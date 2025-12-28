@@ -5,6 +5,7 @@
 - The project is about implementing a beefed up semantic search engine example described in https://docs.langchain.com/oss/python/langchain/knowledge-base
 - Don't add more to the @TODO.md file than tasks; Add explanations in CLAUDE.md here, or in other supporting markdown files.
 - Once you have completed your current tasks according to the @TODO.md file, and before committing changes to git, update the status of the TODO items to reflect on what has been done.
+- When you have a list of planned steps, write one test, make it green, refactor, and git commmit the result. Only then move on to the next test. Never plan writing more than one testat a time. Refer to the testing rules.
 
 ## LangChain Architecture Pattern
 
