@@ -4,6 +4,7 @@ from pathlib import Path
 
 from langchain_core.vectorstores import InMemoryVectorStore
 
+from epistemon.indexing.chunker import load_and_chunk_markdown
 from epistemon.indexing.scanner import scan_markdown_files
 
 
@@ -21,15 +22,18 @@ def detect_file_changes(
         mtime = doc_dict["metadata"]["last_modified"]
         indexed_files[str(directory / source)] = mtime
 
-    new_files = [
-        Path(path) for path in current_files_map.keys() if path not in indexed_files
-    ]
+    new_files = []
+    modified_files = []
 
-    modified_files = [
-        Path(path)
-        for path, mtime in current_files_map.items()
-        if path in indexed_files and indexed_files[path] != mtime
-    ]
+    for path, mtime in current_files_map.items():
+        chunks = load_and_chunk_markdown(Path(path), chunk_size=1000, chunk_overlap=200)
+        if not chunks:
+            continue
+
+        if path not in indexed_files:
+            new_files.append(Path(path))
+        elif indexed_files[path] != mtime:
+            modified_files.append(Path(path))
 
     deleted_files = [
         Path(path) for path in indexed_files.keys() if path not in current_files_map

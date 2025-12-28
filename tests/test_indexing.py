@@ -16,6 +16,18 @@ def test_data_directory() -> Path:
     return Path("tests/data")
 
 
+def files_that_produce_chunks(
+    files: list[Path], chunk_size: int = 500, chunk_overlap: int = 100
+) -> list[Path]:
+    return [
+        f
+        for f in files
+        if load_and_chunk_markdown(
+            f, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+        )
+    ]
+
+
 def create_test_vector_store(
     files: list[Path],
     directory: Path,
@@ -97,6 +109,14 @@ def test_load_and_chunk_markdown_handles_empty_file() -> None:
     assert len(chunks) == 0
 
 
+def test_load_and_chunk_markdown_handles_whitespace_only_file() -> None:
+    test_file = Path("tests/data/whitespace_only.md")
+
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+
+    assert len(chunks) == 0
+
+
 def test_load_and_chunk_markdown_handles_malformed_markdown() -> None:
     test_file = Path("tests/data/malformed.md")
 
@@ -108,28 +128,28 @@ def test_load_and_chunk_markdown_handles_malformed_markdown() -> None:
 
 def test_detect_new_files(test_data_directory: Path) -> None:
     all_files = scan_markdown_files(test_data_directory)
-    non_empty_files = [f for f in all_files if f.stat().st_size > 0]
-    vector_store = create_test_vector_store(non_empty_files[:2], test_data_directory)
+    files_with_chunks = files_that_produce_chunks(all_files)
+    vector_store = create_test_vector_store(files_with_chunks[:2], test_data_directory)
 
     changes = detect_file_changes(test_data_directory, vector_store)
 
-    assert len(changes["new"]) == len(non_empty_files) - 2
+    assert len(changes["new"]) == len(files_with_chunks) - 2
     assert len(changes["modified"]) == 0
     assert len(changes["deleted"]) == 0
 
 
 def test_detect_modified_files(test_data_directory: Path) -> None:
     all_files = scan_markdown_files(test_data_directory, recursive=False)
-    non_empty_files = [f for f in all_files if f.stat().st_size > 0]
-    files = non_empty_files[:2]
+    files_with_chunks = files_that_produce_chunks(all_files)
+    files = files_with_chunks[:2]
     vector_store = create_test_vector_store(files, test_data_directory, old_mtime=True)
 
     changes = detect_file_changes(test_data_directory, vector_store)
 
-    all_non_empty = [
-        f for f in scan_markdown_files(test_data_directory) if f.stat().st_size > 0
-    ]
-    assert len(changes["new"]) == len(all_non_empty) - 2
+    all_files_with_chunks = files_that_produce_chunks(
+        scan_markdown_files(test_data_directory)
+    )
+    assert len(changes["new"]) == len(all_files_with_chunks) - 2
     assert len(changes["modified"]) == 2
     assert len(changes["deleted"]) == 0
     assert all(str(f) in [str(p) for p in changes["modified"]] for f in files)
@@ -153,6 +173,21 @@ def test_retrieve_indexed_files_from_vector_store(test_data_directory: Path) -> 
 def test_skip_unchanged_files(test_data_directory: Path) -> None:
     all_files = scan_markdown_files(test_data_directory)
     vector_store = create_test_vector_store(all_files, test_data_directory)
+
+    changes = detect_file_changes(test_data_directory, vector_store)
+
+    assert len(changes["new"]) == 0
+    assert len(changes["modified"]) == 0
+    assert len(changes["deleted"]) == 0
+
+
+def test_skip_whitespace_only_files(test_data_directory: Path) -> None:
+    files_with_content = [
+        f
+        for f in scan_markdown_files(test_data_directory)
+        if f.name not in ["empty.md", "whitespace_only.md"]
+    ]
+    vector_store = create_test_vector_store(files_with_content, test_data_directory)
 
     changes = detect_file_changes(test_data_directory, vector_store)
 
