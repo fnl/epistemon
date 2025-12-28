@@ -95,8 +95,8 @@ Ensure individual field overrides work correctly:
 
 ### 2.8 Immutability (TDD Cycle 8)
 
-- [ ] Write test for Configuration immutability
-- [ ] Verify frozen dataclass behavior
+- [x] Write test for Configuration immutability
+- [x] Verify frozen dataclass behavior
 
 ## Phase 3: Indexing Module (TDD)
 

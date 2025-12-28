@@ -201,3 +201,11 @@ search_results_limit: -5
 
     with pytest.raises(ValueError, match="search_results_limit must be positive"):
         load_config(config_path)
+
+
+def test_configuration_is_immutable() -> None:
+    """Test that Configuration instances are immutable."""
+    config = load_config()
+
+    with pytest.raises(AttributeError):
+        config.chunk_size = 2000  # type: ignore[misc]
