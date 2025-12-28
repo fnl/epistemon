@@ -40,31 +40,62 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 
 ## Phase 2: Configuration Module (TDD)
 
-### 2.1 Test Setup
+### 2.1 Basic Configuration Loading (TDD Cycle 1)
 
-- [ ] Write test for loading YAML configuration
+- [x] Write test for basic YAML configuration loading
+- [x] Implement Configuration data class with type hints
+- [x] Implement YAML file loader to make test pass
+- [x] Commit green test
+
+### 2.2 Required Fields Validation (TDD Cycle 2)
+
 - [ ] Write test for validating required configuration fields
+- [ ] Implement required fields validation
+- [ ] Make test pass
+- [ ] Commit green test
+
+### 2.3 Default Values (TDD Cycle 3)
+
 - [ ] Write test for default configuration values
-- [ ] Write test for invalid configuration handling
-
-### 2.2 Implementation
-
-- [ ] Implement Configuration data class with type hints
-- [ ] Implement YAML file loader
-- [ ] Implement configuration validation
 - [ ] Implement default value handling
-- [ ] Ensure all tests pass
+- [ ] Make test pass
+- [ ] Commit green test
 
-### 2.3 Configuration Fields Required
+### 2.4 Invalid Configuration Handling (TDD Cycle 4)
 
-- [ ] input_directory: path to markdown files
-- [ ] vector_store_path: path to persistent vector database (for Chroma)
-- [ ] embedding_provider: provider type (fake, huggingface, openai)
-- [ ] embedding_model: model identifier (e.g., "all-MiniLM-L6-v2" or "text-embedding-3-small")
-- [ ] vector_store_type: backend type (inmemory for testing, chroma for production)
-- [ ] chunk_size: size for text splitting (recommended: 1000 characters)
-- [ ] chunk_overlap: overlap for text splitting (recommended: 200 characters)
-- [ ] search_results_limit: number of results per query (default: 5)
+- [ ] Write test for invalid YAML syntax
+- [ ] Implement error handling for invalid YAML
+- [ ] Make test pass
+- [ ] Commit green test
+
+### 2.5 File Not Found Handling (TDD Cycle 5)
+
+- [ ] Write test for missing configuration file
+- [ ] Implement error handling for missing files
+- [ ] Make test pass
+- [ ] Commit green test
+
+### 2.6 Enum Validation (TDD Cycle 6)
+
+- [ ] Write test for embedding_provider validation
+- [ ] Write test for vector_store_type validation
+- [ ] Implement enum validation
+- [ ] Make tests pass
+- [ ] Commit green tests
+
+### 2.7 Value Constraints (TDD Cycle 7)
+
+- [ ] Write test for positive integer validation
+- [ ] Implement constraints validation
+- [ ] Make test pass
+- [ ] Commit green test
+
+### 2.8 Immutability (TDD Cycle 8)
+
+- [ ] Write test for Configuration immutability
+- [ ] Ensure frozen dataclass implementation
+- [ ] Make test pass
+- [ ] Commit green test
 
 ## Phase 3: Indexing Module (TDD)
 
