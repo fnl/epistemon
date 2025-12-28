@@ -228,8 +228,8 @@ Ensure individual field overrides work correctly:
 
 ### 4.17 Update Existing Embeddings (TDD Cycle 17)
 
-- [ ] Write test for updating existing embeddings
-- [ ] Implement embedding update logic
+- [x] Write test for updating existing embeddings
+- [x] Implement embedding update logic
 
 ### 4.18 Vector Store Persistence (TDD Cycle 18)
 

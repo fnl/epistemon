@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from langchain_core.documents import Document
 from langchain_core.vectorstores import InMemoryVectorStore
 
 from epistemon.indexing.chunker import load_and_chunk_markdown
@@ -55,3 +56,13 @@ def remove_deleted_embeddings(
 
     for doc_id in doc_ids_to_remove:
         del vector_store.store[doc_id]
+
+
+def update_embeddings_for_file(
+    file_path: Path,
+    new_chunks: list[Document],
+    vector_store: InMemoryVectorStore,
+    base_directory: Path,
+) -> None:
+    remove_deleted_embeddings([file_path], vector_store, base_directory)
+    vector_store.add_documents(new_chunks)

@@ -9,6 +9,7 @@ from epistemon.indexing import (
     load_and_chunk_markdown,
     remove_deleted_embeddings,
     scan_markdown_files,
+    update_embeddings_for_file,
 )
 
 
@@ -306,3 +307,28 @@ def test_embeddings_preserve_chunk_metadata() -> None:
         ]
         assert len(matching_docs) == 1
         assert matching_docs[0]["metadata"] == chunk.metadata
+
+
+def test_update_existing_embeddings(test_data_directory: Path) -> None:
+    test_file = test_data_directory / "sample.md"
+    old_chunks = load_and_chunk_markdown(
+        test_file, chunk_size=500, chunk_overlap=100, base_directory=test_data_directory
+    )
+    for chunk in old_chunks:
+        chunk.metadata["last_modified"] = 0.0
+
+    vector_store = embed_and_index(old_chunks)
+
+    new_chunks = load_and_chunk_markdown(
+        test_file, chunk_size=500, chunk_overlap=100, base_directory=test_data_directory
+    )
+
+    update_embeddings_for_file(test_file, new_chunks, vector_store, test_data_directory)
+
+    final_count = len(vector_store.store)
+
+    assert final_count == len(new_chunks)
+
+    for doc_dict in vector_store.store.values():
+        if doc_dict["metadata"]["source"] == "sample.md":
+            assert doc_dict["metadata"]["last_modified"] != 0.0
