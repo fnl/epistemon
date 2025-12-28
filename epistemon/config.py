@@ -43,6 +43,8 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
             with config_file.open("r") as file:
                 loaded_data = yaml.safe_load(file)
                 config_data = loaded_data if loaded_data is not None else {}
+        except FileNotFoundError as e:
+            raise ValueError(f"Configuration file not found: {config_path}") from e
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML syntax in {config_path}: {e}") from e
 

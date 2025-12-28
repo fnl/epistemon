@@ -109,3 +109,11 @@ chunk_size: [invalid
 
     with pytest.raises(ValueError, match="Invalid YAML syntax"):
         load_config(config_path)
+
+
+def test_load_config_with_missing_file_raises_error(tmp_path: Path) -> None:
+    """Test loading configuration from a non-existent file raises an error."""
+    non_existent_path = str(tmp_path / "this_file_does_not_exist.yaml")
+
+    with pytest.raises(ValueError, match="Configuration file not found"):
+        load_config(non_existent_path)
