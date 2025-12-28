@@ -4,6 +4,7 @@
 - Remember that you have a HTTP MCP servier docs-langchain to refer to LangChain documentation.
 - The project is about implementing a beefed up semantic search engine example described in https://docs.langchain.com/oss/python/langchain/knowledge-base
 - Don't add more to the @TODO.md file than tasks; Add explanations in CLAUDE.md here, or in other supporting markdown files.
+- Once you have completed your current tasks according to the @TODO.md file, and before committing changes to git, update the status of the TODO items to reflect on what has been done.
 
 ## LangChain Architecture Pattern
 
