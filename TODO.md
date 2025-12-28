@@ -147,8 +147,8 @@ Ensure individual field overrides work correctly:
 
 ### 4.2 Recursive Directory Traversal (TDD Cycle 2)
 
-- [ ] Write test for recursive directory traversal
-- [ ] Implement recursive directory scanning
+- [x] Write test for recursive directory traversal
+- [x] Implement recursive directory scanning
 
 ### 4.3 Filter Non-Markdown Files (TDD Cycle 3)
 

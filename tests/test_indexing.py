@@ -23,6 +23,23 @@ def test_scan_markdown_files() -> None:
     assert "not_markdown.txt" not in file_names
 
 
+def test_scan_markdown_files_recursively() -> None:
+    directory = Path("tests/data")
+
+    markdown_files = scan_markdown_files(directory, recursive=True)
+
+    assert len(markdown_files) == 5
+    assert all(f.suffix == ".md" for f in markdown_files)
+    assert all(f.exists() for f in markdown_files)
+
+    file_names = {f.name for f in markdown_files}
+    assert "sample.md" in file_names
+    assert "doc1.md" in file_names
+    assert "doc2.md" in file_names
+    assert "nested_doc.md" in file_names
+    assert "deep_doc.md" in file_names
+
+
 def test_load_and_chunk_markdown() -> None:
     test_file = Path("tests/data/sample.md")
     chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
