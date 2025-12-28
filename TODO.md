@@ -149,11 +149,17 @@ Ensure individual field overrides work correctly:
 
 - [x] Write test for recursive directory traversal
 - [x] Implement recursive directory scanning
+- [x] Make recursive scanning the default behavior
 
 ### 4.3 Filter Non-Markdown Files (TDD Cycle 3)
 
-- [ ] Write test for filtering non-markdown files
-- [ ] Implement file extension filtering
+- [x] Write test for filtering non-markdown files
+- [x] Implement file extension filtering (covered by *.md glob pattern)
+
+### 4.X Relative Source Paths
+
+- [x] Write test for relative source paths in metadata
+- [x] Implement relative path computation from base directory
 
 ### 4.4 Track File Modification Times (TDD Cycle 4)
 

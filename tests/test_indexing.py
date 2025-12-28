@@ -7,10 +7,10 @@ from epistemon.indexing import (
 )
 
 
-def test_scan_markdown_files() -> None:
+def test_scan_markdown_files_non_recursively() -> None:
     directory = Path("tests/data")
 
-    markdown_files = scan_markdown_files(directory)
+    markdown_files = scan_markdown_files(directory, recursive=False)
 
     assert len(markdown_files) == 3
     assert all(f.suffix == ".md" for f in markdown_files)
@@ -26,7 +26,7 @@ def test_scan_markdown_files() -> None:
 def test_scan_markdown_files_recursively() -> None:
     directory = Path("tests/data")
 
-    markdown_files = scan_markdown_files(directory, recursive=True)
+    markdown_files = scan_markdown_files(directory)
 
     assert len(markdown_files) == 5
     assert all(f.suffix == ".md" for f in markdown_files)
@@ -48,6 +48,19 @@ def test_load_and_chunk_markdown() -> None:
     assert all(chunk.page_content for chunk in chunks)
     assert all("source" in chunk.metadata for chunk in chunks)
     assert all(chunk.metadata["source"] == str(test_file) for chunk in chunks)
+
+
+def test_load_and_chunk_markdown_with_relative_source() -> None:
+    base_dir = Path("tests/data")
+    test_file = base_dir / "subdir" / "nested_doc.md"
+    chunks = load_and_chunk_markdown(
+        test_file, chunk_size=500, chunk_overlap=100, base_directory=base_dir
+    )
+
+    assert len(chunks) > 0
+    assert all(chunk.page_content for chunk in chunks)
+    assert all("source" in chunk.metadata for chunk in chunks)
+    assert all(chunk.metadata["source"] == "subdir/nested_doc.md" for chunk in chunks)
 
 
 def test_embed_and_index() -> None:
