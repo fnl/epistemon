@@ -168,23 +168,23 @@ Ensure individual field overrides work correctly:
 
 ### 4.5 Load Markdown File Content (TDD Cycle 5)
 
-- [ ] Write test for loading markdown file content
-- [ ] Implement markdown document loader
+- [x] Write test for loading markdown file content (covered in Phase 3.1)
+- [x] Implement markdown document loader (covered in Phase 3.1)
 
 ### 4.6 Chunk Document Text (TDD Cycle 6)
 
-- [ ] Write test for chunking document text
-- [ ] Implement text splitter with configurable chunk size
+- [x] Write test for chunking document text (covered in Phase 3.1)
+- [x] Implement text splitter with configurable chunk size (covered in Phase 3.1)
 
 ### 4.7 Preserve Metadata (TDD Cycle 7)
 
-- [ ] Write test for preserving metadata (filename, timestamp)
-- [ ] Implement metadata extraction and attachment
+- [x] Write test for preserving metadata (filename, timestamp) (covered in Phase 3.1 and 4.4)
+- [x] Implement metadata extraction and attachment (covered in Phase 3.1 and 4.4)
 
 ### 4.8 Handle Empty Files (TDD Cycle 8)
 
-- [ ] Write test for handling empty files
-- [ ] Implement empty file handling
+- [x] Write test for handling empty files
+- [x] Implement empty file handling (already works - returns empty list)
 
 ### 4.9 Handle Malformed Markdown (TDD Cycle 9)
 
