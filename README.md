@@ -122,26 +122,37 @@ Once running, the web UI allows users to:
 - Submit semantic search queries
 - Explore ranked search result chunks
 
+## Demo
+
+To quickly test the application with sample data:
+
+```bash
+uv run python demo.py
+```
+
+This starts a web server at http://localhost:8000 with the sample markdown file pre-indexed. Try searching for terms like "LangChain", "embeddings", or "vector stores".
+
 ## Testing
 
 The test suite includes unit tests, integration tests, and end-to-end tests:
 
 - Unit and integration tests use FakeEmbeddings and InMemoryVectorStore for fast, deterministic execution
-- End-to-end tests use Playwright for headless browser testing
+- End-to-end tests use Playwright for headless browser testing (slow, skipped by default)
 
-To run all tests:
+To run unit and integration tests (fast):
 
 ```bash
 uv run pytest tests
 ```
 
-For E2E tests that require a browser, install Playwright browsers first:
+To run E2E tests (requires Playwright browsers):
 
 ```bash
 uv run playwright install chromium
+uv run pytest tests -m e2e
 ```
 
-E2E tests will be automatically skipped if Playwright browsers are not installed.
+E2E tests are skipped by default to keep the test suite fast. They are only executed when explicitly requested with `-m e2e`.
 
 ## Use Cases
 

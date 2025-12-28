@@ -59,3 +59,9 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "epistemon.web.*"
 disable_error_code = ["misc"]
+
+[tool.pytest.ini_options]
+markers = [
+    "e2e: end-to-end tests using headless browser (slow, run with -m e2e)",
+]
+addopts = "-m 'not e2e'"
