@@ -131,12 +131,12 @@ Ensure individual field overrides work correctly:
 
 ### 3.5 Minimal HTML Search UI
 
-- [ ] Create minimal HTML page with search form
-- [ ] Add JavaScript to call search API and display results
+- [x] Create minimal HTML page with search form
+- [x] Add JavaScript to call search API and display results
 
 ### 3.6 End-to-End Manual Test
 
-- [ ] Test complete workflow: index sample.md and search via UI
+- [x] Test complete workflow: index sample.md and search via UI
 
 ## Phase 4: Indexing Module (TDD)
 

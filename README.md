@@ -124,11 +124,24 @@ Once running, the web UI allows users to:
 
 ## Testing
 
-- Tests use an extremely simple and fast local embedding model: TODO
-- Uses an in-memory vector store
-- Fast execution
-- No external dependencies
-- Deterministic behavior
+The test suite includes unit tests, integration tests, and end-to-end tests:
+
+- Unit and integration tests use FakeEmbeddings and InMemoryVectorStore for fast, deterministic execution
+- End-to-end tests use Playwright for headless browser testing
+
+To run all tests:
+
+```bash
+uv run pytest tests
+```
+
+For E2E tests that require a browser, install Playwright browsers first:
+
+```bash
+uv run playwright install chromium
+```
+
+E2E tests will be automatically skipped if Playwright browsers are not installed.
 
 ## Use Cases
 
