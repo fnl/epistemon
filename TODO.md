@@ -113,8 +113,8 @@ Ensure individual field overrides work correctly:
 
 ### 3.2 Embed and Index Chunks (TDD Cycle 2)
 
-- [ ] Write test for embedding and indexing chunks in InMemoryVectorStore
-- [ ] Implement embed_and_index function using FakeEmbeddings
+- [x] Write test for embedding and indexing chunks in InMemoryVectorStore
+- [x] Implement embed_and_index function using FakeEmbeddings
 
 ### 3.3 Search Indexed Content (TDD Cycle 3)
 
