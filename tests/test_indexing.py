@@ -3,6 +3,8 @@ from pathlib import Path
 import pytest
 from langchain_core.embeddings import FakeEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
 from epistemon.config import Configuration
 from epistemon.indexing import (
@@ -394,3 +396,56 @@ def test_load_existing_chroma_vector_store(tmp_path: Path) -> None:
 
     assert len(loaded_results) > 0
     assert all(result.page_content for result in loaded_results)
+
+
+def test_vector_store_uses_fake_embeddings() -> None:
+    config = Configuration(
+        input_directory="./tests/data",
+        vector_store_type="inmemory",
+        vector_store_path="./data/chroma_db",
+        embedding_provider="fake",
+        embedding_model="fake-model",
+        chunk_size=500,
+        chunk_overlap=100,
+        search_results_limit=5,
+    )
+
+    vector_store = create_vector_store(config)
+
+    assert isinstance(vector_store.embeddings, FakeEmbeddings)
+
+
+def test_vector_store_uses_huggingface_embeddings() -> None:
+    config = Configuration(
+        input_directory="./tests/data",
+        vector_store_type="inmemory",
+        vector_store_path="./data/chroma_db",
+        embedding_provider="huggingface",
+        embedding_model="all-MiniLM-L6-v2",
+        chunk_size=500,
+        chunk_overlap=100,
+        search_results_limit=5,
+    )
+
+    vector_store = create_vector_store(config)
+
+    assert isinstance(vector_store.embeddings, HuggingFaceEmbeddings)
+    assert vector_store.embeddings.model_name == "all-MiniLM-L6-v2"
+
+
+def test_vector_store_uses_openai_embeddings() -> None:
+    config = Configuration(
+        input_directory="./tests/data",
+        vector_store_type="inmemory",
+        vector_store_path="./data/chroma_db",
+        embedding_provider="openai",
+        embedding_model="text-embedding-3-small",
+        chunk_size=500,
+        chunk_overlap=100,
+        search_results_limit=5,
+    )
+
+    vector_store = create_vector_store(config)
+
+    assert isinstance(vector_store.embeddings, OpenAIEmbeddings)
+    assert vector_store.embeddings.model == "text-embedding-3-small"

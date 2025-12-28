@@ -238,8 +238,8 @@ Ensure individual field overrides work correctly:
 
 ### 4.19 Make embeddings configurable (TDD Cycle 19)
 
-- [ ] Write test to validate the vector store is using the configured embedding model
-- [ ] Implement configurable embeddings as documented in the README
+- [x] Write test to validate the vector store is using the configured embedding model
+- [x] Implement configurable embeddings as documented in the README
 
 ## Phase 5: Search Module (TDD)
 
