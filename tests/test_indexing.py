@@ -1,11 +1,42 @@
 from pathlib import Path
 
+import pytest
+from langchain_core.vectorstores import InMemoryVectorStore
+
 from epistemon.indexing import (
     detect_file_changes,
     embed_and_index,
     load_and_chunk_markdown,
     scan_markdown_files,
 )
+
+
+@pytest.fixture
+def test_data_directory() -> Path:
+    return Path("tests/data")
+
+
+def create_test_vector_store(
+    files: list[Path],
+    directory: Path,
+    chunk_size: int = 500,
+    chunk_overlap: int = 100,
+    old_mtime: bool = False,
+) -> InMemoryVectorStore:
+    all_chunks = []
+    for file in files:
+        chunks = load_and_chunk_markdown(
+            file,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+            base_directory=directory,
+        )
+        if old_mtime:
+            for chunk in chunks:
+                chunk.metadata["last_modified"] = 0.0
+        all_chunks.extend(chunks)
+
+    return embed_and_index(all_chunks)
 
 
 def test_scan_markdown_files_non_recursively() -> None:
@@ -75,44 +106,38 @@ def test_load_and_chunk_markdown_handles_malformed_markdown() -> None:
     assert all(chunk.page_content for chunk in chunks)
 
 
-def test_detect_new_files() -> None:
-    directory = Path("tests/data")
-    all_files = scan_markdown_files(directory)
+def test_detect_new_files(test_data_directory: Path) -> None:
+    all_files = scan_markdown_files(test_data_directory)
+    vector_store = create_test_vector_store(all_files[:2], test_data_directory)
 
-    all_chunks = []
-    for file in all_files[:2]:
-        chunks = load_and_chunk_markdown(
-            file, chunk_size=500, chunk_overlap=100, base_directory=directory
-        )
-        all_chunks.extend(chunks)
-
-    vector_store = embed_and_index(all_chunks)
-
-    changes = detect_file_changes(directory, vector_store)
+    changes = detect_file_changes(test_data_directory, vector_store)
 
     assert len(changes["new"]) == len(all_files) - 2
     assert len(changes["modified"]) == 0
     assert len(changes["deleted"]) == 0
 
 
-def test_retrieve_indexed_files_from_vector_store() -> None:
-    directory = Path("tests/data")
-    files = scan_markdown_files(directory, recursive=False)[:2]
+def test_detect_modified_files(test_data_directory: Path) -> None:
+    files = scan_markdown_files(test_data_directory, recursive=False)[:2]
+    vector_store = create_test_vector_store(files, test_data_directory, old_mtime=True)
 
-    all_chunks = []
-    for file in files:
-        chunks = load_and_chunk_markdown(
-            file, chunk_size=500, chunk_overlap=100, base_directory=directory
-        )
-        all_chunks.extend(chunks)
+    changes = detect_file_changes(test_data_directory, vector_store)
 
-    vector_store = embed_and_index(all_chunks)
+    assert len(changes["new"]) == len(scan_markdown_files(test_data_directory)) - 2
+    assert len(changes["modified"]) == 2
+    assert len(changes["deleted"]) == 0
+    assert all(str(f) in [str(p) for p in changes["modified"]] for f in files)
+
+
+def test_retrieve_indexed_files_from_vector_store(test_data_directory: Path) -> None:
+    files = scan_markdown_files(test_data_directory, recursive=False)[:2]
+    vector_store = create_test_vector_store(files, test_data_directory)
 
     indexed_files: dict[str, float] = {}
     for _doc_id, doc_dict in vector_store.store.items():
         source = doc_dict["metadata"]["source"]
         mtime = doc_dict["metadata"]["last_modified"]
-        indexed_files[str(directory / source)] = mtime
+        indexed_files[str(test_data_directory / source)] = mtime
 
     assert len(indexed_files) == len(files)
     for file in files:

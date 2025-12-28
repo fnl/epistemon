@@ -1,7 +1,9 @@
 # Project Roadmap
 
-## Semantic Search
+The project is expected to evolve in three stages.
 
-## RAG agent
+## V1: Semantic Search
 
-## Autonomous Retrieval Agent
+## V2: RAG agent
+
+## V3: Autonomous Retrieval Agent
