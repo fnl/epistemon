@@ -126,8 +126,8 @@ Ensure individual field overrides work correctly:
 
 ### 3.4 FastAPI Search Endpoint (TDD Cycle 4)
 
-- [ ] Write test for GET /search endpoint
-- [ ] Implement minimal FastAPI app with search endpoint
+- [x] Write test for GET /search endpoint
+- [x] Implement minimal FastAPI app with search endpoint
 
 ### 3.5 Minimal HTML Search UI
 

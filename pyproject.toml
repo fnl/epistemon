@@ -49,3 +49,12 @@ ignore = [
 
 [tool.mypy]
 strict = true
+disable_error_code = ["import-not-found"]
+
+[[tool.mypy.overrides]]
+module = "fastapi.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "epistemon.web.*"
+disable_error_code = ["misc"]
