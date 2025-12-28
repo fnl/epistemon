@@ -61,7 +61,7 @@ All fields have sensible defaults (config file is optional):
 Tasks:
 - [x] Write test for missing config file (uses all defaults)
 - [x] Write test for empty config file (uses all defaults)
-- [ ] Write test for partial config (some fields overridden)
+- [x] Write test for partial config (some fields overridden)
 - [x] Implement default value handling for None config path
 - [x] Implement default value handling for empty YAML files
 
