@@ -13,20 +13,20 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 
 ### 1.1 Dependencies and Tooling
 
-- [ ] Add LangChain dependencies (langchain, langchain-community, langchain-text-splitters)
-- [ ] Add embedding model dependencies:
+- [x] Add LangChain dependencies (langchain, langchain-community, langchain-text-splitters)
+- [x] Add embedding model dependencies:
   - For testing: FakeEmbeddings (built into langchain, no extra deps)
   - For integration tests: sentence-transformers (HuggingFaceEmbeddings with all-MiniLM-L6-v2)
   - For production: langchain-openai (OpenAIEmbeddings with text-embedding-3-small)
-- [ ] Add vector store dependencies:
+- [x] Add vector store dependencies:
   - For testing: InMemoryVectorStore (built into langchain-core, no extra deps)
   - For production: chromadb (persistent vector store)
-- [ ] Add document loader dependencies (pypdf for PDF support, though focus is markdown)
-- [ ] Add web framework dependencies (fastapi, uvicorn)
-- [ ] Add YAML configuration dependencies (pyyaml)
-- [ ] Add development tools (black, ruff, mypy, pytest, pip-audit)
-- [ ] Configure ruff rules in pyproject.toml
-- [ ] Configure mypy strict mode in pyproject.toml
+- [x] Add document loader dependencies (pypdf for PDF support, though focus is markdown)
+- [x] Add web framework dependencies (fastapi, uvicorn)
+- [x] Add YAML configuration dependencies (pyyaml)
+- [x] Add development tools (black, ruff, mypy, pytest, pip-audit)
+- [x] Configure ruff rules in pyproject.toml
+- [x] Configure mypy strict mode in pyproject.toml
 
 ### 1.2 Project Structure
 
