@@ -117,3 +117,35 @@ def test_load_config_with_missing_file_raises_error(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="Configuration file not found"):
         load_config(non_existent_path)
+
+
+def test_load_config_with_invalid_embedding_provider_raises_error(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test loading configuration with invalid embedding_provider raises an error."""
+    config_content = """
+embedding_provider: "invalid_provider"
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(
+        ValueError,
+        match="Invalid embedding_provider.*Must be one of: fake, huggingface, openai",
+    ):
+        load_config(config_path)
+
+
+def test_load_config_with_invalid_vector_store_type_raises_error(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test loading configuration with invalid vector_store_type raises an error."""
+    config_content = """
+vector_store_type: "invalid_store"
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(
+        ValueError,
+        match="Invalid vector_store_type.*Must be one of: inmemory, chroma",
+    ):
+        load_config(config_path)

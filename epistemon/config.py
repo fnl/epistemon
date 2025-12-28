@@ -2,9 +2,12 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Final, Optional
 
 import yaml
+
+VALID_EMBEDDING_PROVIDERS: Final[list[str]] = ["fake", "huggingface", "openai"]
+VALID_VECTOR_STORE_TYPES: Final[list[str]] = ["inmemory", "chroma"]
 
 
 @dataclass(frozen=True)
@@ -49,6 +52,18 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
             raise ValueError(f"Invalid YAML syntax in {config_path}: {e}") from e
 
     merged_config = {**defaults, **config_data}
+
+    if merged_config["embedding_provider"] not in VALID_EMBEDDING_PROVIDERS:
+        raise ValueError(
+            f"Invalid embedding_provider: {merged_config['embedding_provider']}. "
+            f"Must be one of: {', '.join(VALID_EMBEDDING_PROVIDERS)}"
+        )
+
+    if merged_config["vector_store_type"] not in VALID_VECTOR_STORE_TYPES:
+        raise ValueError(
+            f"Invalid vector_store_type: {merged_config['vector_store_type']}. "
+            f"Must be one of: {', '.join(VALID_VECTOR_STORE_TYPES)}"
+        )
 
     return Configuration(
         input_directory=merged_config["input_directory"],

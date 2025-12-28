@@ -84,9 +84,9 @@ Ensure individual field overrides work correctly:
 
 ### 2.6 Enum Validation (TDD Cycle 6)
 
-- [ ] Write test for embedding_provider validation
-- [ ] Write test for vector_store_type validation
-- [ ] Implement enum validation
+- [x] Write test for embedding_provider validation
+- [x] Write test for vector_store_type validation
+- [x] Implement enum validation
 
 ### 2.7 Value Constraints (TDD Cycle 7)
 
