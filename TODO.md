@@ -65,17 +65,17 @@ Tasks:
 - [x] Implement default value handling for None config path
 - [x] Implement default value handling for empty YAML files
 
-### 2.3 Field Override Validation (TDD Cycle 3)
+### 2.3 Field Override Validation (TDD Cycle 3) - SKIPPED
 
 Ensure individual field overrides work correctly:
-- [ ] Write test for overriding input_directory only
-- [ ] Write test for overriding embedding config only
-- [ ] Write test for overriding vector store config only
+- [~] Write test for overriding input_directory only (SKIPPED - covered by partial override test)
+- [~] Write test for overriding embedding config only (SKIPPED - covered by partial override test)
+- [~] Write test for overriding vector store config only (SKIPPED - covered by partial override test)
 
 ### 2.4 Invalid Configuration Handling (TDD Cycle 4)
 
-- [ ] Write test for invalid YAML syntax
-- [ ] Implement error handling for invalid YAML
+- [x] Write test for invalid YAML syntax
+- [x] Implement error handling for invalid YAML
 
 ### 2.5 File Not Found Handling (TDD Cycle 5)
 

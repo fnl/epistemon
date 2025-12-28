@@ -39,9 +39,12 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         config_data = {}
     else:
         config_file = Path(config_path)
-        with config_file.open("r") as file:
-            loaded_data = yaml.safe_load(file)
-            config_data = loaded_data if loaded_data is not None else {}
+        try:
+            with config_file.open("r") as file:
+                loaded_data = yaml.safe_load(file)
+                config_data = loaded_data if loaded_data is not None else {}
+        except yaml.YAMLError as e:
+            raise ValueError(f"Invalid YAML syntax in {config_path}: {e}") from e
 
     merged_config = {**defaults, **config_data}
 

@@ -3,6 +3,8 @@
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from epistemon.config import load_config
 
 
@@ -100,5 +102,24 @@ chunk_size: 500
         assert config.vector_store_path == "./data/chroma_db"
         assert config.chunk_overlap == 200
         assert config.search_results_limit == 5
+    finally:
+        Path(temp_file_path).unlink()
+
+
+def test_load_config_with_invalid_yaml_raises_error() -> None:
+    """Test loading configuration with invalid YAML syntax raises an error."""
+    config_content = """
+input_directory: "./custom/path"
+chunk_size: [invalid
+"""
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".yaml", delete=False
+    ) as temp_file:
+        temp_file.write(config_content)
+        temp_file_path = temp_file.name
+
+    try:
+        with pytest.raises(ValueError, match="Invalid YAML syntax"):
+            load_config(temp_file_path)
     finally:
         Path(temp_file_path).unlink()
