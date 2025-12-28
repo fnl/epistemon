@@ -44,8 +44,7 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 
 - [x] Write test for basic YAML configuration loading
 - [x] Implement Configuration data class with type hints
-- [x] Implement YAML file loader to make test pass
-- [x] Commit green test
+- [x] Implement YAML file loader
 
 ### 2.2 Default Values for All Fields (TDD Cycle 2)
 
@@ -65,8 +64,6 @@ Tasks:
 - [ ] Write test for partial config (some fields overridden)
 - [x] Implement default value handling for None config path
 - [x] Implement default value handling for empty YAML files
-- [x] Make tests pass
-- [x] Commit green tests
 
 ### 2.3 Field Override Validation (TDD Cycle 3)
 
@@ -74,45 +71,32 @@ Ensure individual field overrides work correctly:
 - [ ] Write test for overriding input_directory only
 - [ ] Write test for overriding embedding config only
 - [ ] Write test for overriding vector store config only
-- [ ] Verify implementation handles overrides
-- [ ] Make tests pass
-- [ ] Commit green tests
 
 ### 2.4 Invalid Configuration Handling (TDD Cycle 4)
 
 - [ ] Write test for invalid YAML syntax
 - [ ] Implement error handling for invalid YAML
-- [ ] Make test pass
-- [ ] Commit green test
 
 ### 2.5 File Not Found Handling (TDD Cycle 5)
 
 - [ ] Write test for missing configuration file
 - [ ] Implement error handling for missing files
-- [ ] Make test pass
-- [ ] Commit green test
 
 ### 2.6 Enum Validation (TDD Cycle 6)
 
 - [ ] Write test for embedding_provider validation
 - [ ] Write test for vector_store_type validation
 - [ ] Implement enum validation
-- [ ] Make tests pass
-- [ ] Commit green tests
 
 ### 2.7 Value Constraints (TDD Cycle 7)
 
 - [ ] Write test for positive integer validation
 - [ ] Implement constraints validation
-- [ ] Make test pass
-- [ ] Commit green test
 
 ### 2.8 Immutability (TDD Cycle 8)
 
 - [ ] Write test for Configuration immutability
-- [ ] Ensure frozen dataclass implementation
-- [ ] Make test pass
-- [ ] Commit green test
+- [ ] Verify frozen dataclass behavior
 
 ## Phase 3: Indexing Module (TDD)
 
@@ -127,7 +111,6 @@ Ensure individual field overrides work correctly:
 
 - [ ] Implement markdown file scanner
 - [ ] Implement file modification time tracking
-- [ ] Ensure all file discovery tests pass
 
 ### 3.3 Document Processing Tests
 
@@ -142,7 +125,6 @@ Ensure individual field overrides work correctly:
 - [ ] Implement markdown document loader
 - [ ] Implement text splitter with configurable chunk size
 - [ ] Implement metadata extraction and attachment
-- [ ] Ensure all document processing tests pass
 
 ### 3.5 Incremental Indexing Tests
 
@@ -159,7 +141,6 @@ Ensure individual field overrides work correctly:
 - [ ] Implement modified file detection logic
 - [ ] Implement embedding update logic
 - [ ] Implement deletion handling
-- [ ] Ensure all incremental indexing tests pass
 
 ### 3.7 Vector Store Integration Tests
 
@@ -176,7 +157,6 @@ Ensure individual field overrides work correctly:
 - [ ] Implement embedding storage logic
 - [ ] Implement embedding update logic
 - [ ] Implement persistence handling
-- [ ] Ensure all vector store tests pass
 
 ## Phase 4: Search Module (TDD)
 
@@ -194,7 +174,6 @@ Ensure individual field overrides work correctly:
 - [ ] Implement similarity search function
 - [ ] Implement result ranking and limiting
 - [ ] Implement edge case handling
-- [ ] Ensure all query tests pass
 
 ### 4.3 Result Formatting Tests
 
@@ -208,7 +187,6 @@ Ensure individual field overrides work correctly:
 - [ ] Implement result data class with type hints
 - [ ] Implement result extraction from vector store response
 - [ ] Implement metadata extraction
-- [ ] Ensure all result formatting tests pass
 
 ## Phase 5: Web UI Module (TDD)
 
@@ -225,7 +203,6 @@ Ensure individual field overrides work correctly:
 - [ ] Implement GET /files endpoint
 - [ ] Implement file list retrieval from vector store
 - [ ] Implement response serialization
-- [ ] Ensure all file listing tests pass
 
 ### 5.3 Search API Tests
 
@@ -241,7 +218,6 @@ Ensure individual field overrides work correctly:
 - [ ] Implement query parameter validation
 - [ ] Implement search result serialization
 - [ ] Implement error handling and responses
-- [ ] Ensure all search API tests pass
 
 ### 5.5 Frontend UI
 
@@ -269,7 +245,6 @@ Ensure individual field overrides work correctly:
 - [ ] Add progress logging
 - [ ] Add error handling and user messages
 - [ ] Configure upsert-index script in pyproject.toml
-- [ ] Ensure all index command tests pass
 
 ### 6.3 Web UI Command Tests
 
@@ -285,7 +260,6 @@ Ensure individual field overrides work correctly:
 - [ ] Add configuration loading
 - [ ] Add shutdown handling
 - [ ] Configure web-ui script in pyproject.toml
-- [ ] Ensure all web UI command tests pass
 
 ## Phase 7: Integration and End-to-End Testing
 
@@ -300,7 +274,6 @@ Ensure individual field overrides work correctly:
 
 - [ ] Ensure all modules integrate correctly
 - [ ] Fix any integration issues
-- [ ] Ensure all integration tests pass
 
 ### 7.3 Example Data
 
@@ -309,17 +282,9 @@ Ensure individual field overrides work correctly:
 - [ ] Create example input directory with markdown files
 - [ ] Document configuration options in README
 
-## Phase 8: Code Quality and Documentation
+## Phase 8: Documentation
 
-### 8.1 Code Quality Checks
-
-- [ ] Run black formatter on all code
-- [ ] Run ruff linter and fix all issues
-- [ ] Run mypy strict type checking and fix all issues
-- [ ] Run pytest and ensure 100% passing tests
-- [ ] Run pip-audit and ensure no vulnerabilities
-
-### 8.2 Documentation
+### 8.1 Documentation
 
 - [ ] Add docstrings to all public functions and classes
 - [ ] Update README with installation instructions
