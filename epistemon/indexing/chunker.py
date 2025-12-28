@@ -13,13 +13,16 @@ def load_and_chunk_markdown(
     base_directory: Path | None = None,
 ) -> list[Document]:
     content = file_path.read_text()
+    mtime = file_path.stat().st_mtime
 
     if base_directory is not None:
         source = str(file_path.relative_to(base_directory))
     else:
         source = str(file_path)
 
-    document = Document(page_content=content, metadata={"source": source})
+    document = Document(
+        page_content=content, metadata={"source": source, "last_modified": mtime}
+    )
 
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
