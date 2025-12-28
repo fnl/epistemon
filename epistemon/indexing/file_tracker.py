@@ -11,7 +11,9 @@ def detect_file_changes(
     directory: Path, vector_store: InMemoryVectorStore
 ) -> dict[str, list[Path]]:
     current_files = scan_markdown_files(directory)
-    current_files_map = {str(f): f.stat().st_mtime for f in current_files}
+    current_files_map = {
+        str(f): f.stat().st_mtime for f in current_files if f.stat().st_size > 0
+    }
 
     indexed_files: dict[str, float] = {}
     for _doc_id, doc_dict in vector_store.store.items():

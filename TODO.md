@@ -203,35 +203,40 @@ Ensure individual field overrides work correctly:
 
 ### 4.12 Skip Unchanged Files (TDD Cycle 12)
 
-- [ ] Write test for skipping unchanged files
-- [ ] Implement unchanged file skipping logic
+- [x] Write test for skipping unchanged files
+- [x] Implement unchanged file skipping logic
 
-### 4.13 Remove Deleted File Embeddings (TDD Cycle 13)
+### 4.13 Log Warnings for Empty Files
+
+- [ ] Write test for logging warning when empty file is encountered
+- [ ] Implement warning log when file produces no chunks
+
+### 4.14 Remove Deleted File Embeddings (TDD Cycle 14)
 
 - [ ] Write test for removing deleted file embeddings
 - [ ] Implement deletion handling
 
-### 4.14 Create Embeddings from Chunks (TDD Cycle 14)
+### 4.15 Create Embeddings from Chunks (TDD Cycle 15)
 
 - [ ] Write test for creating embeddings from chunks
 - [ ] Implement embedding generation interface
 
-### 4.15 Store Embeddings in Vector Store (TDD Cycle 15)
+### 4.16 Store Embeddings in Vector Store (TDD Cycle 16)
 
 - [ ] Write test for storing embeddings in vector store
 - [ ] Implement vector store initialization and storage
 
-### 4.16 Update Existing Embeddings (TDD Cycle 16)
+### 4.17 Update Existing Embeddings (TDD Cycle 17)
 
 - [ ] Write test for updating existing embeddings
 - [ ] Implement embedding update logic
 
-### 4.17 Vector Store Persistence (TDD Cycle 17)
+### 4.18 Vector Store Persistence (TDD Cycle 18)
 
 - [ ] Write test for vector store persistence
 - [ ] Implement persistence handling
 
-### 4.18 In-Memory Vector Store for Tests (TDD Cycle 18)
+### 4.19 In-Memory Vector Store for Tests (TDD Cycle 19)
 
 - [ ] Write test with in-memory vector store
 - [ ] Implement in-memory vector store for fast tests

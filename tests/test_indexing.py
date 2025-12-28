@@ -108,22 +108,28 @@ def test_load_and_chunk_markdown_handles_malformed_markdown() -> None:
 
 def test_detect_new_files(test_data_directory: Path) -> None:
     all_files = scan_markdown_files(test_data_directory)
-    vector_store = create_test_vector_store(all_files[:2], test_data_directory)
+    non_empty_files = [f for f in all_files if f.stat().st_size > 0]
+    vector_store = create_test_vector_store(non_empty_files[:2], test_data_directory)
 
     changes = detect_file_changes(test_data_directory, vector_store)
 
-    assert len(changes["new"]) == len(all_files) - 2
+    assert len(changes["new"]) == len(non_empty_files) - 2
     assert len(changes["modified"]) == 0
     assert len(changes["deleted"]) == 0
 
 
 def test_detect_modified_files(test_data_directory: Path) -> None:
-    files = scan_markdown_files(test_data_directory, recursive=False)[:2]
+    all_files = scan_markdown_files(test_data_directory, recursive=False)
+    non_empty_files = [f for f in all_files if f.stat().st_size > 0]
+    files = non_empty_files[:2]
     vector_store = create_test_vector_store(files, test_data_directory, old_mtime=True)
 
     changes = detect_file_changes(test_data_directory, vector_store)
 
-    assert len(changes["new"]) == len(scan_markdown_files(test_data_directory)) - 2
+    all_non_empty = [
+        f for f in scan_markdown_files(test_data_directory) if f.stat().st_size > 0
+    ]
+    assert len(changes["new"]) == len(all_non_empty) - 2
     assert len(changes["modified"]) == 2
     assert len(changes["deleted"]) == 0
     assert all(str(f) in [str(p) for p in changes["modified"]] for f in files)
@@ -142,6 +148,17 @@ def test_retrieve_indexed_files_from_vector_store(test_data_directory: Path) -> 
     assert len(indexed_files) == len(files)
     for file in files:
         assert str(file) in indexed_files
+
+
+def test_skip_unchanged_files(test_data_directory: Path) -> None:
+    all_files = scan_markdown_files(test_data_directory)
+    vector_store = create_test_vector_store(all_files, test_data_directory)
+
+    changes = detect_file_changes(test_data_directory, vector_store)
+
+    assert len(changes["new"]) == 0
+    assert len(changes["modified"]) == 0
+    assert len(changes["deleted"]) == 0
 
 
 def test_embed_and_index() -> None:
