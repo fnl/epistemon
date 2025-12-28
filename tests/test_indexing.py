@@ -276,3 +276,33 @@ def test_remove_deleted_embeddings(test_data_directory: Path) -> None:
         doc_dict["metadata"]["source"] for doc_dict in vector_store.store.values()
     }
     assert "deleted_file.md" not in remaining_sources
+
+
+def test_create_embeddings_from_chunks() -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+
+    vector_store = embed_and_index(chunks)
+
+    assert len(vector_store.store) == len(chunks)
+    for doc_id in vector_store.store.keys():
+        doc_dict = vector_store.store[doc_id]
+        assert "vector" in doc_dict
+        assert isinstance(doc_dict["vector"], list)
+        assert len(doc_dict["vector"]) == 384
+
+
+def test_embeddings_preserve_chunk_metadata() -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+
+    vector_store = embed_and_index(chunks)
+
+    for chunk in chunks:
+        matching_docs = [
+            doc_dict
+            for doc_dict in vector_store.store.values()
+            if doc_dict["text"] == chunk.page_content
+        ]
+        assert len(matching_docs) == 1
+        assert matching_docs[0]["metadata"] == chunk.metadata

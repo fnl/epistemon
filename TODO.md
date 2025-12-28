@@ -218,13 +218,13 @@ Ensure individual field overrides work correctly:
 
 ### 4.15 Create Embeddings from Chunks (TDD Cycle 15)
 
-- [ ] Write test for creating embeddings from chunks
-- [ ] Implement embedding generation interface
+- [x] Write test for creating embeddings from chunks
+- [x] Implement embedding generation interface
 
 ### 4.16 Store Embeddings in Vector Store (TDD Cycle 16)
 
-- [ ] Write test for storing embeddings in vector store
-- [ ] Implement vector store initialization and storage
+- [x] Write test for storing embeddings in vector store
+- [x] Implement vector store initialization and storage
 
 ### 4.17 Update Existing Embeddings (TDD Cycle 17)
 
