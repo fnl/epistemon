@@ -1,9 +1,12 @@
 """Document loading and chunking functionality."""
 
+import logging
 from pathlib import Path
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+logger = logging.getLogger(__name__)
 
 
 def load_and_chunk_markdown(
@@ -30,4 +33,9 @@ def load_and_chunk_markdown(
         add_start_index=True,
     )
 
-    return text_splitter.split_documents([document])
+    chunks = text_splitter.split_documents([document])
+
+    if not chunks:
+        logger.warning("File %s produced no chunks (empty or whitespace-only)", source)
+
+    return chunks

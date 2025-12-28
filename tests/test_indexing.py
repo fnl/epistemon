@@ -109,6 +109,19 @@ def test_load_and_chunk_markdown_handles_empty_file() -> None:
     assert len(chunks) == 0
 
 
+def test_load_and_chunk_markdown_logs_warning_for_empty_file(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    test_file = Path("tests/data/empty.md")
+
+    load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+
+    assert any(
+        record.levelname == "WARNING" and "empty.md" in record.message
+        for record in caplog.records
+    )
+
+
 def test_load_and_chunk_markdown_handles_whitespace_only_file() -> None:
     test_file = Path("tests/data/whitespace_only.md")
 

@@ -208,8 +208,8 @@ Ensure individual field overrides work correctly:
 
 ### 4.13 Log Warnings for Empty Files
 
-- [ ] Write test for logging warning when empty file is encountered
-- [ ] Implement warning log when file produces no chunks
+- [x] Write test for logging warning when empty file is encountered
+- [x] Implement warning log when file produces no chunks
 
 ### 4.14 Remove Deleted File Embeddings (TDD Cycle 14)
 
