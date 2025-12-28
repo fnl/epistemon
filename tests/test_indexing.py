@@ -6,10 +6,10 @@ from langchain_core.vectorstores import InMemoryVectorStore
 
 from epistemon.config import Configuration
 from epistemon.indexing import (
+    collect_markdown_files,
     detect_file_changes,
     load_and_chunk_markdown,
     remove_deleted_embeddings,
-    scan_markdown_files,
     update_embeddings_for_file,
 )
 from epistemon.vector_store_factory import create_vector_store
@@ -58,20 +58,20 @@ def create_test_vector_store(
     return vector_store
 
 
-def test_scan_markdown_files_non_recursively() -> None:
+def test_collect_markdown_files_non_recursively() -> None:
     directory = Path("tests/data")
 
-    markdown_files = scan_markdown_files(directory, recursive=False)
+    markdown_files = collect_markdown_files(directory, recursive=False)
 
     assert len(markdown_files) > 0
     assert all(f.suffix == ".md" for f in markdown_files)
     assert all(f.parent == directory for f in markdown_files)
 
 
-def test_scan_markdown_files_recursively() -> None:
+def test_collect_markdown_files_recursively() -> None:
     directory = Path("tests/data")
 
-    markdown_files = scan_markdown_files(directory)
+    markdown_files = collect_markdown_files(directory)
 
     assert len(markdown_files) > 0
     assert all(f.suffix == ".md" for f in markdown_files)
@@ -147,19 +147,19 @@ def test_load_and_chunk_markdown_handles_malformed_markdown() -> None:
 
 
 def test_detect_new_files(test_data_directory: Path) -> None:
-    all_files = scan_markdown_files(test_data_directory)
+    all_files = collect_markdown_files(test_data_directory)
     files_with_chunks = files_that_produce_chunks(all_files)
     vector_store = create_test_vector_store(files_with_chunks[:2], test_data_directory)
 
     changes = detect_file_changes(test_data_directory, vector_store)
 
-    assert len(changes["new"]) == len(files_with_chunks) - 2
-    assert len(changes["modified"]) == 0
-    assert len(changes["deleted"]) == 0
+    assert len(changes.new) == len(files_with_chunks) - 2
+    assert len(changes.modified) == 0
+    assert len(changes.deleted) == 0
 
 
 def test_detect_modified_files(test_data_directory: Path) -> None:
-    all_files = scan_markdown_files(test_data_directory, recursive=False)
+    all_files = collect_markdown_files(test_data_directory, recursive=False)
     files_with_chunks = files_that_produce_chunks(all_files)
     files = files_with_chunks[:2]
     vector_store = create_test_vector_store(files, test_data_directory, old_mtime=True)
@@ -167,16 +167,16 @@ def test_detect_modified_files(test_data_directory: Path) -> None:
     changes = detect_file_changes(test_data_directory, vector_store)
 
     all_files_with_chunks = files_that_produce_chunks(
-        scan_markdown_files(test_data_directory)
+        collect_markdown_files(test_data_directory)
     )
-    assert len(changes["new"]) == len(all_files_with_chunks) - 2
-    assert len(changes["modified"]) == 2
-    assert len(changes["deleted"]) == 0
-    assert all(str(f) in [str(p) for p in changes["modified"]] for f in files)
+    assert len(changes.new) == len(all_files_with_chunks) - 2
+    assert len(changes.modified) == 2
+    assert len(changes.deleted) == 0
+    assert all(str(f) in [str(p) for p in changes.modified] for f in files)
 
 
 def test_retrieve_indexed_files_from_vector_store(test_data_directory: Path) -> None:
-    files = scan_markdown_files(test_data_directory, recursive=False)[:2]
+    files = collect_markdown_files(test_data_directory, recursive=False)[:2]
     vector_store = create_test_vector_store(files, test_data_directory)
 
     indexed_files: dict[str, float] = {}
@@ -191,29 +191,29 @@ def test_retrieve_indexed_files_from_vector_store(test_data_directory: Path) -> 
 
 
 def test_skip_unchanged_files(test_data_directory: Path) -> None:
-    all_files = scan_markdown_files(test_data_directory)
+    all_files = collect_markdown_files(test_data_directory)
     vector_store = create_test_vector_store(all_files, test_data_directory)
 
     changes = detect_file_changes(test_data_directory, vector_store)
 
-    assert len(changes["new"]) == 0
-    assert len(changes["modified"]) == 0
-    assert len(changes["deleted"]) == 0
+    assert len(changes.new) == 0
+    assert len(changes.modified) == 0
+    assert len(changes.deleted) == 0
 
 
 def test_skip_whitespace_only_files(test_data_directory: Path) -> None:
     files_with_content = [
         f
-        for f in scan_markdown_files(test_data_directory)
+        for f in collect_markdown_files(test_data_directory)
         if f.name not in ["empty.md", "whitespace_only.md"]
     ]
     vector_store = create_test_vector_store(files_with_content, test_data_directory)
 
     changes = detect_file_changes(test_data_directory, vector_store)
 
-    assert len(changes["new"]) == 0
-    assert len(changes["modified"]) == 0
-    assert len(changes["deleted"]) == 0
+    assert len(changes.new) == 0
+    assert len(changes.modified) == 0
+    assert len(changes.deleted) == 0
 
 
 def test_add_documents_to_vector_store() -> None:
@@ -229,7 +229,7 @@ def test_add_documents_to_vector_store() -> None:
 
 
 def test_detect_deleted_files(test_data_directory: Path) -> None:
-    all_files = scan_markdown_files(test_data_directory)
+    all_files = collect_markdown_files(test_data_directory)
     files_with_chunks = files_that_produce_chunks(all_files)
     vector_store = create_test_vector_store(files_with_chunks[:2], test_data_directory)
 
@@ -248,12 +248,12 @@ def test_detect_deleted_files(test_data_directory: Path) -> None:
 
     changes = detect_file_changes(test_data_directory, vector_store)
 
-    assert len(changes["deleted"]) == 1
-    assert changes["deleted"][0] == fake_deleted_file
+    assert len(changes.deleted) == 1
+    assert changes.deleted[0] == fake_deleted_file
 
 
 def test_remove_deleted_embeddings(test_data_directory: Path) -> None:
-    all_files = scan_markdown_files(test_data_directory)
+    all_files = collect_markdown_files(test_data_directory)
     files_with_chunks = files_that_produce_chunks(all_files)
     vector_store = create_test_vector_store(files_with_chunks[:2], test_data_directory)
 

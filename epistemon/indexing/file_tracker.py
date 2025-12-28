@@ -1,18 +1,29 @@
 """File change detection for incremental indexing."""
 
 from pathlib import Path
+from typing import NamedTuple
 
 from langchain_core.documents import Document
 from langchain_core.vectorstores import InMemoryVectorStore
 
 from epistemon.indexing.chunker import load_and_chunk_markdown
-from epistemon.indexing.scanner import scan_markdown_files
+
+
+class FileChanges(NamedTuple):
+    new: list[Path]
+    modified: list[Path]
+    deleted: list[Path]
+
+
+def collect_markdown_files(directory: Path, recursive: bool = True) -> list[Path]:
+    pattern = "**/*.md" if recursive else "*.md"
+    return sorted(directory.glob(pattern))
 
 
 def detect_file_changes(
     directory: Path, vector_store: InMemoryVectorStore
-) -> dict[str, list[Path]]:
-    current_files = scan_markdown_files(directory)
+) -> FileChanges:
+    current_files = collect_markdown_files(directory)
     current_files_map = {
         str(f): f.stat().st_mtime for f in current_files if f.stat().st_size > 0
     }
@@ -40,7 +51,7 @@ def detect_file_changes(
         Path(path) for path in indexed_files.keys() if path not in current_files_map
     ]
 
-    return {"new": new_files, "modified": modified_files, "deleted": deleted_files}
+    return FileChanges(new=new_files, modified=modified_files, deleted=deleted_files)
 
 
 def remove_deleted_embeddings(
