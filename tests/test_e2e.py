@@ -9,9 +9,11 @@ import time
 from pathlib import Path
 
 import pytest
+from langchain_core.embeddings import FakeEmbeddings
+from langchain_core.vectorstores import InMemoryVectorStore
 from playwright.sync_api import expect, sync_playwright
 
-from epistemon.indexing import embed_and_index, load_and_chunk_markdown
+from epistemon.indexing import load_and_chunk_markdown
 from epistemon.web import create_app
 
 
@@ -29,7 +31,8 @@ def run_server() -> None:
 
     test_file = Path("tests/data/sample.md")
     chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
-    vector_store = embed_and_index(chunks)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
 
     app = create_app(vector_store)
 

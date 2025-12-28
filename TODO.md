@@ -154,7 +154,7 @@ Ensure individual field overrides work correctly:
 ### 4.3 Filter Non-Markdown Files (TDD Cycle 3)
 
 - [x] Write test for filtering non-markdown files
-- [x] Implement file extension filtering (covered by *.md glob pattern)
+- [x] Implement file extension filtering (covered by \*.md glob pattern)
 
 ### 4.X Relative Source Paths
 
@@ -233,13 +233,13 @@ Ensure individual field overrides work correctly:
 
 ### 4.18 Vector Store Persistence (TDD Cycle 18)
 
-- [ ] Write test for vector store persistence
-- [ ] Implement persistence handling
+- [x] Write test for vector store persistence
+- [x] Implement persistence handling
 
-### 4.19 In-Memory Vector Store for Tests (TDD Cycle 19)
+### 4.19 Make embeddings configurable (TDD Cycle 19)
 
-- [ ] Write test with in-memory vector store
-- [ ] Implement in-memory vector store for fast tests
+- [ ] Write test to validate the vector store is using the configured embedding model
+- [ ] Implement configurable embeddings as documented in the README
 
 ## Phase 5: Search Module (TDD)
 

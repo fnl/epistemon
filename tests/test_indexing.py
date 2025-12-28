@@ -1,11 +1,13 @@
 from pathlib import Path
 
 import pytest
+from langchain_core.embeddings import FakeEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore
 
+from epistemon.config import Configuration
 from epistemon.indexing import (
+    create_vector_store,
     detect_file_changes,
-    embed_and_index,
     load_and_chunk_markdown,
     remove_deleted_embeddings,
     scan_markdown_files,
@@ -50,7 +52,10 @@ def create_test_vector_store(
                 chunk.metadata["last_modified"] = 0.0
         all_chunks.extend(chunks)
 
-    return embed_and_index(all_chunks)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    if all_chunks:
+        vector_store.add_documents(all_chunks)
+    return vector_store
 
 
 def test_scan_markdown_files_non_recursively() -> None:
@@ -211,11 +216,12 @@ def test_skip_whitespace_only_files(test_data_directory: Path) -> None:
     assert len(changes["deleted"]) == 0
 
 
-def test_embed_and_index() -> None:
+def test_add_documents_to_vector_store() -> None:
     test_file = Path("tests/data/sample.md")
     chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
 
-    vector_store = embed_and_index(chunks)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
 
     stored_docs = vector_store.similarity_search("LangChain", k=3)
 
@@ -283,7 +289,8 @@ def test_create_embeddings_from_chunks() -> None:
     test_file = Path("tests/data/sample.md")
     chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
 
-    vector_store = embed_and_index(chunks)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
 
     assert len(vector_store.store) == len(chunks)
     for doc_id in vector_store.store.keys():
@@ -297,7 +304,8 @@ def test_embeddings_preserve_chunk_metadata() -> None:
     test_file = Path("tests/data/sample.md")
     chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
 
-    vector_store = embed_and_index(chunks)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
 
     for chunk in chunks:
         matching_docs = [
@@ -317,7 +325,8 @@ def test_update_existing_embeddings(test_data_directory: Path) -> None:
     for chunk in old_chunks:
         chunk.metadata["last_modified"] = 0.0
 
-    vector_store = embed_and_index(old_chunks)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(old_chunks)
 
     new_chunks = load_and_chunk_markdown(
         test_file, chunk_size=500, chunk_overlap=100, base_directory=test_data_directory
@@ -332,3 +341,56 @@ def test_update_existing_embeddings(test_data_directory: Path) -> None:
     for doc_dict in vector_store.store.values():
         if doc_dict["metadata"]["source"] == "sample.md":
             assert doc_dict["metadata"]["last_modified"] != 0.0
+
+
+def test_chroma_persistence(tmp_path: Path) -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+    persist_directory = tmp_path / "chroma_db"
+
+    config = Configuration(
+        input_directory="./tests/data",
+        vector_store_type="chroma",
+        vector_store_path=str(persist_directory),
+        embedding_provider="fake",
+        embedding_model="fake",
+        chunk_size=500,
+        chunk_overlap=100,
+        search_results_limit=5,
+    )
+
+    vector_store = create_vector_store(config)
+    vector_store.add_documents(chunks)
+
+    assert persist_directory.exists()
+    assert len(list(persist_directory.iterdir())) > 0
+
+    results = vector_store.similarity_search("LangChain", k=3)
+    assert len(results) > 0
+
+
+def test_load_existing_chroma_vector_store(tmp_path: Path) -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+    persist_directory = tmp_path / "chroma_db"
+
+    config = Configuration(
+        input_directory="./tests/data",
+        vector_store_type="chroma",
+        vector_store_path=str(persist_directory),
+        embedding_provider="fake",
+        embedding_model="fake",
+        chunk_size=500,
+        chunk_overlap=100,
+        search_results_limit=5,
+    )
+
+    vector_store = create_vector_store(config)
+    vector_store.add_documents(chunks)
+
+    loaded_store = create_vector_store(config)
+
+    loaded_results = loaded_store.similarity_search("LangChain", k=3)
+
+    assert len(loaded_results) > 0
+    assert all(result.page_content for result in loaded_results)

@@ -488,6 +488,7 @@ dependencies = [
     { name = "chromadb" },
     { name = "fastapi" },
     { name = "langchain" },
+    { name = "langchain-chroma" },
     { name = "langchain-community" },
     { name = "langchain-core" },
     { name = "langchain-openai" },
@@ -513,6 +514,7 @@ requires-dist = [
     { name = "chromadb", specifier = ">=1.4.0" },
     { name = "fastapi", specifier = ">=0.128.0" },
     { name = "langchain", specifier = ">=1.2.0" },
+    { name = "langchain-chroma", specifier = ">=1.1.0" },
     { name = "langchain-community", specifier = ">=0.4.1" },
     { name = "langchain-core", specifier = ">=1.2.5" },
     { name = "langchain-openai", specifier = ">=1.1.6" },
@@ -1064,6 +1066,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/12/3a74c22abdfddd877dfc2ee666d516f9132877fcd25eb4dd694835c59c79/langchain-1.2.0.tar.gz", hash = "sha256:a087d1e2b2969819e29a91a6d5f98302aafe31bd49ba377ecee3bf5a5dcfe14a", size = 536126, upload-time = "2025-12-15T14:51:42.24Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/23/00/4e3fa0d90f5a5c376ccb8ca983d0f0f7287783dfac48702e18f01d24673b/langchain-1.2.0-py3-none-any.whl", hash = "sha256:82f0d17aa4fbb11560b30e1e7d4aeb75e3ad71ce09b85c90ab208b181a24ffac", size = 102828, upload-time = "2025-12-15T14:51:40.802Z" },
+]
+
+[[package]]
+name = "langchain-chroma"
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "chromadb" },
+    { name = "langchain-core" },
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/fa/0e/54896830b7331c90788cf96b2c37858977c199da9ecdaf85cf11eb6e6bc1/langchain_chroma-1.1.0.tar.gz", hash = "sha256:8069685e7848041e998d16c8a4964256b031fd20551bf59429173415bc2adc12", size = 220382, upload-time = "2025-12-12T16:23:01.399Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ae/35/2a6d1191acaad043647e28313b0ecd161d61f09d8be37d1996a90d752c13/langchain_chroma-1.1.0-py3-none-any.whl", hash = "sha256:ff65e4a2ccefb0fb9fde2ff38705022ace402f979d557f018f6e623f7288f0fc", size = 12981, upload-time = "2025-12-12T16:23:00.196Z" },
 ]
 
 [[package]]

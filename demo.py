@@ -3,8 +3,10 @@
 from pathlib import Path
 
 import uvicorn
+from langchain_core.embeddings import FakeEmbeddings
+from langchain_core.vectorstores import InMemoryVectorStore
 
-from epistemon.indexing import embed_and_index, load_and_chunk_markdown
+from epistemon.indexing import load_and_chunk_markdown
 from epistemon.web import create_app
 
 
@@ -14,7 +16,8 @@ def main() -> None:
     chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
 
     print(f"Indexing {len(chunks)} chunks...")
-    vector_store = embed_and_index(chunks)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
 
     app = create_app(vector_store)
 
