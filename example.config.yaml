@@ -1,24 +1,35 @@
 # Epistemon Configuration
+#
+# All fields are optional with sensible defaults.
+# The application will run without a config file using the defaults below.
+# Uncomment and modify any field to override the default.
 
 # Input directory containing markdown files to index
-input_directory: "./docs"
-
-# Vector store configuration
-vector_store_type: "chroma"  # Options: inmemory, chroma
-vector_store_path: "./data/chroma_db"
+# Default: "./tests/data"
+input_directory: "./tests/data"
 
 # Embedding configuration
-embedding_provider: "huggingface"  # Options: fake, huggingface, openai
-embedding_model: "all-MiniLM-L6-v2"  # HuggingFace model for local embeddings
+# Default provider: "huggingface" (options: fake, huggingface, openai)
+embedding_provider: "huggingface"
+# Default model: "all-MiniLM-L6-v2"
+embedding_model: "all-MiniLM-L6-v2"
 
-# For OpenAI embeddings, use:
+# For OpenAI embeddings, uncomment and set OPENAI_API_KEY environment variable:
 # embedding_provider: "openai"
 # embedding_model: "text-embedding-3-small"
-# And set OPENAI_API_KEY environment variable
+
+# Vector store configuration
+# Default type: "chroma" (options: inmemory, chroma)
+vector_store_type: "chroma"
+# Default path: "./data/chroma_db"
+vector_store_path: "./data/chroma_db"
 
 # Text chunking configuration
-chunk_size: 1000  # Characters per chunk
-chunk_overlap: 200  # Character overlap between chunks
+# Default chunk size: 1000 characters
+chunk_size: 1000
+# Default overlap: 200 characters
+chunk_overlap: 200
 
 # Search configuration
-search_results_limit: 5  # Number of results returned per query
+# Default results limit: 5
+search_results_limit: 5

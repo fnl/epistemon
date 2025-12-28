@@ -47,19 +47,35 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 - [x] Implement YAML file loader to make test pass
 - [x] Commit green test
 
-### 2.2 Required Fields Validation (TDD Cycle 2)
+### 2.2 Default Values for All Fields (TDD Cycle 2)
 
-- [ ] Write test for validating required configuration fields
-- [ ] Implement required fields validation
-- [ ] Make test pass
-- [ ] Commit green test
+All fields have sensible defaults (config file is optional):
+- input_directory: Default "./tests/data"
+- embedding_provider: Default "huggingface"
+- embedding_model: Default "all-MiniLM-L6-v2"
+- vector_store_type: Default "chroma"
+- vector_store_path: Default "./data/chroma_db"
+- chunk_size: Default 1000 (LangChain best practice)
+- chunk_overlap: Default 200 (LangChain best practice)
+- search_results_limit: Default 5
 
-### 2.3 Default Values (TDD Cycle 3)
-
-- [ ] Write test for default configuration values
+Tasks:
+- [ ] Write test for missing config file (uses all defaults)
+- [ ] Write test for empty config file (uses all defaults)
+- [ ] Write test for partial config (some fields overridden)
 - [ ] Implement default value handling
-- [ ] Make test pass
-- [ ] Commit green test
+- [ ] Make tests pass
+- [ ] Commit green tests
+
+### 2.3 Field Override Validation (TDD Cycle 3)
+
+Ensure individual field overrides work correctly:
+- [ ] Write test for overriding input_directory only
+- [ ] Write test for overriding embedding config only
+- [ ] Write test for overriding vector store config only
+- [ ] Verify implementation handles overrides
+- [ ] Make tests pass
+- [ ] Commit green tests
 
 ### 2.4 Invalid Configuration Handling (TDD Cycle 4)
 
