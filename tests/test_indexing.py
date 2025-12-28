@@ -6,13 +6,13 @@ from langchain_core.vectorstores import InMemoryVectorStore
 
 from epistemon.config import Configuration
 from epistemon.indexing import (
-    create_vector_store,
     detect_file_changes,
     load_and_chunk_markdown,
     remove_deleted_embeddings,
     scan_markdown_files,
     update_embeddings_for_file,
 )
+from epistemon.vector_store_factory import create_vector_store
 
 
 @pytest.fixture
