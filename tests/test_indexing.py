@@ -73,6 +73,16 @@ def test_load_and_chunk_markdown_handles_empty_file() -> None:
     assert len(chunks) == 0
 
 
+def test_load_and_chunk_markdown_handles_malformed_markdown() -> None:
+    test_file = Path("tests/data/malformed.md")
+
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+
+    assert len(chunks) > 0
+    assert all(chunk.page_content for chunk in chunks)
+    assert all("source" in chunk.metadata for chunk in chunks)
+
+
 def test_embed_and_index() -> None:
     test_file = Path("tests/data/sample.md")
     chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)

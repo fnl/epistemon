@@ -14,5 +14,5 @@ wheels/
 config.yaml
 
 # Data directories
-data/
-docs/
+/data/
+/docs/
