@@ -213,8 +213,8 @@ Ensure individual field overrides work correctly:
 
 ### 4.14 Remove Deleted File Embeddings (TDD Cycle 14)
 
-- [ ] Write test for removing deleted file embeddings
-- [ ] Implement deletion handling
+- [x] Write test for removing deleted file embeddings
+- [x] Implement deletion handling
 
 ### 4.15 Create Embeddings from Chunks (TDD Cycle 15)
 

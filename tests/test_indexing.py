@@ -7,6 +7,7 @@ from epistemon.indexing import (
     detect_file_changes,
     embed_and_index,
     load_and_chunk_markdown,
+    remove_deleted_embeddings,
     scan_markdown_files,
 )
 
@@ -218,3 +219,60 @@ def test_embed_and_index() -> None:
     stored_docs = vector_store.similarity_search("LangChain", k=3)
 
     assert len(stored_docs) > 0
+
+
+def test_detect_deleted_files(test_data_directory: Path) -> None:
+    all_files = scan_markdown_files(test_data_directory)
+    files_with_chunks = files_that_produce_chunks(all_files)
+    vector_store = create_test_vector_store(files_with_chunks[:2], test_data_directory)
+
+    fake_deleted_file = test_data_directory / "deleted_file.md"
+    fake_chunks = load_and_chunk_markdown(
+        files_with_chunks[0],
+        chunk_size=500,
+        chunk_overlap=100,
+        base_directory=test_data_directory,
+    )
+    for chunk in fake_chunks:
+        chunk.metadata["source"] = "deleted_file.md"
+        chunk.metadata["last_modified"] = 0.0
+
+    vector_store.add_documents(fake_chunks)
+
+    changes = detect_file_changes(test_data_directory, vector_store)
+
+    assert len(changes["deleted"]) == 1
+    assert changes["deleted"][0] == fake_deleted_file
+
+
+def test_remove_deleted_embeddings(test_data_directory: Path) -> None:
+    all_files = scan_markdown_files(test_data_directory)
+    files_with_chunks = files_that_produce_chunks(all_files)
+    vector_store = create_test_vector_store(files_with_chunks[:2], test_data_directory)
+
+    fake_chunks = load_and_chunk_markdown(
+        files_with_chunks[0],
+        chunk_size=500,
+        chunk_overlap=100,
+        base_directory=test_data_directory,
+    )
+    for chunk in fake_chunks:
+        chunk.metadata["source"] = "deleted_file.md"
+        chunk.metadata["last_modified"] = 0.0
+
+    vector_store.add_documents(fake_chunks)
+
+    initial_doc_count = len(vector_store.store)
+
+    deleted_files = [test_data_directory / "deleted_file.md"]
+    remove_deleted_embeddings(deleted_files, vector_store, test_data_directory)
+
+    final_doc_count = len(vector_store.store)
+
+    assert final_doc_count < initial_doc_count
+    assert final_doc_count == initial_doc_count - len(fake_chunks)
+
+    remaining_sources = {
+        doc_dict["metadata"]["source"] for doc_dict in vector_store.store.values()
+    }
+    assert "deleted_file.md" not in remaining_sources

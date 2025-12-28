@@ -40,3 +40,18 @@ def detect_file_changes(
     ]
 
     return {"new": new_files, "modified": modified_files, "deleted": deleted_files}
+
+
+def remove_deleted_embeddings(
+    deleted_files: list[Path], vector_store: InMemoryVectorStore, base_directory: Path
+) -> None:
+    deleted_sources = {str(f.relative_to(base_directory)) for f in deleted_files}
+
+    doc_ids_to_remove = [
+        doc_id
+        for doc_id, doc_dict in vector_store.store.items()
+        if doc_dict["metadata"]["source"] in deleted_sources
+    ]
+
+    for doc_id in doc_ids_to_remove:
+        del vector_store.store[doc_id]
