@@ -193,8 +193,8 @@ Ensure individual field overrides work correctly:
 
 ### 4.10 Detect New Files (TDD Cycle 10)
 
-- [ ] Write test for detecting new files
-- [ ] Implement file state tracking and new file detection
+- [x] Write test for detecting new files
+- [x] Implement file state tracking and new file detection
 
 ### 4.11 Detect Modified Files (TDD Cycle 11)
 

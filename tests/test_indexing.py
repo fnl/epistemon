@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from epistemon.indexing import (
+    detect_file_changes,
     embed_and_index,
     load_and_chunk_markdown,
     scan_markdown_files,
@@ -72,6 +73,50 @@ def test_load_and_chunk_markdown_handles_malformed_markdown() -> None:
 
     assert len(chunks) > 0
     assert all(chunk.page_content for chunk in chunks)
+
+
+def test_detect_new_files() -> None:
+    directory = Path("tests/data")
+    all_files = scan_markdown_files(directory)
+
+    all_chunks = []
+    for file in all_files[:2]:
+        chunks = load_and_chunk_markdown(
+            file, chunk_size=500, chunk_overlap=100, base_directory=directory
+        )
+        all_chunks.extend(chunks)
+
+    vector_store = embed_and_index(all_chunks)
+
+    changes = detect_file_changes(directory, vector_store)
+
+    assert len(changes["new"]) == len(all_files) - 2
+    assert len(changes["modified"]) == 0
+    assert len(changes["deleted"]) == 0
+
+
+def test_retrieve_indexed_files_from_vector_store() -> None:
+    directory = Path("tests/data")
+    files = scan_markdown_files(directory, recursive=False)[:2]
+
+    all_chunks = []
+    for file in files:
+        chunks = load_and_chunk_markdown(
+            file, chunk_size=500, chunk_overlap=100, base_directory=directory
+        )
+        all_chunks.extend(chunks)
+
+    vector_store = embed_and_index(all_chunks)
+
+    indexed_files: dict[str, float] = {}
+    for _doc_id, doc_dict in vector_store.store.items():
+        source = doc_dict["metadata"]["source"]
+        mtime = doc_dict["metadata"]["last_modified"]
+        indexed_files[str(directory / source)] = mtime
+
+    assert len(indexed_files) == len(files)
+    for file in files:
+        assert str(file) in indexed_files
 
 
 def test_embed_and_index() -> None:
