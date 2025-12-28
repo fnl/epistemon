@@ -209,3 +209,29 @@ def test_configuration_is_immutable() -> None:
 
     with pytest.raises(AttributeError):
         config.chunk_size = 2000  # type: ignore[misc]
+
+
+def test_load_config_with_string_chunk_size_raises_error(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test loading configuration with chunk_size as string raises an error."""
+    config_content = """
+chunk_size: "500"
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(ValueError, match="chunk_size must be an integer"):
+        load_config(config_path)
+
+
+def test_load_config_with_integer_input_directory_raises_error(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test loading configuration with input_directory as integer raises an error."""
+    config_content = """
+input_directory: 123
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(ValueError, match="input_directory must be a string"):
+        load_config(config_path)

@@ -53,6 +53,26 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
 
     merged_config = {**defaults, **config_data}
 
+    string_fields = [
+        "input_directory",
+        "vector_store_type",
+        "vector_store_path",
+        "embedding_provider",
+        "embedding_model",
+    ]
+    for field in string_fields:
+        if not isinstance(merged_config[field], str):
+            raise ValueError(
+                f"{field} must be a string, got {type(merged_config[field]).__name__}"
+            )
+
+    integer_fields = ["chunk_size", "chunk_overlap", "search_results_limit"]
+    for field in integer_fields:
+        if not isinstance(merged_config[field], int):
+            raise ValueError(
+                f"{field} must be an integer, got {type(merged_config[field]).__name__}"
+            )
+
     if merged_config["embedding_provider"] not in VALID_EMBEDDING_PROVIDERS:
         raise ValueError(
             f"Invalid embedding_provider: {merged_config['embedding_provider']}. "
