@@ -31,7 +31,7 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 ### 1.2 Project Structure
 
 - [x] Create epistemon/ package directory
-- [x] Create epistemon/__init__.py
+- [x] Create epistemon/**init**.py
 - [x] Create epistemon/indexing/ module directory
 - [x] Create epistemon/search/ module directory
 - [x] Create epistemon/web/ module directory
@@ -49,6 +49,7 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 ### 2.2 Default Values for All Fields (TDD Cycle 2)
 
 All fields have sensible defaults (config file is optional):
+
 - input_directory: Default "./tests/data"
 - embedding_provider: Default "huggingface"
 - embedding_model: Default "all-MiniLM-L6-v2"
@@ -59,6 +60,7 @@ All fields have sensible defaults (config file is optional):
 - search_results_limit: Default 5
 
 Tasks:
+
 - [x] Write test for missing config file (uses all defaults)
 - [x] Write test for empty config file (uses all defaults)
 - [x] Write test for partial config (some fields overridden)
@@ -68,6 +70,7 @@ Tasks:
 ### 2.3 Field Override Validation (TDD Cycle 3) - SKIPPED
 
 Ensure individual field overrides work correctly:
+
 - [~] Write test for overriding input_directory only (SKIPPED - covered by partial override test)
 - [~] Write test for overriding embedding config only (SKIPPED - covered by partial override test)
 - [~] Write test for overriding vector store config only (SKIPPED - covered by partial override test)
@@ -118,12 +121,12 @@ Ensure individual field overrides work correctly:
 
 ### 3.3 Search Indexed Content (TDD Cycle 3)
 
-- [ ] Write test for searching indexed content
-- [ ] Implement search function
+- [x] Write test for searching indexed content
+- [x] Implement search function
 
 ### 3.4 FastAPI Search Endpoint (TDD Cycle 4)
 
-- [ ] Write test for POST /search endpoint
+- [ ] Write test for GET /search endpoint
 - [ ] Implement minimal FastAPI app with search endpoint
 
 ### 3.5 Minimal HTML Search UI
