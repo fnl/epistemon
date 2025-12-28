@@ -2,5 +2,6 @@
 
 from epistemon.indexing.chunker import load_and_chunk_markdown
 from epistemon.indexing.indexer import embed_and_index
+from epistemon.indexing.scanner import scan_markdown_files
 
-__all__ = ["load_and_chunk_markdown", "embed_and_index"]
+__all__ = ["load_and_chunk_markdown", "embed_and_index", "scan_markdown_files"]

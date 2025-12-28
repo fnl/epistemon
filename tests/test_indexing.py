@@ -1,6 +1,26 @@
 from pathlib import Path
 
-from epistemon.indexing import embed_and_index, load_and_chunk_markdown
+from epistemon.indexing import (
+    embed_and_index,
+    load_and_chunk_markdown,
+    scan_markdown_files,
+)
+
+
+def test_scan_markdown_files() -> None:
+    directory = Path("tests/data")
+
+    markdown_files = scan_markdown_files(directory)
+
+    assert len(markdown_files) == 3
+    assert all(f.suffix == ".md" for f in markdown_files)
+    assert all(f.exists() for f in markdown_files)
+
+    file_names = {f.name for f in markdown_files}
+    assert "sample.md" in file_names
+    assert "doc1.md" in file_names
+    assert "doc2.md" in file_names
+    assert "not_markdown.txt" not in file_names
 
 
 def test_load_and_chunk_markdown() -> None:

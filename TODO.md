@@ -142,8 +142,8 @@ Ensure individual field overrides work correctly:
 
 ### 4.1 Scan Directory for Markdown Files (TDD Cycle 1)
 
-- [ ] Write test for scanning directory for markdown files
-- [ ] Implement markdown file scanner
+- [x] Write test for scanning directory for markdown files
+- [x] Implement markdown file scanner
 
 ### 4.2 Recursive Directory Traversal (TDD Cycle 2)
 
