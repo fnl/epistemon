@@ -108,8 +108,8 @@ Ensure individual field overrides work correctly:
 
 ### 3.1 Load and Chunk Single Markdown File (TDD Cycle 1)
 
-- [ ] Write test for loading and chunking a single markdown file
-- [ ] Implement load_and_chunk_markdown function
+- [x] Write test for loading and chunking a single markdown file
+- [x] Implement load_and_chunk_markdown function
 
 ### 3.2 Embed and Index Chunks (TDD Cycle 2)
 
