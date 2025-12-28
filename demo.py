@@ -3,21 +3,40 @@
 from pathlib import Path
 
 import uvicorn
-from langchain_core.embeddings import FakeEmbeddings
-from langchain_core.vectorstores import InMemoryVectorStore
 
-from epistemon.indexing import load_and_chunk_markdown
+from epistemon.config import load_config
+from epistemon.indexing import collect_markdown_files, load_and_chunk_markdown
+from epistemon.vector_store_factory import create_vector_store
 from epistemon.web import create_app
 
 
 def main() -> None:
-    print("Loading sample markdown file...")
-    test_file = Path("tests/data/sample.md")
-    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+    print("Loading default configuration...")
+    config = load_config()
 
-    print(f"Indexing {len(chunks)} chunks...")
-    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
-    vector_store.add_documents(chunks)
+    print(f"Creating vector store ({config.vector_store_type})...")
+    vector_store = create_vector_store(config)
+
+    print(f"Scanning {config.input_directory} for markdown files...")
+    base_directory = Path(config.input_directory)
+    markdown_files = collect_markdown_files(base_directory)
+
+    print(f"Found {len(markdown_files)} markdown files")
+
+    total_chunks = 0
+    for file in markdown_files:
+        chunks = load_and_chunk_markdown(
+            file,
+            chunk_size=config.chunk_size,
+            chunk_overlap=config.chunk_overlap,
+            base_directory=base_directory,
+        )
+        if chunks:
+            vector_store.add_documents(chunks)
+            total_chunks += len(chunks)
+            print(f"  Indexed {file.name}: {len(chunks)} chunks")
+
+    print(f"\nTotal indexed: {total_chunks} chunks from {len(markdown_files)} files")
 
     app = create_app(vector_store)
 
