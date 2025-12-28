@@ -90,8 +90,8 @@ Ensure individual field overrides work correctly:
 
 ### 2.7 Value Constraints (TDD Cycle 7)
 
-- [ ] Write test for positive integer validation
-- [ ] Implement constraints validation
+- [x] Write test for positive integer validation
+- [x] Implement constraints validation
 
 ### 2.8 Immutability (TDD Cycle 8)
 

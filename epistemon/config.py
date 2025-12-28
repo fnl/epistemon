@@ -65,6 +65,21 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
             f"Must be one of: {', '.join(VALID_VECTOR_STORE_TYPES)}"
         )
 
+    if merged_config["chunk_size"] <= 0:
+        raise ValueError(
+            f"chunk_size must be positive, got: {merged_config['chunk_size']}"
+        )
+
+    if merged_config["chunk_overlap"] < 0:
+        raise ValueError(
+            f"chunk_overlap must be positive, got: {merged_config['chunk_overlap']}"
+        )
+
+    if merged_config["search_results_limit"] <= 0:
+        raise ValueError(
+            f"search_results_limit must be positive, got: {merged_config['search_results_limit']}"
+        )
+
     return Configuration(
         input_directory=merged_config["input_directory"],
         embedding_provider=merged_config["embedding_provider"],

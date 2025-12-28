@@ -149,3 +149,55 @@ vector_store_type: "invalid_store"
         match="Invalid vector_store_type.*Must be one of: inmemory, chroma",
     ):
         load_config(config_path)
+
+
+def test_load_config_with_negative_chunk_size_raises_error(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test loading configuration with negative chunk_size raises an error."""
+    config_content = """
+chunk_size: -100
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(ValueError, match="chunk_size must be positive"):
+        load_config(config_path)
+
+
+def test_load_config_with_zero_chunk_size_raises_error(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test loading configuration with zero chunk_size raises an error."""
+    config_content = """
+chunk_size: 0
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(ValueError, match="chunk_size must be positive"):
+        load_config(config_path)
+
+
+def test_load_config_with_negative_chunk_overlap_raises_error(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test loading configuration with negative chunk_overlap raises an error."""
+    config_content = """
+chunk_overlap: -50
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(ValueError, match="chunk_overlap must be positive"):
+        load_config(config_path)
+
+
+def test_load_config_with_negative_search_results_limit_raises_error(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test loading configuration with negative search_results_limit raises an error."""
+    config_content = """
+search_results_limit: -5
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(ValueError, match="search_results_limit must be positive"):
+        load_config(config_path)
