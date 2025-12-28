@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import yaml
 
@@ -23,30 +23,35 @@ class Configuration:
 
 def load_config(config_path: Optional[str] = None) -> Configuration:
     """Load configuration from a YAML file or use defaults."""
+    defaults = {
+        "input_directory": "./tests/data",
+        "embedding_provider": "huggingface",
+        "embedding_model": "all-MiniLM-L6-v2",
+        "vector_store_type": "chroma",
+        "vector_store_path": "./data/chroma_db",
+        "chunk_size": 1000,
+        "chunk_overlap": 200,
+        "search_results_limit": 5,
+    }
+
+    config_data: dict[str, Any]
     if config_path is None:
-        return Configuration(
-            input_directory="./tests/data",
-            embedding_provider="huggingface",
-            embedding_model="all-MiniLM-L6-v2",
-            vector_store_type="chroma",
-            vector_store_path="./data/chroma_db",
-            chunk_size=1000,
-            chunk_overlap=200,
-            search_results_limit=5,
-        )
+        config_data = {}
+    else:
+        config_file = Path(config_path)
+        with config_file.open("r") as file:
+            loaded_data = yaml.safe_load(file)
+            config_data = loaded_data if loaded_data is not None else {}
 
-    config_file = Path(config_path)
-
-    with config_file.open("r") as file:
-        config_data = yaml.safe_load(file)
+    merged_config = {**defaults, **config_data}
 
     return Configuration(
-        input_directory=config_data["input_directory"],
-        vector_store_type=config_data["vector_store_type"],
-        vector_store_path=config_data["vector_store_path"],
-        embedding_provider=config_data["embedding_provider"],
-        embedding_model=config_data["embedding_model"],
-        chunk_size=config_data["chunk_size"],
-        chunk_overlap=config_data["chunk_overlap"],
-        search_results_limit=config_data["search_results_limit"],
+        input_directory=merged_config["input_directory"],
+        embedding_provider=merged_config["embedding_provider"],
+        embedding_model=merged_config["embedding_model"],
+        vector_store_type=merged_config["vector_store_type"],
+        vector_store_path=merged_config["vector_store_path"],
+        chunk_size=merged_config["chunk_size"],
+        chunk_overlap=merged_config["chunk_overlap"],
+        search_results_limit=merged_config["search_results_limit"],
     )
