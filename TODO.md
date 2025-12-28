@@ -30,13 +30,13 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 
 ### 1.2 Project Structure
 
-- [ ] Create epistemon/ package directory
-- [ ] Create epistemon/**init**.py
-- [ ] Create epistemon/indexing/ module directory
-- [ ] Create epistemon/search/ module directory
-- [ ] Create epistemon/web/ module directory
-- [ ] Create tests/data/ directory for test markdown files
-- [ ] Create config.yaml template file
+- [x] Create epistemon/ package directory
+- [x] Create epistemon/__init__.py
+- [x] Create epistemon/indexing/ module directory
+- [x] Create epistemon/search/ module directory
+- [x] Create epistemon/web/ module directory
+- [x] Create tests/data/ directory for test markdown files
+- [x] Create config.yaml template file
 
 ## Phase 2: Configuration Module (TDD)
 

@@ -1,0 +1,24 @@
+# Epistemon Configuration
+
+# Input directory containing markdown files to index
+input_directory: "./docs"
+
+# Vector store configuration
+vector_store_type: "chroma"  # Options: inmemory, chroma
+vector_store_path: "./data/chroma_db"
+
+# Embedding configuration
+embedding_provider: "huggingface"  # Options: fake, huggingface, openai
+embedding_model: "all-MiniLM-L6-v2"  # HuggingFace model for local embeddings
+
+# For OpenAI embeddings, use:
+# embedding_provider: "openai"
+# embedding_model: "text-embedding-3-small"
+# And set OPENAI_API_KEY environment variable
+
+# Text chunking configuration
+chunk_size: 1000  # Characters per chunk
+chunk_overlap: 200  # Character overlap between chunks
+
+# Search configuration
+search_results_limit: 5  # Number of results returned per query

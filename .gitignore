@@ -11,3 +11,8 @@ wheels/
 
 # Local configuration
 .claude/
+config.yaml
+
+# Data directories
+data/
+docs/
