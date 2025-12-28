@@ -60,12 +60,12 @@ All fields have sensible defaults (config file is optional):
 - search_results_limit: Default 5
 
 Tasks:
-- [ ] Write test for missing config file (uses all defaults)
+- [x] Write test for missing config file (uses all defaults)
 - [ ] Write test for empty config file (uses all defaults)
 - [ ] Write test for partial config (some fields overridden)
-- [ ] Implement default value handling
-- [ ] Make tests pass
-- [ ] Commit green tests
+- [x] Implement default value handling for None config path
+- [x] Make test pass
+- [x] Commit green test
 
 ### 2.3 Field Override Validation (TDD Cycle 3)
 

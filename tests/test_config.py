@@ -37,3 +37,17 @@ search_results_limit: 5
         assert config.search_results_limit == 5
     finally:
         Path(temp_file_path).unlink()
+
+
+def test_load_config_without_file_uses_defaults() -> None:
+    """Test loading configuration without a file uses all default values."""
+    config = load_config()
+
+    assert config.input_directory == "./tests/data"
+    assert config.embedding_provider == "huggingface"
+    assert config.embedding_model == "all-MiniLM-L6-v2"
+    assert config.vector_store_type == "chroma"
+    assert config.vector_store_path == "./data/chroma_db"
+    assert config.chunk_size == 1000
+    assert config.chunk_overlap == 200
+    assert config.search_results_limit == 5
