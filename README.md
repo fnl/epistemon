@@ -72,18 +72,16 @@ This project builds a semantic search engine over Markdown (`.md`) files using *
 
 ```text
 .
-├── epistemon/
+├── epistemon/           # Source code
 │   ├── indexing/        # Indexing logic
-│   ├── search/          # Query and retrieval logic
 │   ├── web/             # Web UI and API
-│   │   └── main.py      # Web UI main.
+│   │   └── app.py       # Web UI main.
 │   └── config.py        # Configuration reader
-├── config.yaml          # Configuration
-├── tests/
+├── config.yaml          # Optional configuration
+├── tests/               # Unit and a few e2e tests
 │   ├── data/            # Data for tests, such as markdown files
-│   └── ...              # Fast tests with in-memory stores
-├── pyproject.toml
-└── README.md
+├── pyproject.toml       # Project setup
+└── *.md                 # Docs for humans and code assistants
 ```
 
 ## Configuration
@@ -97,6 +95,7 @@ All major components are configurable from the YAML file, including:
 - Number of search results returned per query
 
 Configuration is handled via the config.yaml.
+If none is provided, the defaults are used.
 
 ### Important: Changing Chunk Size Settings
 
@@ -112,6 +111,11 @@ This is necessary because the incremental indexing system tracks file modificati
 ## Commands
 
 The project is built and managed using **uv**. Two primary commands are exposed via `pyproject.toml`.
+To set up the dependencies according to the latest lock-file:
+
+```bash
+uv sync
+```
 
 ### Indexing
 
@@ -141,9 +145,9 @@ Once running, the web UI allows users to:
 - Submit semantic search queries
 - Explore ranked search result chunks
 
-## Demo
+### Demo
 
-To quickly test the application with sample data:
+To quickly test-run the application with boring test documents:
 
 ```bash
 uv run python demo.py
