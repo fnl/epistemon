@@ -301,15 +301,18 @@ Performance achieved:
 - [x] Implement linking result chunks to a configurable base http url (Configuration!) with the encoded source path appended
 - [x] Add a simple mechanism to serve the test data markdown files over http, to test and validate the functionality
 
-### 5.7 Extract Content Snippet from Results (TDD Cycle 7)
+### 5.7 Extract Content Snippet from Results (TDD Cycle 7) - SKIPPED
 
-- [ ] Write test for extracting content snippet from results
-- [ ] Implement content snippet extraction from vector store response
+- [~] Write test for extracting content snippet from results (SKIPPED - content already included)
+- [~] Implement content snippet extraction from vector store response (SKIPPED - content already included)
+
+Note: Content snippets are already included in the page_content field of search results.
+Additionally, markdown files are now rendered as nicely formatted HTML when accessed via links.
 
 ### 5.8 Include Similarity Score in Results (TDD Cycle 8)
 
-- [ ] Write test for including similarity score in results
-- [ ] Implement similarity score inclusion in results
+- [x] Write test for displaying similarity score in web UI
+- [x] Update web UI to display similarity scores for each result
 
 ### 5.9 Include Metadata in Results (TDD Cycle 9)
 

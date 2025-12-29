@@ -70,6 +70,12 @@
         .result-source a:hover {
             text-decoration: underline;
         }
+        .result-score {
+            color: #28a745;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 5px 0;
+        }
         .error {
             color: #d9534f;
             padding: 10px;
@@ -124,9 +130,14 @@
                         ? `<a href="${escapeHtml(result.link)}" target="_blank">${escapeHtml(result.source)}</a>`
                         : escapeHtml(result.source);
 
+                    const scoreDisplay = result.score !== undefined
+                        ? `<div class="result-score">Similarity Score: ${result.score.toFixed(4)}</div>`
+                        : '';
+
                     html += `
                         <div class="result">
                             <strong>Result ${index + 1}</strong>
+                            ${scoreDisplay}
                             <div class="result-content">${escapeHtml(result.content)}</div>
                             <div class="result-source">Source: ${sourceDisplay}</div>
                         </div>
