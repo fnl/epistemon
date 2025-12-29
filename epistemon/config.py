@@ -33,7 +33,7 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "embedding_model": "all-MiniLM-L6-v2",
         "vector_store_type": "chroma",
         "vector_store_path": "./data/chroma_db",
-        "chunk_size": 1000,
+        "chunk_size": 500,
         "chunk_overlap": 200,
         "search_results_limit": 5,
         "score_threshold": 0.0,

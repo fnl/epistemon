@@ -54,7 +54,7 @@ def test_load_config_without_file_uses_defaults() -> None:
     assert config.embedding_model == "all-MiniLM-L6-v2"
     assert config.vector_store_type == "chroma"
     assert config.vector_store_path == "./data/chroma_db"
-    assert config.chunk_size == 1000
+    assert config.chunk_size == 500
     assert config.chunk_overlap == 200
     assert config.search_results_limit == 5
 
@@ -71,7 +71,7 @@ def test_load_config_with_empty_file_uses_defaults(
     assert config.embedding_model == "all-MiniLM-L6-v2"
     assert config.vector_store_type == "chroma"
     assert config.vector_store_path == "./data/chroma_db"
-    assert config.chunk_size == 1000
+    assert config.chunk_size == 500
     assert config.chunk_overlap == 200
     assert config.search_results_limit == 5
 

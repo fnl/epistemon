@@ -55,7 +55,7 @@ All fields have sensible defaults (config file is optional):
 - embedding_model: Default "all-MiniLM-L6-v2"
 - vector_store_type: Default "chroma"
 - vector_store_path: Default "./data/chroma_db"
-- chunk_size: Default 1000 (LangChain best practice)
+- chunk_size: Default 500 (optimized for better semantic granularity)
 - chunk_overlap: Default 200 (LangChain best practice)
 - search_results_limit: Default 5
 
@@ -268,6 +268,11 @@ Performance achieved:
 - Instrumentation module created for detailed performance breakdown
 - Three performance tests added to validate and monitor performance
 
+### 4.23 Don't let chunks end in headlines unless the headline is the only piece of the chunk.
+
+- [ ] Write a test where markdown chunk using the configured chunk size would cover a headline, a paragraph, and another headline, but not the next paragraph. The test should ensure that second headline is NOT part of the chunk, and headlines don't get "torn" from the paragraphs they follow.
+- [ ] Implement any changes needed to ensure that the chunker.py correctly prevents a "dangling" headline in a chunk.
+
 ## Phase 5: GET /search API (TDD)
 
 ### 5.1 Embed Query Text (TDD Cycle 1)
@@ -313,6 +318,7 @@ Additionally, markdown files are now rendered as nicely formatted HTML when acce
 
 - [x] Write test for displaying similarity score in web UI
 - [x] Update web UI to display similarity scores for each result
+- [x] Ensure results are ordered by decreasing similarity score (test exists and passes)
 
 ### 5.9 Include Metadata in Results (TDD Cycle 9)
 

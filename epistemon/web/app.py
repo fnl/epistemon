@@ -134,14 +134,19 @@ def create_app(
             q, k=limit
         )
 
+        is_distance_metric = (
+            len(results_with_scores) > 0 and abs(results_with_scores[0][1]) > 1.0
+        )
+
         results = []
         for doc, score in results_with_scores:
             if score >= score_threshold:
                 source = doc.metadata.get("source", "")
+                display_score = -float(score) if is_distance_metric else float(score)
                 result = {
                     "content": doc.page_content,
                     "source": source,
-                    "score": float(score),
+                    "score": display_score,
                 }
                 if base_url and source:
                     result["link"] = f"{base_url}/{quote(source)}"
