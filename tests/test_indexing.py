@@ -694,3 +694,27 @@ def test_index_function_works_with_chroma(tmp_path: Path) -> None:
 
     assert len(results) > 0
     assert any("test" in doc.page_content.lower() for doc in results)
+
+
+def test_chunks_do_not_end_with_dangling_headlines() -> None:
+    test_file = Path("tests/data/dangling_headline_test.md")
+    chunk_size = 300
+    chunk_overlap = 0
+    chunks = load_and_chunk_markdown(
+        test_file, chunk_size=chunk_size, chunk_overlap=chunk_overlap
+    )
+
+    assert len(chunks) > 0
+
+    for chunk in chunks:
+        lines = chunk.page_content.strip().split("\n")
+        last_line = lines[-1].strip()
+
+        is_headline = last_line.startswith("#")
+        is_only_content = len(lines) == 1
+
+        if is_headline and not is_only_content:
+            raise AssertionError(
+                f"Chunk ends with dangling headline: '{last_line}'\n"
+                f"Full chunk:\n{chunk.page_content}"
+            )

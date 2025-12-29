@@ -4,7 +4,10 @@ import logging
 from pathlib import Path
 
 from langchain_core.documents import Document
-from langchain_text_splitters import MarkdownTextSplitter
+from langchain_text_splitters import (
+    MarkdownHeaderTextSplitter,
+    MarkdownTextSplitter,
+)
 
 from epistemon.instrumentation import measure
 
@@ -26,17 +29,32 @@ def load_and_chunk_markdown(
         else:
             source = str(file_path)
 
-        document = Document(
-            page_content=content, metadata={"source": source, "last_modified": mtime}
+        headers_to_split_on = [
+            ("#", "Header 1"),
+            ("##", "Header 2"),
+            ("###", "Header 3"),
+            ("####", "Header 4"),
+            ("#####", "Header 5"),
+            ("######", "Header 6"),
+        ]
+
+        markdown_splitter = MarkdownHeaderTextSplitter(
+            headers_to_split_on=headers_to_split_on,
+            strip_headers=False,
         )
+
+        md_header_splits = markdown_splitter.split_text(content)
+
+        for chunk in md_header_splits:
+            chunk.metadata["source"] = source
+            chunk.metadata["last_modified"] = mtime
 
         text_splitter = MarkdownTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
-            add_start_index=True,
         )
 
-        chunks: list[Document] = text_splitter.split_documents([document])
+        chunks: list[Document] = text_splitter.split_documents(md_header_splits)
 
         if not chunks:
             logger.warning(

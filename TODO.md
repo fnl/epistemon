@@ -270,8 +270,8 @@ Performance achieved:
 
 ### 4.23 Don't let chunks end in headlines unless the headline is the only piece of the chunk.
 
-- [ ] Write a test where markdown chunk using the configured chunk size would cover a headline, a paragraph, and another headline, but not the next paragraph. The test should ensure that second headline is NOT part of the chunk, and headlines don't get "torn" from the paragraphs they follow.
-- [ ] Implement any changes needed to ensure that the chunker.py correctly prevents a "dangling" headline in a chunk.
+- [x] Write a test where markdown chunk using the configured chunk size would cover a headline, a paragraph, and another headline, but not the next paragraph. The test should ensure that second headline is NOT part of the chunk, and headlines don't get "torn" from the paragraphs they follow.
+- [x] Implement any changes needed to ensure that the chunker.py correctly prevents a "dangling" headline in a chunk.
 
 ## Phase 5: GET /search API (TDD)
 
@@ -322,8 +322,8 @@ Additionally, markdown files are now rendered as nicely formatted HTML when acce
 
 ### 5.9 Include Metadata in Results (TDD Cycle 9)
 
-- [ ] Write test for including metadata in results
-- [ ] Implement metadata extraction and inclusion
+- [ ] Write test for including metadata in results and UI
+- [ ] Implement metadata extraction and inclusion in UI
 
 ## Phase 6: Web UI Module (TDD)
 
