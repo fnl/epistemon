@@ -251,9 +251,9 @@ Ensure individual field overrides work correctly:
 
 ### 4.21 Create a unified API to run an indexing process (TDD Cycle 21)
 
-- [ ] Write a test for a function index(directory: Path, vector_store: VectorStore) -> None: that updates the given vector store with the contents of directory
-- [ ] Implement the function so that it upserts all new files into the vector store, encapsulating the existing functions in the indexer
-- [ ] Review if some refactoring is necessary to make use of LangChain's ability to process multiple documents at once
+- [x] Write a test for a function index(directory: Path, vector_store: VectorStore) -> None: that updates the given vector store with the contents of directory
+- [x] Implement the function so that it upserts all new files into the vector store, encapsulating the existing functions in the indexer
+- [x] Review if some refactoring is necessary to make use of LangChain's ability to process multiple documents at once
 
 ## Phase 5: Search Module (TDD)
 

@@ -1,10 +1,10 @@
 """File change detection for incremental indexing."""
 
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, cast
 
 from langchain_core.documents import Document
-from langchain_core.vectorstores import InMemoryVectorStore
+from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon.indexing.chunker import load_and_chunk_markdown
 
@@ -20,16 +20,15 @@ def collect_markdown_files(directory: Path, recursive: bool = True) -> list[Path
     return sorted(directory.glob(pattern))
 
 
-def detect_file_changes(
-    directory: Path, vector_store: InMemoryVectorStore
-) -> FileChanges:
+def detect_file_changes(directory: Path, vector_store: VectorStore) -> FileChanges:
     current_files = collect_markdown_files(directory)
     current_files_map = {
         str(f): f.stat().st_mtime for f in current_files if f.stat().st_size > 0
     }
 
     indexed_files: dict[str, float] = {}
-    for _doc_id, doc_dict in vector_store.store.items():
+    inmemory_store = cast(InMemoryVectorStore, vector_store)
+    for _doc_id, doc_dict in inmemory_store.store.items():
         source = doc_dict["metadata"]["source"]
         mtime = doc_dict["metadata"]["last_modified"]
         indexed_files[str(directory / source)] = mtime
@@ -55,24 +54,25 @@ def detect_file_changes(
 
 
 def remove_deleted_embeddings(
-    deleted_files: list[Path], vector_store: InMemoryVectorStore, base_directory: Path
+    deleted_files: list[Path], vector_store: VectorStore, base_directory: Path
 ) -> None:
     deleted_sources = {str(f.relative_to(base_directory)) for f in deleted_files}
 
+    inmemory_store = cast(InMemoryVectorStore, vector_store)
     doc_ids_to_remove = [
         doc_id
-        for doc_id, doc_dict in vector_store.store.items()
+        for doc_id, doc_dict in inmemory_store.store.items()
         if doc_dict["metadata"]["source"] in deleted_sources
     ]
 
     for doc_id in doc_ids_to_remove:
-        del vector_store.store[doc_id]
+        del inmemory_store.store[doc_id]
 
 
 def update_embeddings_for_file(
     file_path: Path,
     new_chunks: list[Document],
-    vector_store: InMemoryVectorStore,
+    vector_store: VectorStore,
     base_directory: Path,
 ) -> None:
     remove_deleted_embeddings([file_path], vector_store, base_directory)

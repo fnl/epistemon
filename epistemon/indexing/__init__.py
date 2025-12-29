@@ -8,8 +8,10 @@ from epistemon.indexing.file_tracker import (
     remove_deleted_embeddings,
     update_embeddings_for_file,
 )
+from epistemon.indexing.indexer import index
 
 __all__ = [
+    "index",
     "load_and_chunk_markdown",
     "collect_markdown_files",
     "detect_file_changes",

@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 
 import pytest
@@ -58,6 +59,27 @@ def create_test_vector_store(
     if all_chunks:
         vector_store.add_documents(all_chunks)
     return vector_store
+
+
+def create_test_config(
+    input_directory: Path | str = "./tests/data",
+    vector_store_type: str = "inmemory",
+    vector_store_path: str = "./data/chroma_db",
+    embedding_provider: str = "fake",
+    embedding_model: str = "fake",
+    chunk_size: int = 500,
+    chunk_overlap: int = 100,
+) -> Configuration:
+    return Configuration(
+        input_directory=str(input_directory),
+        embedding_provider=embedding_provider,
+        embedding_model=embedding_model,
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+        vector_store_type=vector_store_type,
+        vector_store_path=vector_store_path,
+        search_results_limit=5,
+    )
 
 
 def test_collect_markdown_files_non_recursively() -> None:
@@ -350,15 +372,8 @@ def test_chroma_persistence(tmp_path: Path) -> None:
     chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
     persist_directory = tmp_path / "chroma_db"
 
-    config = Configuration(
-        input_directory="./tests/data",
-        vector_store_type="chroma",
-        vector_store_path=str(persist_directory),
-        embedding_provider="fake",
-        embedding_model="fake",
-        chunk_size=500,
-        chunk_overlap=100,
-        search_results_limit=5,
+    config = create_test_config(
+        vector_store_type="chroma", vector_store_path=str(persist_directory)
     )
 
     vector_store = create_vector_store(config)
@@ -376,15 +391,8 @@ def test_load_existing_chroma_vector_store(tmp_path: Path) -> None:
     chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
     persist_directory = tmp_path / "chroma_db"
 
-    config = Configuration(
-        input_directory="./tests/data",
-        vector_store_type="chroma",
-        vector_store_path=str(persist_directory),
-        embedding_provider="fake",
-        embedding_model="fake",
-        chunk_size=500,
-        chunk_overlap=100,
-        search_results_limit=5,
+    config = create_test_config(
+        vector_store_type="chroma", vector_store_path=str(persist_directory)
     )
 
     vector_store = create_vector_store(config)
@@ -399,16 +407,7 @@ def test_load_existing_chroma_vector_store(tmp_path: Path) -> None:
 
 
 def test_vector_store_uses_fake_embeddings() -> None:
-    config = Configuration(
-        input_directory="./tests/data",
-        vector_store_type="inmemory",
-        vector_store_path="./data/chroma_db",
-        embedding_provider="fake",
-        embedding_model="fake-model",
-        chunk_size=500,
-        chunk_overlap=100,
-        search_results_limit=5,
-    )
+    config = create_test_config(embedding_model="fake-model")
 
     vector_store = create_vector_store(config)
 
@@ -416,15 +415,8 @@ def test_vector_store_uses_fake_embeddings() -> None:
 
 
 def test_vector_store_uses_huggingface_embeddings() -> None:
-    config = Configuration(
-        input_directory="./tests/data",
-        vector_store_type="inmemory",
-        vector_store_path="./data/chroma_db",
-        embedding_provider="huggingface",
-        embedding_model="all-MiniLM-L6-v2",
-        chunk_size=500,
-        chunk_overlap=100,
-        search_results_limit=5,
+    config = create_test_config(
+        embedding_provider="huggingface", embedding_model="all-MiniLM-L6-v2"
     )
 
     vector_store = create_vector_store(config)
@@ -434,15 +426,8 @@ def test_vector_store_uses_huggingface_embeddings() -> None:
 
 
 def test_vector_store_uses_openai_embeddings() -> None:
-    config = Configuration(
-        input_directory="./tests/data",
-        vector_store_type="inmemory",
-        vector_store_path="./data/chroma_db",
-        embedding_provider="openai",
-        embedding_model="text-embedding-3-small",
-        chunk_size=500,
-        chunk_overlap=100,
-        search_results_limit=5,
+    config = create_test_config(
+        embedding_provider="openai", embedding_model="text-embedding-3-small"
     )
 
     vector_store = create_vector_store(config)
@@ -487,3 +472,90 @@ def test_oversized_markdown_chunks_are_split() -> None:
 
     for chunk in chunks:
         assert len(chunk.page_content) <= chunk_size * 1.5
+
+
+def test_index_function_indexes_all_files(test_data_directory: Path) -> None:
+    from epistemon.indexing import index
+
+    config = create_test_config(test_data_directory)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+
+    index(config, vector_store)
+
+    assert len(vector_store.store) > 0
+
+    sources = {doc["metadata"]["source"] for doc in vector_store.store.values()}
+    assert len(sources) > 0
+
+
+def test_index_function_skips_unchanged_files(test_data_directory: Path) -> None:
+    from epistemon.indexing import index
+
+    config = create_test_config(test_data_directory)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+
+    index(config, vector_store)
+    initial_count = len(vector_store.store)
+
+    index(config, vector_store)
+    final_count = len(vector_store.store)
+
+    assert initial_count == final_count
+
+
+def test_index_function_updates_modified_files(tmp_path: Path) -> None:
+    from epistemon.indexing import index
+
+    temp_file = tmp_path / "test_file.md"
+    temp_file.write_text("# Original Content\n\nThis is the original content.")
+
+    config = create_test_config(tmp_path)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+
+    index(config, vector_store)
+    initial_chunks = [
+        doc["text"]
+        for doc in vector_store.store.values()
+        if doc["metadata"]["source"] == "test_file.md"
+    ]
+
+    assert len(initial_chunks) > 0
+    assert any("Original Content" in chunk for chunk in initial_chunks)
+
+    time.sleep(0.01)
+    temp_file.write_text(
+        "# Updated Content\n\nThis is the updated content with different text."
+    )
+
+    index(config, vector_store)
+    updated_chunks = [
+        doc["text"]
+        for doc in vector_store.store.values()
+        if doc["metadata"]["source"] == "test_file.md"
+    ]
+
+    assert len(updated_chunks) > 0
+    assert any("Updated Content" in chunk for chunk in updated_chunks)
+    assert not any("Original Content" in chunk for chunk in updated_chunks)
+
+
+def test_index_function_removes_deleted_files(tmp_path: Path) -> None:
+    from epistemon.indexing import index
+
+    temp_file = tmp_path / "to_be_deleted.md"
+    temp_file.write_text("# File to Delete\n\nThis file will be deleted.")
+
+    config = create_test_config(tmp_path)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+
+    index(config, vector_store)
+
+    sources_before = {doc["metadata"]["source"] for doc in vector_store.store.values()}
+    assert "to_be_deleted.md" in sources_before
+
+    temp_file.unlink()
+
+    index(config, vector_store)
+
+    sources_after = {doc["metadata"]["source"] for doc in vector_store.store.values()}
+    assert "to_be_deleted.md" not in sources_after
