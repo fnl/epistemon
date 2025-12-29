@@ -96,3 +96,21 @@ def test_search_results_ranked_by_score() -> None:
 
     scores = [result["score"] for result in results]
     assert scores == sorted(scores, reverse=True)
+
+
+def test_search_handles_empty_query() -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
+
+    retriever = vector_store.as_retriever()
+    app = create_app(retriever)
+    client = TestClient(app)
+
+    response = client.get("/search", params={"q": "", "limit": 5})
+
+    assert response.status_code == 200
+    data = response.json()
+    assert "results" in data
+    assert data["results"] == []

@@ -24,6 +24,9 @@ def create_app(retriever: VectorStoreRetriever) -> FastAPI:
         q: str = Query(..., description="Search query"),
         limit: int = Query(5, description="Maximum number of results"),
     ) -> dict[str, list[dict[str, str | float]]]:
+        if not q or not q.strip():
+            return {"results": []}
+
         results_with_scores = retriever.vectorstore.similarity_search_with_score(
             q, k=limit
         )
