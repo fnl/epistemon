@@ -290,15 +290,16 @@ Performance achieved:
 - [x] Write test for handling empty queries
 - [x] Implement empty query edge case handling
 
-### 5.5 No-Match Scenario Handling (TDD Cycle 5)
+### 5.5 Below cutoff score handling (TDD Cycle 5)
 
-- [ ] Write test for handling no-match scenarios
-- [ ] Implement no-match scenario handling
+- [x] Write test for handling no-match scenarios if all results are below a cutoff score.
+- [x] Implement no-match scenario handling: return an empty result, but with an alert that no match was found
 
-### 5.6 Extract Source File from Results (TDD Cycle 6)
+### 5.6 Link to Source File from Results (TDD Cycle 6)
 
-- [ ] Write test for extracting source file from results
-- [ ] Implement result data class with source file extraction
+- [ ] Write test for linking to source file from results using a configurable base http URL
+- [ ] Implement linking result chunks to a base http url with the encoded source path appended
+- [ ] Add a simple mechanism to server the test data files over http to test the functionality
 
 ### 5.7 Extract Content Snippet from Results (TDD Cycle 7)
 

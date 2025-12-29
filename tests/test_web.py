@@ -33,7 +33,7 @@ def test_search_endpoint() -> None:
     vector_store.add_documents(chunks)
 
     retriever = vector_store.as_retriever()
-    app = create_app(retriever)
+    app = create_app(retriever, score_threshold=-1000.0)
     client = TestClient(app)
 
     response = client.get("/search", params={"q": "LangChain", "limit": 3})
@@ -80,7 +80,7 @@ def test_search_results_ranked_by_score() -> None:
     vector_store.add_documents(chunks)
 
     retriever = vector_store.as_retriever()
-    app = create_app(retriever)
+    app = create_app(retriever, score_threshold=-1000.0)
     client = TestClient(app)
 
     response = client.get("/search", params={"q": "LangChain", "limit": 5})
@@ -114,3 +114,57 @@ def test_search_handles_empty_query() -> None:
     data = response.json()
     assert "results" in data
     assert data["results"] == []
+
+
+def test_search_filters_results_below_score_threshold() -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
+
+    retriever = vector_store.as_retriever()
+    app_without_threshold = create_app(retriever, score_threshold=0.0)
+    client_without = TestClient(app_without_threshold)
+
+    response_without_threshold = client_without.get(
+        "/search", params={"q": "LangChain", "limit": 5}
+    )
+    data_without_threshold = response_without_threshold.json()
+    all_results = data_without_threshold["results"]
+    assert len(all_results) > 0
+
+    if len(all_results) > 1:
+        middle_score = all_results[len(all_results) // 2]["score"]
+
+        app_with_threshold = create_app(retriever, score_threshold=middle_score)
+        client_with = TestClient(app_with_threshold)
+
+        response_with_threshold = client_with.get(
+            "/search", params={"q": "LangChain", "limit": 5}
+        )
+        data_with_threshold = response_with_threshold.json()
+        filtered_results = data_with_threshold["results"]
+
+        assert len(filtered_results) < len(all_results)
+        assert all(result["score"] >= middle_score for result in filtered_results)
+
+
+def test_search_returns_alert_when_all_results_below_threshold() -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
+
+    retriever = vector_store.as_retriever()
+    very_high_threshold = 1000000.0
+    app = create_app(retriever, score_threshold=very_high_threshold)
+    client = TestClient(app)
+
+    response = client.get("/search", params={"q": "LangChain", "limit": 5})
+
+    assert response.status_code == 204
+    data = response.json()
+    assert "results" in data
+    assert data["results"] == []
+    assert "alert" in data
+    assert "no match" in data["alert"].lower() or "no results" in data["alert"].lower()

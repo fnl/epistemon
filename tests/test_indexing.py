@@ -69,6 +69,7 @@ def create_test_config(
     embedding_model: str = "fake",
     chunk_size: int = 500,
     chunk_overlap: int = 100,
+    score_threshold: float = 0.0,
 ) -> Configuration:
     return Configuration(
         input_directory=str(input_directory),
@@ -79,6 +80,7 @@ def create_test_config(
         vector_store_type=vector_store_type,
         vector_store_path=vector_store_path,
         search_results_limit=5,
+        score_threshold=score_threshold,
     )
 
 

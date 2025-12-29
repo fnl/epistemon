@@ -22,6 +22,7 @@ class Configuration:
     chunk_size: int
     chunk_overlap: int
     search_results_limit: int
+    score_threshold: float
 
 
 def load_config(config_path: Optional[str] = None) -> Configuration:
@@ -35,6 +36,7 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "chunk_size": 1000,
         "chunk_overlap": 200,
         "search_results_limit": 5,
+        "score_threshold": 0.0,
     }
 
     config_data: dict[str, Any]
@@ -73,6 +75,14 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
                 f"{field} must be an integer, got {type(merged_config[field]).__name__}"
             )
 
+    float_fields = ["score_threshold"]
+    for field in float_fields:
+        if not isinstance(merged_config[field], (int, float)):
+            raise ValueError(
+                f"{field} must be a number, got {type(merged_config[field]).__name__}"
+            )
+        merged_config[field] = float(merged_config[field])
+
     if merged_config["embedding_provider"] not in VALID_EMBEDDING_PROVIDERS:
         raise ValueError(
             f"Invalid embedding_provider: {merged_config['embedding_provider']}. "
@@ -100,6 +110,11 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
             f"search_results_limit must be positive, got: {merged_config['search_results_limit']}"
         )
 
+    if merged_config["score_threshold"] < 0:
+        raise ValueError(
+            f"score_threshold must be non-negative, got: {merged_config['score_threshold']}"
+        )
+
     return Configuration(
         input_directory=merged_config["input_directory"],
         embedding_provider=merged_config["embedding_provider"],
@@ -109,4 +124,5 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         chunk_size=merged_config["chunk_size"],
         chunk_overlap=merged_config["chunk_overlap"],
         search_results_limit=merged_config["search_results_limit"],
+        score_threshold=merged_config["score_threshold"],
     )
