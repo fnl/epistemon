@@ -449,3 +449,41 @@ def test_vector_store_uses_openai_embeddings() -> None:
 
     assert isinstance(vector_store.embeddings, OpenAIEmbeddings)
     assert vector_store.embeddings.model == "text-embedding-3-small"
+
+
+def test_markdown_structure_based_chunking() -> None:
+    test_file = Path("tests/data/markdown_with_headers.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=150, chunk_overlap=0)
+
+    assert len(chunks) > 0
+
+    chunk_contents = [chunk.page_content for chunk in chunks]
+
+    headers_found = [
+        "# Document Title",
+        "## Section One Header",
+        "## Section Two Header",
+        "## Section Three Header",
+    ]
+
+    for header in headers_found:
+        chunks_with_header = [c for c in chunk_contents if header in c]
+        assert len(chunks_with_header) == 1
+
+        chunk_with_header = chunks_with_header[0]
+        header_line_index = chunk_with_header.find(header)
+        text_after_header = chunk_with_header[header_line_index + len(header) :].strip()
+
+        if "Section" in header:
+            assert len(text_after_header) > 0
+
+
+def test_oversized_markdown_chunks_are_split() -> None:
+    test_file = Path("tests/data/large_section.md")
+    chunk_size = 200
+    chunks = load_and_chunk_markdown(test_file, chunk_size=chunk_size, chunk_overlap=0)
+
+    assert len(chunks) > 1
+
+    for chunk in chunks:
+        assert len(chunk.page_content) <= chunk_size * 1.5

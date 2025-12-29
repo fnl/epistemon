@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import MarkdownTextSplitter
 
 logger = logging.getLogger(__name__)
 
@@ -27,13 +27,13 @@ def load_and_chunk_markdown(
         page_content=content, metadata={"source": source, "last_modified": mtime}
     )
 
-    text_splitter = RecursiveCharacterTextSplitter(
+    text_splitter = MarkdownTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
         add_start_index=True,
     )
 
-    chunks = text_splitter.split_documents([document])
+    chunks: list[Document] = text_splitter.split_documents([document])
 
     if not chunks:
         logger.warning("File %s produced no chunks (empty or whitespace-only)", source)

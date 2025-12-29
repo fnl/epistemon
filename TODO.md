@@ -243,11 +243,11 @@ Ensure individual field overrides work correctly:
 
 ### 4.20 Add unstructured markdown splitting (TDD Cycle 20)
 
-- [ ] Write test to validate that the chunks are created around markdown elements like titles, paragraphs, and tables
-- [ ] Implement proper markdown chunking with MarkdownTextSplitter to create syntactic chunks
-- [ ] Write test to validate that huge chunks that are too big for embeddings get split up into smaller docs
-- [ ] Implement sub-chunking of markdown chunks that are too big, according to the chunk size settings
-- [ ] Clean up the implementation and configuration, checking for refactoring options
+- [x] Write test to validate that the chunks are created around markdown elements like titles, paragraphs, and tables
+- [x] Implement proper markdown chunking with MarkdownTextSplitter to create syntactic chunks
+- [x] Write test to validate that huge chunks that are too big for embeddings get split up into smaller docs
+- [x] Implement sub-chunking of markdown chunks that are too big, according to the chunk size settings
+- [x] Clean up the implementation and configuration, checking for refactoring options
 
 ## Phase 5: Search Module (TDD)
 
