@@ -130,11 +130,9 @@ def test_files_endpoint_serves_markdown() -> None:
     response = client.get("/files/sample.md")
 
     assert response.status_code == 200
-    assert (
-        "markdown" in response.headers.get("content-type", "").lower()
-        or "text" in response.headers.get("content-type", "").lower()
-    )
-    assert len(response.content) > 0
+    assert "text/html" in response.headers.get("content-type", "").lower()
+    assert b"<html" in response.content.lower()
+    assert b"<h1>" in response.content.lower() or b"<h2>" in response.content.lower()
 
 
 def test_end_to_end_search_and_file_retrieval(retriever: VectorStoreRetriever) -> None:

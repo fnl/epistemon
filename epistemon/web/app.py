@@ -1,10 +1,11 @@
 """FastAPI application for semantic search."""
 
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
-from fastapi import FastAPI, Query
-from fastapi.responses import FileResponse, JSONResponse
+import markdown
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from langchain_core.vectorstores import VectorStoreRetriever
 
@@ -21,16 +22,105 @@ def create_app(
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-    if files_directory is not None:
-        app.mount(
-            "/files",
-            StaticFiles(directory=str(files_directory)),
-            name="files",
-        )
-
     @app.get("/")
     def root() -> FileResponse:
         return FileResponse(STATIC_DIR / "index.html")
+
+    if files_directory is not None:
+
+        @app.get("/files/{file_path:path}")
+        def serve_markdown_as_html(file_path: str) -> HTMLResponse:
+            decoded_path = unquote(file_path)
+            full_path = files_directory / decoded_path
+
+            if not full_path.exists():
+                raise HTTPException(status_code=404, detail="File not found")
+
+            if not full_path.is_relative_to(files_directory):
+                raise HTTPException(status_code=403, detail="Access denied")
+
+            markdown_content = full_path.read_text()
+            html_content = markdown.markdown(
+                markdown_content,
+                extensions=["tables", "fenced_code", "codehilite"],
+            )
+
+            html_template = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{decoded_path}</title>
+    <style>
+        body {{
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+            color: #333;
+        }}
+        h1, h2, h3, h4, h5, h6 {{
+            margin-top: 24px;
+            margin-bottom: 16px;
+            font-weight: 600;
+            line-height: 1.25;
+        }}
+        h1 {{ font-size: 2em; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }}
+        h2 {{ font-size: 1.5em; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }}
+        code {{
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }}
+        pre {{
+            background: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }}
+        pre code {{
+            background: none;
+            padding: 0;
+        }}
+        table {{
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+        }}
+        th, td {{
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            text-align: left;
+        }}
+        th {{
+            background: #f6f8fa;
+            font-weight: 600;
+        }}
+        a {{
+            color: #0969da;
+            text-decoration: none;
+        }}
+        a:hover {{
+            text-decoration: underline;
+        }}
+        blockquote {{
+            border-left: 4px solid #ddd;
+            padding-left: 16px;
+            color: #666;
+            margin: 16px 0;
+        }}
+    </style>
+</head>
+<body>
+    {html_content}
+</body>
+</html>
+"""
+            return HTMLResponse(content=html_template)
 
     @app.get("/search", response_model=None)
     def search_endpoint(
