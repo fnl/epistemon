@@ -255,6 +255,12 @@ Ensure individual field overrides work correctly:
 - [x] Implement the function so that it upserts all new files into the vector store, encapsulating the existing functions in the indexer
 - [x] Review if some refactoring is necessary to make use of LangChain's ability to process multiple documents at once
 
+### 4.22 Optimize the indexing process
+
+- [ ] Create instrumentation to measure the time to index a file
+- [ ] Improve the indexing process over a directory of markdown files with FakeEmbeddings to be under 0.01s per file, or get as close as possible
+- [ ] If new functions need to be created, add relevant tests for their core behavior
+
 ## Phase 5: Search Module (TDD)
 
 ### 5.1 Embed Query Text (TDD Cycle 1)
