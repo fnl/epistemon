@@ -277,8 +277,8 @@ Performance achieved:
 
 ### 5.2 Similarity Search with Configurable Limit (TDD Cycle 2)
 
-- [ ] Write test for similarity search with configurable result limit
-- [ ] Implement similarity search with k limit
+- [x] Write test for similarity search with configurable result limit
+- [x] Implement similarity search with k limit
 
 ### 5.3 Result Ranking by Score (TDD Cycle 3)
 

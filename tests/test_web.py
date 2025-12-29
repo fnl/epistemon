@@ -45,3 +45,29 @@ def test_search_endpoint() -> None:
     assert len(data["results"]) <= 3
     assert all("content" in result for result in data["results"])
     assert all("source" in result for result in data["results"])
+
+
+def test_search_respects_configurable_limit() -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
+
+    retriever = vector_store.as_retriever()
+    app = create_app(retriever)
+    client = TestClient(app)
+
+    response_limit_1 = client.get("/search", params={"q": "LangChain", "limit": 1})
+    assert response_limit_1.status_code == 200
+    data_limit_1 = response_limit_1.json()
+    assert len(data_limit_1["results"]) == 1
+
+    response_limit_3 = client.get("/search", params={"q": "LangChain", "limit": 3})
+    assert response_limit_3.status_code == 200
+    data_limit_3 = response_limit_3.json()
+    assert len(data_limit_3["results"]) <= 3
+
+    response_limit_10 = client.get("/search", params={"q": "LangChain", "limit": 10})
+    assert response_limit_10.status_code == 200
+    data_limit_10 = response_limit_10.json()
+    assert len(data_limit_10["results"]) <= 10
