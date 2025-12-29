@@ -322,8 +322,8 @@ Additionally, markdown files are now rendered as nicely formatted HTML when acce
 
 ### 5.9 Include Metadata in Results (TDD Cycle 9)
 
-- [ ] Write test for including metadata in results and UI
-- [ ] Implement metadata extraction and inclusion in UI
+- [x] Write test for including metadata in results and UI
+- [x] Implement metadata extraction and inclusion in UI
 
 ## Phase 6: Web UI Module (TDD)
 
