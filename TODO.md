@@ -241,12 +241,20 @@ Ensure individual field overrides work correctly:
 - [x] Write test to validate the vector store is using the configured embedding model
 - [x] Implement configurable embeddings as documented in the README
 
+### 4.20 Add unstructured markdown splitting (TDD Cycle 20)
+
+- [ ] Write test to validate that the chunks are created around markdown elements like titles, paragraphs, and tables
+- [ ] Implement proper markdown chunking with MarkdownTextSplitter to create syntactic chunks
+- [ ] Write test to validate that huge chunks that are too big for embeddings get split up into smaller docs
+- [ ] Implement sub-chunking of markdown chunks that are too big, according to the chunk size settings
+- [ ] Clean up the implementation and configuration, checking for refactoring options
+
 ## Phase 5: Search Module (TDD)
 
 ### 5.1 Embed Query Text (TDD Cycle 1)
 
 - [ ] Write test for embedding query text
-- [ ] Implement query embedding interface
+- [ ] Implement query interface using a VectorStoreRetriever.
 
 ### 5.2 Similarity Search with Configurable Limit (TDD Cycle 2)
 
