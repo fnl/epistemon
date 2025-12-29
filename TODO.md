@@ -282,8 +282,8 @@ Performance achieved:
 
 ### 5.3 Result Ranking by Score (TDD Cycle 3)
 
-- [ ] Write test for result ranking by score
-- [ ] Implement result ranking and limiting
+- [x] Write test for result ranking by score
+- [x] Implement result ranking and limiting
 
 ### 5.4 Empty Query Handling (TDD Cycle 4)
 

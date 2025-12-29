@@ -5,12 +5,12 @@ from pathlib import Path
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from langchain_core.retrievers import BaseRetriever
+from langchain_core.vectorstores import VectorStoreRetriever
 
 STATIC_DIR = Path(__file__).parent / "static"
 
 
-def create_app(retriever: BaseRetriever) -> FastAPI:
+def create_app(retriever: VectorStoreRetriever) -> FastAPI:
     app = FastAPI()
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -23,13 +23,18 @@ def create_app(retriever: BaseRetriever) -> FastAPI:
     def search_endpoint(
         q: str = Query(..., description="Search query"),
         limit: int = Query(5, description="Maximum number of results"),
-    ) -> dict[str, list[dict[str, str]]]:
-        results = retriever.invoke(q, k=limit)
-
+    ) -> dict[str, list[dict[str, str | float]]]:
+        results_with_scores = retriever.vectorstore.similarity_search_with_score(
+            q, k=limit
+        )
         return {
             "results": [
-                {"content": doc.page_content, "source": doc.metadata.get("source", "")}
-                for doc in results
+                {
+                    "content": doc.page_content,
+                    "source": doc.metadata.get("source", ""),
+                    "score": float(score),
+                }
+                for doc, score in results_with_scores
             ]
         }
 

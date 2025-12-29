@@ -71,3 +71,28 @@ def test_search_respects_configurable_limit() -> None:
     assert response_limit_10.status_code == 200
     data_limit_10 = response_limit_10.json()
     assert len(data_limit_10["results"]) <= 10
+
+
+def test_search_results_ranked_by_score() -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
+
+    retriever = vector_store.as_retriever()
+    app = create_app(retriever)
+    client = TestClient(app)
+
+    response = client.get("/search", params={"q": "LangChain", "limit": 5})
+
+    assert response.status_code == 200
+    data = response.json()
+    results = data["results"]
+
+    assert len(results) > 0
+    assert all("score" in result for result in results)
+    assert all("content" in result for result in results)
+    assert all("source" in result for result in results)
+
+    scores = [result["score"] for result in results]
+    assert scores == sorted(scores, reverse=True)
