@@ -329,17 +329,17 @@ Additionally, markdown files are now rendered as nicely formatted HTML when acce
 
 ### 6.1 Endpoint Returns All Indexed Files (TDD Cycle 1)
 
-- [ ] Write test for endpoint returning all indexed files
-- [ ] Implement FastAPI app initialization and GET /files endpoint
+- [x] Implement FastAPI app initialization and GET /files endpoint
 
 ### 6.2 File Metadata in Response (TDD Cycle 2)
 
-- [ ] Write test for file metadata in response
-- [ ] Implement file list retrieval from vector store with metadata
+- [ ] Write test for the GET /files endpoint to return a list of all indexed files
+- [ ] Write test to check the presence of all file metadata in response for list of all indexed files
+- [ ] Implement file list retrieval from vector store with metadata (expect that in the future the vector store managers need to support iterative retrieval by using the official clients of those vector stores)
 
 ### 6.3 Empty Index Handling (TDD Cycle 3)
 
-- [ ] Write test for empty index handling
+- [ ] Write test for empty index handling (no files in store)
 - [ ] Implement empty index response handling
 
 ### 6.4 Sorting Files by Name or Date (TDD Cycle 4)
@@ -347,25 +347,25 @@ Additionally, markdown files are now rendered as nicely formatted HTML when acce
 - [ ] Write test for sorting files by name or date
 - [ ] Implement file sorting and response serialization
 
-### 6.5 POST /search Endpoint with Query (TDD Cycle 5)
+### 6.5 GET /search Endpoint with Query (TDD Cycle 5)
 
-- [ ] Write test for POST /search endpoint with query
-- [ ] Implement POST /search endpoint
+- [x] Write test for GET /search endpoint with query
+- [x] Implement GET /search endpoint
 
 ### 6.6 Search Result Response Format (TDD Cycle 6)
 
-- [ ] Write test for search result response format
-- [ ] Implement search result serialization
+- [x] Write test for search result response format
+- [x] Implement search result serialization
 
 ### 6.7 Empty Query Handling (TDD Cycle 7)
 
-- [ ] Write test for empty query handling
-- [ ] Implement query parameter validation
+- [x] Write test for empty query handling
+- [x] Implement query parameter validation
 
 ### 6.8 Result Limit Enforcement (TDD Cycle 8)
 
-- [ ] Write test for result limit enforcement
-- [ ] Implement result limit enforcement logic
+- [x] Write test for result limit enforcement
+- [x] Implement result limit enforcement logic
 
 ### 6.9 Error Handling (TDD Cycle 9)
 
@@ -375,67 +375,67 @@ Additionally, markdown files are now rendered as nicely formatted HTML when acce
 ### 6.10 Frontend UI
 
 - [ ] Create static HTML template for file listing
-- [ ] Create static HTML template for search interface
-- [ ] Add minimal CSS for clean UI
+- [x] Create static HTML template for search interface
+- [x] Add minimal CSS for clean UI
 - [ ] Add JavaScript for API interaction
 - [ ] Implement result display with source file links
-- [ ] Test UI manually in browser
+- [x] Test UI manually in browser
 
 ## Phase 7: CLI Commands (TDD)
 
 ### 7.1 Index Command Execution (TDD Cycle 1)
 
 - [ ] Write test for upsert-index command execution
-- [ ] Create epistemon/cli.py module and implement index_command function
+- [ ] Create epistemon/cli.py module and implement index_command function (similar to demo.py code)
 
 ### 7.2 Command Loads Configuration (TDD Cycle 2)
 
-- [ ] Write test for command loading configuration
-- [ ] Implement configuration loading in index_command
+- [~] Write test for command loading configuration
+- [~] Implement configuration loading in index_command
 
 ### 7.3 Command Triggers Indexing (TDD Cycle 3)
 
-- [ ] Write test for command triggering indexing
-- [ ] Implement indexing trigger logic
+- [~] Write test for command triggering indexing
+- [~] Implement indexing trigger logic
 
 ### 7.4 Command Reports Progress (TDD Cycle 4)
 
-- [ ] Write test for command reporting progress
-- [ ] Add progress logging
+- [~] Write test for command reporting progress
+- [~] Add progress logging
 
 ### 7.5 Command Error Handling (TDD Cycle 5)
 
-- [ ] Write test for command error handling
-- [ ] Add error handling and user messages
+- [~] Write test for command error handling
+- [~] Add error handling and user messages
 
 ### 7.6 Configure Index Command Script (TDD Cycle 6)
 
-- [ ] Write test for upsert-index script in pyproject.toml
-- [ ] Configure upsert-index script in pyproject.toml
+- [~] Write test for upsert-index script in pyproject.toml
+- [~] Configure upsert-index script in pyproject.toml
 
 ### 7.7 Web UI Command Execution (TDD Cycle 7)
 
 - [ ] Write test for web-ui command execution
-- [ ] Implement web_ui_command function
+- [ ] Implement code to start the web ui (similarto demo.py code)
 
 ### 7.8 Command Starts Web Server (TDD Cycle 8)
 
-- [ ] Write test for command starting web server
-- [ ] Add server startup logic
+- [~] Write test for command starting web server
+- [~] Add server startup logic
 
 ### 7.9 Command Loads Configuration (TDD Cycle 9)
 
-- [ ] Write test for command loading configuration
-- [ ] Add configuration loading
+- [~] Write test for command loading configuration
+- [~] Add configuration loading
 
 ### 7.10 Command Handles Shutdown (TDD Cycle 10)
 
-- [ ] Write test for command handling shutdown
-- [ ] Add shutdown handling
+- [~] Write test for command handling shutdown
+- [~] Add shutdown handling
 
 ### 7.11 Configure Web UI Command Script (TDD Cycle 11)
 
-- [ ] Write test for web-ui script in pyproject.toml
+- [~] Write test for web-ui script in pyproject.toml
 - [ ] Configure web-ui script in pyproject.toml
 
 ## Phase 8: Integration and End-to-End Testing
@@ -443,17 +443,17 @@ Additionally, markdown files are now rendered as nicely formatted HTML when acce
 ### 8.1 Full Indexing Workflow Integration Test
 
 - [ ] Write test for full indexing workflow (config -> scan -> chunk -> embed -> store)
-- [ ] Ensure all indexing modules integrate correctly
+- [ ] Ensure all modules integrate correctly
 
 ### 8.2 Full Search Workflow Integration Test
 
-- [ ] Write test for full search workflow (query -> embed -> search -> format)
-- [ ] Ensure search module integrates with indexing output
+- [~] Write test for full search workflow (query -> embed -> search -> format)
+- [~] Ensure search module integrates with indexing output
 
 ### 8.3 Incremental Re-indexing Integration Test
 
-- [ ] Write test for incremental re-indexing workflow
-- [ ] Fix any incremental update issues
+- [~] Write test for incremental re-indexing workflow
+- [~] Fix any incremental update issues
 
 ### 8.4 Web API Integration Test
 
@@ -462,13 +462,13 @@ Additionally, markdown files are now rendered as nicely formatted HTML when acce
 
 ### 8.5 Example Configuration
 
-- [ ] Create sample config.yaml with sensible defaults
+- [~] Create sample config.yaml with sensible defaults
 - [ ] Document configuration options in README
 
 ### 8.6 Example Markdown Data
 
-- [ ] Create tests/data/ with example markdown files
-- [ ] Create example input directory with markdown files
+- [~] Create tests/data/ with example markdown files
+- [~] Create example input directory with markdown files
 
 ## Phase 9: Documentation
 
@@ -483,10 +483,6 @@ Additionally, markdown files are now rendered as nicely formatted HTML when acce
 ### 9.3 Usage Examples
 
 - [ ] Update README with usage examples
-
-### 9.4 Code Comments
-
-- [ ] Add inline comments only where logic is non-obvious
 
 ### 9.5 Workflow Documentation
 
