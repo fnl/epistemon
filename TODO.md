@@ -262,6 +262,7 @@ Ensure individual field overrides work correctly:
 - [x] If new functions need to be created, add relevant tests for their core behavior
 
 Performance achieved:
+
 - New file indexing: 0.23ms per file (target: 10ms) - 43x better than target
 - Re-indexing unchanged files: 0.07ms per file (target: 10ms) - 142x better than target
 - Instrumentation module created for detailed performance breakdown
@@ -271,13 +272,13 @@ Performance achieved:
 
 ### 5.1 Embed Query Text (TDD Cycle 1)
 
-- [ ] Write test for embedding query text
-- [ ] Implement query interface using a VectorStoreRetriever.
+- [~] Write test for embedding query text (Skip)
+- [~] Implement query interface using a VectorStoreRetriever. (Skip)
 
 ### 5.2 Similarity Search with Configurable Limit (TDD Cycle 2)
 
-- [ ] Write test for similarity search with configurable limit
-- [ ] Implement similarity search function
+- [~] Write test for similarity search with configurable limit (Skip)
+- [~] Implement similarity search function (Skip)
 
 ### 5.3 Result Ranking by Score (TDD Cycle 3)
 

@@ -4,7 +4,6 @@ from langchain_core.embeddings import FakeEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore
 
 from epistemon.indexing import load_and_chunk_markdown
-from epistemon.search import search
 
 
 def test_search_indexed_content() -> None:
@@ -13,7 +12,8 @@ def test_search_indexed_content() -> None:
     vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
     vector_store.add_documents(chunks)
 
-    results = search(vector_store, "LangChain framework", limit=3)
+    retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+    results = retriever.invoke("LangChain framework")
 
     assert len(results) > 0
     assert len(results) <= 3

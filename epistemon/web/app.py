@@ -7,8 +7,6 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from langchain_core.vectorstores import VectorStore
 
-from epistemon.search import search
-
 STATIC_DIR = Path(__file__).parent / "static"
 
 
@@ -26,7 +24,8 @@ def create_app(vector_store: VectorStore) -> FastAPI:
         q: str = Query(..., description="Search query"),
         limit: int = Query(5, description="Maximum number of results"),
     ) -> dict[str, list[dict[str, str]]]:
-        results = search(vector_store, q, limit)
+        retriever = vector_store.as_retriever(search_kwargs={"k": limit})
+        results = retriever.invoke(q)
 
         return {
             "results": [
