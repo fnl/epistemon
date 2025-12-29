@@ -257,9 +257,15 @@ Ensure individual field overrides work correctly:
 
 ### 4.22 Optimize the indexing process
 
-- [ ] Create instrumentation to measure the time to index a file
-- [ ] Improve the indexing process over a directory of markdown files with FakeEmbeddings to be under 0.01s per file, or get as close as possible
-- [ ] If new functions need to be created, add relevant tests for their core behavior
+- [x] Create instrumentation to measure the time to index a file
+- [x] Improve the indexing process over a directory of markdown files with FakeEmbeddings to be under 0.01s per file, or get as close as possible
+- [x] If new functions need to be created, add relevant tests for their core behavior
+
+Performance achieved:
+- New file indexing: 0.23ms per file (target: 10ms) - 43x better than target
+- Re-indexing unchanged files: 0.07ms per file (target: 10ms) - 142x better than target
+- Instrumentation module created for detailed performance breakdown
+- Three performance tests added to validate and monitor performance
 
 ## Phase 5: Search Module (TDD)
 

@@ -12,35 +12,42 @@ from epistemon.indexing.file_tracker import (
     remove_deleted_embeddings,
     update_embeddings_for_file,
 )
+from epistemon.instrumentation import measure
 
 
 def index(config: Configuration, vector_store: VectorStore) -> None:
-    directory = Path(config.input_directory)
-    changes = detect_file_changes(directory, vector_store)
+    with measure("index_total"):
+        directory = Path(config.input_directory)
+        changes = detect_file_changes(directory, vector_store)
 
-    if changes.deleted:
-        remove_deleted_embeddings(changes.deleted, vector_store, directory)
+        if changes.deleted:
+            with measure("remove_deleted"):
+                remove_deleted_embeddings(changes.deleted, vector_store, directory)
 
-    new_file_chunks: list[Document] = []
-    for file_path in changes.new:
-        chunks = load_and_chunk_markdown(
-            file_path,
-            chunk_size=config.chunk_size,
-            chunk_overlap=config.chunk_overlap,
-            base_directory=directory,
-        )
-        if chunks:
-            new_file_chunks.extend(chunks)
+        new_file_chunks: list[Document] = []
+        for file_path in changes.new:
+            chunks = load_and_chunk_markdown(
+                file_path,
+                chunk_size=config.chunk_size,
+                chunk_overlap=config.chunk_overlap,
+                base_directory=directory,
+            )
+            if chunks:
+                new_file_chunks.extend(chunks)
 
-    if new_file_chunks:
-        vector_store.add_documents(new_file_chunks)
+        if new_file_chunks:
+            with measure("add_new_documents"):
+                vector_store.add_documents(new_file_chunks)
 
-    for file_path in changes.modified:
-        chunks = load_and_chunk_markdown(
-            file_path,
-            chunk_size=config.chunk_size,
-            chunk_overlap=config.chunk_overlap,
-            base_directory=directory,
-        )
-        if chunks:
-            update_embeddings_for_file(file_path, chunks, vector_store, directory)
+        for file_path in changes.modified:
+            chunks = load_and_chunk_markdown(
+                file_path,
+                chunk_size=config.chunk_size,
+                chunk_overlap=config.chunk_overlap,
+                base_directory=directory,
+            )
+            if chunks:
+                with measure("update_modified_file"):
+                    update_embeddings_for_file(
+                        file_path, chunks, vector_store, directory
+                    )

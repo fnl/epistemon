@@ -7,6 +7,7 @@ from langchain_core.documents import Document
 from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon.indexing.chunker import load_and_chunk_markdown
+from epistemon.instrumentation import measure
 
 
 class FileChanges(NamedTuple):
@@ -21,36 +22,41 @@ def collect_markdown_files(directory: Path, recursive: bool = True) -> list[Path
 
 
 def detect_file_changes(directory: Path, vector_store: VectorStore) -> FileChanges:
-    current_files = collect_markdown_files(directory)
-    current_files_map = {
-        str(f): f.stat().st_mtime for f in current_files if f.stat().st_size > 0
-    }
+    with measure("detect_file_changes"):
+        current_files = collect_markdown_files(directory)
+        current_files_map = {
+            str(f): f.stat().st_mtime for f in current_files if f.stat().st_size > 0
+        }
 
-    indexed_files: dict[str, float] = {}
-    inmemory_store = cast(InMemoryVectorStore, vector_store)
-    for _doc_id, doc_dict in inmemory_store.store.items():
-        source = doc_dict["metadata"]["source"]
-        mtime = doc_dict["metadata"]["last_modified"]
-        indexed_files[str(directory / source)] = mtime
+        indexed_files: dict[str, float] = {}
+        inmemory_store = cast(InMemoryVectorStore, vector_store)
+        for _doc_id, doc_dict in inmemory_store.store.items():
+            source = doc_dict["metadata"]["source"]
+            mtime = doc_dict["metadata"]["last_modified"]
+            indexed_files[str(directory / source)] = mtime
 
-    new_files = []
-    modified_files = []
+        new_files = []
+        modified_files = []
 
-    for path, mtime in current_files_map.items():
-        chunks = load_and_chunk_markdown(Path(path), chunk_size=1000, chunk_overlap=200)
-        if not chunks:
-            continue
+        for path, mtime in current_files_map.items():
+            chunks = load_and_chunk_markdown(
+                Path(path), chunk_size=1000, chunk_overlap=200
+            )
+            if not chunks:
+                continue
 
-        if path not in indexed_files:
-            new_files.append(Path(path))
-        elif indexed_files[path] != mtime:
-            modified_files.append(Path(path))
+            if path not in indexed_files:
+                new_files.append(Path(path))
+            elif indexed_files[path] != mtime:
+                modified_files.append(Path(path))
 
-    deleted_files = [
-        Path(path) for path in indexed_files.keys() if path not in current_files_map
-    ]
+        deleted_files = [
+            Path(path) for path in indexed_files.keys() if path not in current_files_map
+        ]
 
-    return FileChanges(new=new_files, modified=modified_files, deleted=deleted_files)
+        return FileChanges(
+            new=new_files, modified=modified_files, deleted=deleted_files
+        )
 
 
 def remove_deleted_embeddings(

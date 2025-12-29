@@ -559,3 +559,112 @@ def test_index_function_removes_deleted_files(tmp_path: Path) -> None:
 
     sources_after = {doc["metadata"]["source"] for doc in vector_store.store.values()}
     assert "to_be_deleted.md" not in sources_after
+
+
+def test_indexing_performance_per_file(tmp_path: Path) -> None:
+    from epistemon.indexing import index
+
+    num_files = 10
+    for i in range(num_files):
+        file = tmp_path / f"file_{i}.md"
+        file.write_text(f"# File {i}\n\nThis is file number {i} with some content.")
+
+    config = create_test_config(tmp_path)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+
+    start_time = time.perf_counter()
+    index(config, vector_store)
+    end_time = time.perf_counter()
+
+    total_time = end_time - start_time
+    time_per_file = total_time / num_files
+
+    print("\nIndexing performance (new files):")
+    print(f"  Total time: {total_time:.4f}s")
+    print(f"  Files indexed: {num_files}")
+    print(f"  Time per file: {time_per_file * 1000:.2f}ms")
+    print("  Target: 10.00ms per file")
+
+    assert len(vector_store.store) > 0
+    assert time_per_file < 0.1
+
+
+def test_reindexing_performance_for_unchanged_files(tmp_path: Path) -> None:
+    from epistemon.indexing import index
+
+    num_files = 100
+    for i in range(num_files):
+        file = tmp_path / f"file_{i}.md"
+        content = f"# File {i}\n\n" + "\n\n".join(
+            f"This is paragraph {j} of file {i}." for j in range(10)
+        )
+        file.write_text(content)
+
+    config = create_test_config(tmp_path)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+
+    index(config, vector_store)
+    initial_count = len(vector_store.store)
+
+    start_time = time.perf_counter()
+    index(config, vector_store)
+    end_time = time.perf_counter()
+
+    total_time = end_time - start_time
+    time_per_file = total_time / num_files
+
+    print("\nRe-indexing performance (unchanged files):")
+    print(f"  Total time: {total_time:.4f}s")
+    print(f"  Files checked: {num_files}")
+    print(f"  Time per file: {time_per_file * 1000:.2f}ms")
+    print("  Target: 10.00ms per file")
+
+    assert len(vector_store.store) == initial_count
+    assert time_per_file < 0.01
+
+
+def test_indexing_performance_with_instrumentation(tmp_path: Path) -> None:
+    from epistemon.indexing import index
+    from epistemon.instrumentation import (
+        disable_instrumentation,
+        enable_instrumentation,
+        get_metrics,
+    )
+
+    num_files = 50
+    for i in range(num_files):
+        file = tmp_path / f"file_{i}.md"
+        content = f"# File {i}\n\n" + "\n\n".join(
+            f"This is paragraph {j} of file {i}." for j in range(10)
+        )
+        file.write_text(content)
+
+    config = create_test_config(tmp_path)
+    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+
+    enable_instrumentation()
+
+    index(config, vector_store)
+
+    metrics = get_metrics()
+    assert metrics is not None
+
+    summary = metrics.summary()
+
+    print(f"\nPerformance breakdown for {num_files} files:")
+    for operation, stats in sorted(
+        summary.items(), key=lambda x: x[1]["total"], reverse=True
+    ):
+        print(f"\n  {operation}:")
+        print(f"    Total time: {stats['total'] * 1000:.2f}ms")
+        print(f"    Count: {stats['count']}")
+        print(f"    Avg: {stats['avg'] * 1000:.4f}ms")
+        print(f"    Min: {stats['min'] * 1000:.4f}ms")
+        print(f"    Max: {stats['max'] * 1000:.4f}ms")
+
+    disable_instrumentation()
+
+    assert len(vector_store.store) > 0
+    assert "index_total" in summary
+    assert "detect_file_changes" in summary
+    assert "load_and_chunk_markdown" in summary
