@@ -668,3 +668,27 @@ def test_indexing_performance_with_instrumentation(tmp_path: Path) -> None:
     assert "index_total" in summary
     assert "detect_file_changes" in summary
     assert "load_and_chunk_markdown" in summary
+
+
+def test_index_function_works_with_chroma(tmp_path: Path) -> None:
+    from epistemon.indexing import index
+    from epistemon.vector_store_factory import create_vector_store
+
+    file1 = tmp_path / "file1.md"
+    file1.write_text("# Test\n\nThis is a test file.")
+
+    config = create_test_config(
+        input_directory=tmp_path,
+        vector_store_type="chroma",
+        vector_store_path=str(tmp_path / "chroma_db"),
+    )
+
+    vector_store = create_vector_store(config)
+
+    index(config, vector_store)
+
+    retriever = vector_store.as_retriever()
+    results = retriever.invoke("test")
+
+    assert len(results) > 0
+    assert any("test" in doc.page_content.lower() for doc in results)
