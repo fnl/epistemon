@@ -268,7 +268,7 @@ Performance achieved:
 - Instrumentation module created for detailed performance breakdown
 - Three performance tests added to validate and monitor performance
 
-## Phase 5: Search Module (TDD)
+## Phase 5: GET /search API (TDD)
 
 ### 5.1 Embed Query Text (TDD Cycle 1)
 
@@ -277,8 +277,8 @@ Performance achieved:
 
 ### 5.2 Similarity Search with Configurable Limit (TDD Cycle 2)
 
-- [~] Write test for similarity search with configurable limit (Skip)
-- [~] Implement similarity search function (Skip)
+- [ ] Write test for similarity search with configurable result limit
+- [ ] Implement similarity search with k limit
 
 ### 5.3 Result Ranking by Score (TDD Cycle 3)
 
