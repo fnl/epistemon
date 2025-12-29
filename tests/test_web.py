@@ -14,7 +14,8 @@ def test_root_serves_html() -> None:
     vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
     vector_store.add_documents(chunks)
 
-    app = create_app(vector_store)
+    retriever = vector_store.as_retriever()
+    app = create_app(retriever)
     client = TestClient(app)
 
     response = client.get("/")
@@ -31,7 +32,8 @@ def test_search_endpoint() -> None:
     vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
     vector_store.add_documents(chunks)
 
-    app = create_app(vector_store)
+    retriever = vector_store.as_retriever()
+    app = create_app(retriever)
     client = TestClient(app)
 
     response = client.get("/search", params={"q": "LangChain", "limit": 3})

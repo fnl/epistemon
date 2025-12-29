@@ -5,12 +5,12 @@ from pathlib import Path
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from langchain_core.vectorstores import VectorStore
+from langchain_core.retrievers import BaseRetriever
 
 STATIC_DIR = Path(__file__).parent / "static"
 
 
-def create_app(vector_store: VectorStore) -> FastAPI:
+def create_app(retriever: BaseRetriever) -> FastAPI:
     app = FastAPI()
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
@@ -24,8 +24,7 @@ def create_app(vector_store: VectorStore) -> FastAPI:
         q: str = Query(..., description="Search query"),
         limit: int = Query(5, description="Maximum number of results"),
     ) -> dict[str, list[dict[str, str]]]:
-        retriever = vector_store.as_retriever(search_kwargs={"k": limit})
-        results = retriever.invoke(q)
+        results = retriever.invoke(q, k=limit)
 
         return {
             "results": [

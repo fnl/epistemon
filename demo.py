@@ -20,7 +20,10 @@ def main() -> None:
 
     print("\nIndexing complete!")
 
-    app = create_app(vector_store)
+    print("Creating retriever...")
+    retriever = vector_store.as_retriever()
+
+    app = create_app(retriever)
 
     print("\n" + "=" * 60)
     print("Demo server starting...")
