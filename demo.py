@@ -1,5 +1,7 @@
 """Demo script to run the web UI with sample data."""
 
+from pathlib import Path
+
 import uvicorn
 
 from epistemon.config import load_config
@@ -23,7 +25,12 @@ def main() -> None:
     print("Creating retriever...")
     retriever = vector_store.as_retriever()
 
-    app = create_app(retriever)
+    app = create_app(
+        retriever,
+        base_url="http://localhost:8000/files",
+        score_threshold=config.score_threshold,
+        files_directory=Path(config.input_directory),
+    )
 
     print("\n" + "=" * 60)
     print("Demo server starting...")
