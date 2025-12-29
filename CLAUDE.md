@@ -15,10 +15,10 @@ Document -> Chunks -> Embeddings -> Vector Store -> Retriever -> Results
 
 Key components:
 
-- RecursiveCharacterTextSplitter (chunk_size=999, overlap=200, add_start_index=True)
-- Document objects with page_content, metadata, and optional id
+- MarkdownTextSplitter
+- Document objects with chunked content, metadata, and source
 - Vector store retriever with as_retriever() method
-- Support for similarity search, MMR, and score threshold filtering
+- Support for similarity search and score threshold filtering
 
 ## Embedding Model Strategy
 
@@ -60,3 +60,4 @@ Two-tier approach:
 - Persistent storage on disk
 - Supports incremental updates
 - Easy metadata filtering
+- Open for extension to more stores
