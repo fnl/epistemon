@@ -1,6 +1,7 @@
 """FastAPI application for semantic search."""
 
 from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import FastAPI, Query
 from fastapi.responses import FileResponse, JSONResponse
@@ -11,11 +12,21 @@ STATIC_DIR = Path(__file__).parent / "static"
 
 
 def create_app(
-    retriever: VectorStoreRetriever, score_threshold: float = 0.0
+    retriever: VectorStoreRetriever,
+    base_url: str = "",
+    score_threshold: float = 0.0,
+    files_directory: Path | None = None,
 ) -> FastAPI:
     app = FastAPI()
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+    if files_directory is not None:
+        app.mount(
+            "/files",
+            StaticFiles(directory=str(files_directory)),
+            name="files",
+        )
 
     @app.get("/")
     def root() -> FileResponse:
@@ -33,15 +44,18 @@ def create_app(
             q, k=limit
         )
 
-        results = [
-            {
-                "content": doc.page_content,
-                "source": doc.metadata.get("source", ""),
-                "score": float(score),
-            }
-            for doc, score in results_with_scores
-            if score >= score_threshold
-        ]
+        results = []
+        for doc, score in results_with_scores:
+            if score >= score_threshold:
+                source = doc.metadata.get("source", "")
+                result = {
+                    "content": doc.page_content,
+                    "source": source,
+                    "score": float(score),
+                }
+                if base_url and source:
+                    result["link"] = f"{base_url}/{quote(source)}"
+                results.append(result)
 
         response: dict[str, list[dict[str, str | float]] | str] = {"results": results}
 

@@ -297,9 +297,9 @@ Performance achieved:
 
 ### 5.6 Link to Source File from Results (TDD Cycle 6)
 
-- [ ] Write test for linking to source file from results using a configurable base http URL
-- [ ] Implement linking result chunks to a base http url with the encoded source path appended
-- [ ] Add a simple mechanism to server the test data files over http to test the functionality
+- [x] Write test to check for links to source file from each search result
+- [x] Implement linking result chunks to a configurable base http url (Configuration!) with the encoded source path appended
+- [x] Add a simple mechanism to serve the test data markdown files over http, to test and validate the functionality
 
 ### 5.7 Extract Content Snippet from Results (TDD Cycle 7)
 
