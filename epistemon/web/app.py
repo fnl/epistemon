@@ -134,19 +134,21 @@ def create_app(
             q, k=limit
         )
 
-        is_distance_metric = (
-            len(results_with_scores) > 0 and abs(results_with_scores[0][1]) > 1.0
-        )
+        metric_type = "similarity"
+        if len(results_with_scores) >= 2:
+            score1, score2 = results_with_scores[0][1], results_with_scores[1][1]
+            if score1 < score2:
+                metric_type = "distance"
 
         results = []
         for doc, score in results_with_scores:
             if score >= score_threshold:
                 source = doc.metadata.get("source", "")
-                display_score = -float(score) if is_distance_metric else float(score)
                 result = {
                     "content": doc.page_content,
                     "source": source,
-                    "score": display_score,
+                    "score": float(score),
+                    "metric_type": metric_type,
                 }
                 if base_url and source:
                     result["link"] = f"{base_url}/{quote(source)}"

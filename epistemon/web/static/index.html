@@ -130,8 +130,9 @@
                         ? `<a href="${escapeHtml(result.link)}" target="_blank">${escapeHtml(result.source)}</a>`
                         : escapeHtml(result.source);
 
+                    const scoreLabel = result.metric_type === 'distance' ? 'Distance' : 'Similarity Score';
                     const scoreDisplay = result.score !== undefined
-                        ? `<div class="result-score">Similarity Score: ${result.score.toFixed(4)}</div>`
+                        ? `<div class="result-score">${scoreLabel}: ${result.score.toFixed(4)}</div>`
                         : '';
 
                     html += `
