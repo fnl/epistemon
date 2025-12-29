@@ -2,6 +2,12 @@
 
 A lightweight semantic search application for indexing and querying Markdown files. The project provides a command-line indexing workflow and a web-based UI for browsing indexed files and running semantic search queries. It is designed for local-first usage, fast iteration, and easy configurability.
 
+## Use Cases
+
+- Experiment with different embedding models and vector stores.
+- Explore the effect of chunking strategies on semantic search results.
+- Make local/personal content more readily available to an AI assistant.
+
 ## Overview
 
 This project builds a semantic search engine over Markdown (`.md`) files using **Python** and **LangChain**. It supports:
@@ -9,6 +15,7 @@ This project builds a semantic search engine over Markdown (`.md`) files using *
 - Incremental indexing of Markdown files from a configurable input directory
 - Persistent storage of embeddings and metadata in a vector store on the host
 - Automatic detection of new and modified files on re-index
+- A search API endpoint to query for document chunks
 - A web UI to:
   - View indexed files
   - Perform semantic search queries
@@ -165,10 +172,6 @@ uv run pytest tests -m e2e
 ```
 
 E2E tests are skipped by default to keep the test suite fast. They are only executed when explicitly requested with `-m e2e`.
-
-## Use Cases
-
-- Experiment with different embedding models and vector stores.
 
 ## License
 
