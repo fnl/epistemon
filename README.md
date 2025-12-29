@@ -86,9 +86,21 @@ All major components are configurable from the YAML file, including:
 - Input directory for Markdown files
 - Embedding model
 - Vector store backend and storage path
+- Chunk size and overlap settings
 - Number of search results returned per query
 
 Configuration is handled via the config.yaml.
+
+### Important: Changing Chunk Size Settings
+
+**If you change `chunk_size` or `chunk_overlap` settings**, you must delete the existing vector store database and re-index from scratch:
+
+```bash
+rm -rf ./data/chroma_db
+uv run upsert-index  # or python demo.py
+```
+
+This is necessary because the incremental indexing system tracks file modification times, not configuration changes. Files that haven't been modified won't be re-chunked automatically, leaving old chunks with the previous chunk size in the database.
 
 ## Commands
 
