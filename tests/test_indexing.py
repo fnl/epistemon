@@ -13,8 +13,8 @@ from epistemon.indexing import (
     detect_file_changes,
     load_and_chunk_markdown,
     remove_deleted_embeddings,
-    update_embeddings_for_file,
 )
+from epistemon.indexing.vector_store_manager import create_vector_store_manager
 from epistemon.vector_store_factory import create_vector_store
 
 
@@ -176,8 +176,9 @@ def test_detect_new_files(test_data_directory: Path) -> None:
     all_files = collect_markdown_files(test_data_directory)
     files_with_chunks = files_that_produce_chunks(all_files)
     vector_store = create_test_vector_store(files_with_chunks[:2], test_data_directory)
+    manager = create_vector_store_manager(vector_store, test_data_directory)
 
-    changes = detect_file_changes(test_data_directory, vector_store)
+    changes = detect_file_changes(test_data_directory, manager)
 
     assert len(changes.new) == len(files_with_chunks) - 2
     assert len(changes.modified) == 0
@@ -189,8 +190,9 @@ def test_detect_modified_files(test_data_directory: Path) -> None:
     files_with_chunks = files_that_produce_chunks(all_files)
     files = files_with_chunks[:2]
     vector_store = create_test_vector_store(files, test_data_directory, old_mtime=True)
+    manager = create_vector_store_manager(vector_store, test_data_directory)
 
-    changes = detect_file_changes(test_data_directory, vector_store)
+    changes = detect_file_changes(test_data_directory, manager)
 
     all_files_with_chunks = files_that_produce_chunks(
         collect_markdown_files(test_data_directory)
@@ -219,8 +221,9 @@ def test_retrieve_indexed_files_from_vector_store(test_data_directory: Path) -> 
 def test_skip_unchanged_files(test_data_directory: Path) -> None:
     all_files = collect_markdown_files(test_data_directory)
     vector_store = create_test_vector_store(all_files, test_data_directory)
+    manager = create_vector_store_manager(vector_store, test_data_directory)
 
-    changes = detect_file_changes(test_data_directory, vector_store)
+    changes = detect_file_changes(test_data_directory, manager)
 
     assert len(changes.new) == 0
     assert len(changes.modified) == 0
@@ -234,8 +237,9 @@ def test_skip_whitespace_only_files(test_data_directory: Path) -> None:
         if f.name not in ["empty.md", "whitespace_only.md"]
     ]
     vector_store = create_test_vector_store(files_with_content, test_data_directory)
+    manager = create_vector_store_manager(vector_store, test_data_directory)
 
-    changes = detect_file_changes(test_data_directory, vector_store)
+    changes = detect_file_changes(test_data_directory, manager)
 
     assert len(changes.new) == 0
     assert len(changes.modified) == 0
@@ -271,8 +275,9 @@ def test_detect_deleted_files(test_data_directory: Path) -> None:
         chunk.metadata["last_modified"] = 0.0
 
     vector_store.add_documents(fake_chunks)
+    manager = create_vector_store_manager(vector_store, test_data_directory)
 
-    changes = detect_file_changes(test_data_directory, vector_store)
+    changes = detect_file_changes(test_data_directory, manager)
 
     assert len(changes.deleted) == 1
     assert changes.deleted[0] == fake_deleted_file
@@ -294,11 +299,12 @@ def test_remove_deleted_embeddings(test_data_directory: Path) -> None:
         chunk.metadata["last_modified"] = 0.0
 
     vector_store.add_documents(fake_chunks)
+    manager = create_vector_store_manager(vector_store, test_data_directory)
 
     initial_doc_count = len(vector_store.store)
 
     deleted_files = [test_data_directory / "deleted_file.md"]
-    remove_deleted_embeddings(deleted_files, vector_store, test_data_directory)
+    remove_deleted_embeddings(deleted_files, manager)
 
     final_doc_count = len(vector_store.store)
 
@@ -353,12 +359,13 @@ def test_update_existing_embeddings(test_data_directory: Path) -> None:
 
     vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
     vector_store.add_documents(old_chunks)
+    manager = create_vector_store_manager(vector_store, test_data_directory)
 
     new_chunks = load_and_chunk_markdown(
         test_file, chunk_size=500, chunk_overlap=100, base_directory=test_data_directory
     )
 
-    update_embeddings_for_file(test_file, new_chunks, vector_store, test_data_directory)
+    manager.update_documents_for_file(test_file, new_chunks)
 
     final_count = len(vector_store.store)
 

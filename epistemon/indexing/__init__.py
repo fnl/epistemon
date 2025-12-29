@@ -6,7 +6,6 @@ from epistemon.indexing.file_tracker import (
     collect_markdown_files,
     detect_file_changes,
     remove_deleted_embeddings,
-    update_embeddings_for_file,
 )
 from epistemon.indexing.indexer import index
 
@@ -16,6 +15,5 @@ __all__ = [
     "collect_markdown_files",
     "detect_file_changes",
     "remove_deleted_embeddings",
-    "update_embeddings_for_file",
     "FileChanges",
 ]
