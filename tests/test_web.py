@@ -180,3 +180,12 @@ def test_search_results_include_metadata(retriever: VectorStoreRetriever) -> Non
     assert "last_modified" in result
     assert isinstance(result["last_modified"], (int, float))
     assert result["last_modified"] > 0
+
+
+def test_ui_displays_metadata() -> None:
+    from pathlib import Path
+
+    html_path = Path("epistemon/web/static/index.html")
+    html_content = html_path.read_text()
+
+    assert "result.last_modified" in html_content
