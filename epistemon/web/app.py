@@ -126,7 +126,7 @@ def create_app(
     def search_endpoint(
         q: str = Query(..., description="Search query"),
         limit: int = Query(5, description="Maximum number of results"),
-    ) -> dict[str, list[dict[str, str | float]] | str] | JSONResponse:
+    ) -> dict[str, list[dict[str, str | float | int]] | str] | JSONResponse:
         if not q or not q.strip():
             return {"results": []}
 
@@ -144,9 +144,11 @@ def create_app(
         for doc, score in results_with_scores:
             if score >= score_threshold:
                 source = doc.metadata.get("source", "")
+                last_modified = doc.metadata.get("last_modified", 0)
                 result = {
                     "content": doc.page_content,
                     "source": source,
+                    "last_modified": last_modified,
                     "score": float(score),
                     "metric_type": metric_type,
                 }
@@ -154,7 +156,9 @@ def create_app(
                     result["link"] = f"{base_url}/{quote(source)}"
                 results.append(result)
 
-        response: dict[str, list[dict[str, str | float]] | str] = {"results": results}
+        response: dict[str, list[dict[str, str | float | int]] | str] = {
+            "results": results
+        }
 
         if score_threshold > 0 and len(results) == 0:
             response["alert"] = "No results found matching the score threshold"

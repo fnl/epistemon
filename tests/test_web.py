@@ -165,3 +165,18 @@ def test_end_to_end_search_and_file_retrieval(retriever: VectorStoreRetriever) -
     assert file_response.status_code == 200
     content = file_response.text
     assert "LangChain" in content or len(content) > 0
+
+
+def test_search_results_include_metadata(retriever: VectorStoreRetriever) -> None:
+    app = create_app(retriever, score_threshold=-1.0)
+    client = TestClient(app)
+
+    response = client.get("/search", params={"q": "LangChain", "limit": 1})
+
+    results = response.json()["results"]
+    assert len(results) > 0
+    result = results[0]
+    assert "source" in result
+    assert "last_modified" in result
+    assert isinstance(result["last_modified"], (int, float))
+    assert result["last_modified"] > 0
