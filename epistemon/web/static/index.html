@@ -63,6 +63,13 @@
             color: #666;
             font-size: 14px;
         }
+        .result-source a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .result-source a:hover {
+            text-decoration: underline;
+        }
         .error {
             color: #d9534f;
             padding: 10px;
@@ -113,11 +120,15 @@
                 let html = `<h2>Found ${data.results.length} results:</h2>`;
 
                 data.results.forEach((result, index) => {
+                    const sourceDisplay = result.link
+                        ? `<a href="${escapeHtml(result.link)}" target="_blank">${escapeHtml(result.source)}</a>`
+                        : escapeHtml(result.source);
+
                     html += `
                         <div class="result">
                             <strong>Result ${index + 1}</strong>
                             <div class="result-content">${escapeHtml(result.content)}</div>
-                            <div class="result-source">Source: ${escapeHtml(result.source)}</div>
+                            <div class="result-source">Source: ${sourceDisplay}</div>
                         </div>
                     `;
                 });
