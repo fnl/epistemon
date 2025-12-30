@@ -200,3 +200,18 @@ def test_ui_displays_metadata() -> None:
     html_content = html_path.read_text()
 
     assert "result.last_modified" in html_content
+
+
+def test_files_endpoint_returns_list_of_indexed_files(
+    vector_store: VectorStore,
+) -> None:
+    app = create_app(vector_store)
+    client = TestClient(app)
+
+    response = client.get("/files")
+
+    assert response.status_code == 200
+    files = response.json()["files"]
+    assert isinstance(files, list)
+    assert len(files) > 0
+    assert any("sample.md" in file["source"] for file in files)

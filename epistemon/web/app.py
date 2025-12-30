@@ -122,6 +122,23 @@ def create_app(
 """
             return HTMLResponse(content=html_template)
 
+    @app.get("/files", response_model=None)
+    def list_files_endpoint() -> dict[str, list[dict[str, str | float | int]]]:
+        files_dict: dict[str, dict[str, str | float | int]] = {}
+
+        if hasattr(vector_store, "store"):
+            for _doc_id, doc in vector_store.store.items():
+                metadata = doc.get("metadata", {})
+                source = metadata.get("source", "")
+                if source and source not in files_dict:
+                    files_dict[source] = {
+                        "source": source,
+                        "last_modified": metadata.get("last_modified", 0),
+                    }
+
+        files_list = list(files_dict.values())
+        return {"files": files_list}
+
     @app.get("/search", response_model=None)
     def search_endpoint(
         q: str = Query(..., description="Search query"),
