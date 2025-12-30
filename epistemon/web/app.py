@@ -7,14 +7,11 @@ from urllib.parse import quote, unquote
 
 import markdown
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon import __version__
 from epistemon.indexing.vector_store_manager import VectorStoreManager
-
-STATIC_DIR = Path(__file__).parent / "static"
 
 
 def create_app(
@@ -23,7 +20,6 @@ def create_app(
     score_threshold: float = 0.0,
     files_directory: Path | None = None,
     vector_store_manager: Optional[VectorStoreManager] = None,
-    mount_shiny: bool = False,
 ) -> FastAPI:
     app = FastAPI(
         title="Epistemon API",
@@ -31,11 +27,9 @@ def create_app(
         version=__version__,
     )
 
-    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
     @app.get("/")
-    def root() -> FileResponse:
-        return FileResponse(STATIC_DIR / "index.html")
+    def root() -> RedirectResponse:
+        return RedirectResponse(url="/app/", status_code=307)
 
     if files_directory is not None:
 
@@ -247,12 +241,11 @@ def create_app(
 
         return response
 
-    if mount_shiny:
-        from epistemon.web.shiny_ui import create_shiny_app
+    from epistemon.web.shiny_ui import create_shiny_app
 
-        shiny_app = create_shiny_app(
-            vector_store, base_url=base_url, score_threshold=score_threshold
-        )
-        app.mount("/app", shiny_app)
+    shiny_app = create_shiny_app(
+        vector_store, base_url=base_url, score_threshold=score_threshold
+    )
+    app.mount("/app", shiny_app)
 
     return app

@@ -8,7 +8,7 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 - [x] Configuration module with YAML loading and validation
 - [x] Core indexing functionality with incremental updates
 - [x] Search API with FastAPI endpoints
-- [ ] Web UI migration to Shiny (in progress - Phase 6)
+- [x] Web UI migration to Shiny
 - [ ] CLI commands for indexing and web server
 - [ ] Production ready
 
@@ -177,8 +177,8 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 
 #### 6.17 Root Path Handling (TDD Cycle 15)
 
-- [ ] Replace the current HTML UI at GET / with the Shiny app (always).
-- [ ] Remove static/index.html and anything else that is left from the original UI.
+- [x] Replace the current HTML UI at GET / with the Shiny app (always).
+- [x] Remove static/index.html and anything else that is left from the original UI.
 
 #### 6.18 Future RAG Comparison Preparation (TDD Cycle 16)
 

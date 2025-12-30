@@ -34,14 +34,14 @@ def test_create_app_accepts_vector_store(vector_store: VectorStore) -> None:
     assert all("score" in result for result in results)
 
 
-def test_root_serves_html(vector_store: VectorStore) -> None:
+def test_root_redirects_to_shiny_app(vector_store: VectorStore) -> None:
     app = create_app(vector_store)
     client = TestClient(app)
 
-    response = client.get("/")
+    response = client.get("/", follow_redirects=False)
 
-    assert "text/html" in response.headers["content-type"]
-    assert b"Epistemon" in response.content
+    assert response.status_code == 307
+    assert response.headers["location"] == "/app/"
 
 
 def test_search_returns_results(vector_store: VectorStore) -> None:
@@ -193,15 +193,6 @@ def test_search_results_include_metadata(vector_store: VectorStore) -> None:
     assert "last_modified" in result
     assert isinstance(result["last_modified"], (int, float))
     assert result["last_modified"] > 0
-
-
-def test_ui_displays_metadata() -> None:
-    from pathlib import Path
-
-    html_path = Path("epistemon/web/static/index.html")
-    html_content = html_path.read_text()
-
-    assert "result.last_modified" in html_content
 
 
 def test_files_endpoint_returns_list_of_indexed_files(
@@ -486,8 +477,8 @@ def test_openapi_schema_has_custom_title_and_description(
     assert openapi_schema["info"]["version"] == __version__
 
 
-def test_shiny_app_can_be_mounted_at_app_path(vector_store: VectorStore) -> None:
-    app = create_app(vector_store, mount_shiny=True)
+def test_shiny_app_is_available_at_app_path(vector_store: VectorStore) -> None:
+    app = create_app(vector_store)
     client = TestClient(app)
 
     response = client.get("/app/")
@@ -496,8 +487,8 @@ def test_shiny_app_can_be_mounted_at_app_path(vector_store: VectorStore) -> None
     assert b"Epistemon" in response.content
 
 
-def test_api_endpoints_work_when_shiny_is_mounted(vector_store: VectorStore) -> None:
-    app = create_app(vector_store, mount_shiny=True, score_threshold=-1.0)
+def test_api_endpoints_work_with_shiny_ui(vector_store: VectorStore) -> None:
+    app = create_app(vector_store, score_threshold=-1.0)
     client = TestClient(app)
 
     search_response = client.get("/search", params={"q": "LangChain", "limit": 3})

@@ -31,13 +31,11 @@ def main() -> None:
         vector_store_manager=create_vector_store_manager(
             vector_store, Path(config.input_directory)
         ),
-        mount_shiny=True,
     )
 
     print("\n" + "=" * 60)
     print("Demo server starting...")
-    print("Shiny UI:   http://localhost:8000/app/")
-    print("Static UI:  http://localhost:8000/")
+    print("Shiny UI:   http://localhost:8000/ (redirects to /app/)")
     print("API docs:   http://localhost:8000/docs")
     print("\nTry searching for:")
     print("  - LangChain")
