@@ -108,37 +108,46 @@ def create_shiny_app(
                     dt = datetime.fromtimestamp(last_modified)
                     modified_display = dt.strftime("%Y-%m-%d %H:%M:%S")
 
+                metadata_items = [
+                    ui.span(ui.strong("Source: "), source_link),
+                ]
+                if modified_display:
+                    metadata_items.append(
+                        ui.span(
+                            ui.strong("Modified: "),
+                            ui.span(modified_display, class_="text-muted"),
+                        )
+                    )
+
+                score_class = "bg-success" if score > 0.7 else "bg-primary"
+                if metric_type == "distance":
+                    score_class = "bg-primary" if score < 0.5 else "bg-secondary"
+
                 card = ui.card(
                     ui.card_header(
                         ui.div(
-                            ui.strong(f"Result {idx}"),
+                            ui.strong(f"Result {idx}", class_="me-2"),
                             ui.span(
-                                f"{metric_type.title()}: {score:.4f}",
-                                class_="badge bg-success ms-2",
+                                f"{score:.4f}",
+                                class_=f"badge {score_class} rounded-pill",
+                                title=f"{metric_type.title()} score",
                             ),
-                        )
+                        ),
+                        class_="d-flex align-items-center",
                     ),
                     ui.div(
                         ui.tags.pre(
                             content,
-                            class_="bg-light p-2 rounded",
+                            class_="bg-light p-2 rounded mb-2",
                             style="white-space: pre-wrap;",
                         ),
-                        class_="mb-2",
-                    ),
-                    ui.div(
-                        ui.strong("Source: "),
-                        source_link,
-                        class_="mb-0 small",
-                    ),
-                    (
-                        ui.div(
-                            ui.strong("Modified: "),
-                            ui.span(modified_display, class_="text-muted"),
-                            class_="mb-0 small",
-                        )
-                        if modified_display
-                        else None
+                        ui.tags.ul(
+                            *[
+                                ui.tags.li(item, class_="small")
+                                for item in metadata_items
+                            ],
+                            class_="list-unstyled mb-0",
+                        ),
                     ),
                     class_="mb-3",
                 )
