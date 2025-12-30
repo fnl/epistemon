@@ -97,11 +97,11 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 
 #### 6.5 Basic Shiny App Structure (TDD Cycle 3)
 
-- [ ] Write test for create_shiny_app() factory function
-- [ ] Implement epistemon/web/shiny_app.py with app structure
-- [ ] Create app_ui with page layout and sidebar
-- [ ] Create server function skeleton
-- [ ] Return App instance
+- [x] Write test for create_shiny_app() factory function
+- [x] Implement epistemon/web/shiny_app.py with app structure
+- [x] Create app_ui with page layout and sidebar
+- [x] Create server function skeleton
+- [x] Return App instance
 
 #### 6.6 Search Input Components (TDD Cycle 4)
 
