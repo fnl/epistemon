@@ -81,6 +81,6 @@ disable_error_code = ["misc"]
 
 [tool.pytest.ini_options]
 markers = [
-    "e2e: end-to-end tests using headless browser (slow, run with -m e2e)",
+    "slow: slow tests including performance tests and e2e tests (run with -m slow)",
 ]
-addopts = "-m 'not e2e'"
+addopts = "-m 'not slow'"

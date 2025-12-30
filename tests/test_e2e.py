@@ -42,7 +42,7 @@ def run_server() -> None:
     uvicorn.run(app, host="127.0.0.1", port=8765, log_level="error")
 
 
-@pytest.mark.e2e
+@pytest.mark.slow
 @pytest.mark.skipif(
     not _check_playwright_installed(),
     reason="Playwright browsers not installed. Run: uv run playwright install chromium",
@@ -95,7 +95,7 @@ def run_server_with_config(vector_store_path: str) -> None:
     uvicorn.run(app, host="127.0.0.1", port=8766, log_level="error")
 
 
-@pytest.mark.e2e
+@pytest.mark.slow
 @pytest.mark.skipif(
     not _check_playwright_installed(),
     reason="Playwright browsers not installed. Run: uv run playwright install chromium",

@@ -426,6 +426,7 @@ def test_vector_store_uses_fake_embeddings() -> None:
     assert isinstance(vector_store.embeddings, FakeEmbeddings)
 
 
+@pytest.mark.slow
 def test_vector_store_uses_huggingface_embeddings() -> None:
     config = create_test_config(
         embedding_provider="huggingface", embedding_model="all-MiniLM-L6-v2"
@@ -448,6 +449,7 @@ def test_vector_store_uses_openai_embeddings() -> None:
     assert vector_store.embeddings.model == "text-embedding-3-small"
 
 
+@pytest.mark.slow
 def test_vector_store_uses_weaviate(tmp_path: Path) -> None:
     config = create_test_config(
         vector_store_type="weaviate", vector_store_path=str(tmp_path / "weaviate_db")
@@ -604,6 +606,7 @@ def test_index_function_removes_deleted_files(tmp_path: Path) -> None:
     assert "to_be_deleted.md" not in sources_after
 
 
+@pytest.mark.slow
 def test_indexing_performance_per_file(tmp_path: Path) -> None:
     from epistemon.indexing import index
 
@@ -632,6 +635,7 @@ def test_indexing_performance_per_file(tmp_path: Path) -> None:
     assert time_per_file < 0.1
 
 
+@pytest.mark.slow
 def test_reindexing_performance_for_unchanged_files(tmp_path: Path) -> None:
     from epistemon.indexing import index
 
@@ -666,6 +670,7 @@ def test_reindexing_performance_for_unchanged_files(tmp_path: Path) -> None:
     assert time_per_file < 0.01
 
 
+@pytest.mark.slow
 def test_indexing_performance_with_instrumentation(tmp_path: Path) -> None:
     from epistemon.indexing import index
     from epistemon.instrumentation import (

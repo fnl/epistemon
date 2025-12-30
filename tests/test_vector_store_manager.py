@@ -150,6 +150,7 @@ def weaviate_store(tmp_path: Path) -> WeaviateVectorStore:
     client.close()
 
 
+@pytest.mark.slow
 def test_weaviate_manager_get_indexed_files_with_multiple_files(
     weaviate_store: WeaviateVectorStore, base_directory: Path
 ) -> None:
@@ -177,6 +178,7 @@ def test_weaviate_manager_get_indexed_files_with_multiple_files(
     assert str(base_directory / "file_b.md") in indexed_files
 
 
+@pytest.mark.slow
 def test_weaviate_manager_get_indexed_files_empty_store(
     weaviate_store: WeaviateVectorStore, base_directory: Path
 ) -> None:
@@ -187,6 +189,7 @@ def test_weaviate_manager_get_indexed_files_empty_store(
     assert indexed_files == {}
 
 
+@pytest.mark.slow
 def test_create_vector_store_manager_returns_weaviate_manager(
     weaviate_store: WeaviateVectorStore, base_directory: Path
 ) -> None:

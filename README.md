@@ -167,11 +167,16 @@ To run unit and integration tests (fast):
 uv run pytest tests
 ```
 
-To run E2E tests (requires Playwright browsers):
+To run E2E tests install the Playwright Chromium browser:
 
 ```bash
 uv run playwright install chromium
-uv run pytest tests -m e2e
+```
+
+And run slow tests like the Weaviate vector store tests, E2E tests, or performance tests:
+
+```bash
+uv run pytest tests -m slow
 ```
 
 E2E tests are skipped by default to keep the test suite fast. They are only executed when explicitly requested with `-m e2e`.
