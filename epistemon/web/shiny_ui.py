@@ -1,0 +1,162 @@
+"""Shiny UI for semantic search."""
+
+from datetime import datetime
+from urllib.parse import quote
+
+from langchain_core.vectorstores import VectorStore
+from shiny import App, Inputs, Outputs, Session, reactive, render, ui
+
+
+def create_shiny_app(
+    vector_store: VectorStore,
+    base_url: str = "",
+    score_threshold: float = 0.0,
+) -> App:
+    """Create a Shiny app for semantic search.
+
+    Args:
+        vector_store: LangChain vector store
+        base_url: Base URL for source file links
+        score_threshold: Minimum score threshold for results
+
+    Returns:
+        Configured Shiny App instance
+    """
+    app_ui = ui.page_fluid(
+        ui.panel_title("Epistemon Semantic Search"),
+        ui.layout_sidebar(
+            ui.sidebar(
+                ui.input_text(
+                    "query",
+                    "Search Query",
+                    placeholder="Enter your search query...",
+                ),
+                ui.input_numeric(
+                    "limit",
+                    "Result Limit",
+                    value=5,
+                    min=1,
+                    max=20,
+                ),
+                ui.input_action_button(
+                    "search",
+                    "Search",
+                    class_="btn-primary",
+                ),
+                width=300,
+            ),
+            ui.output_ui("results"),
+        ),
+    )
+
+    def server(input: Inputs, output: Outputs, session: Session) -> None:
+        @render.ui
+        @reactive.event(input.search)
+        def results() -> ui.TagList:
+            query = input.query()
+
+            if not query or not query.strip():
+                return ui.div(
+                    ui.p("Please enter a search query", class_="text-warning"),
+                    class_="alert alert-warning",
+                )
+
+            results_with_scores = vector_store.similarity_search_with_score(
+                query, k=input.limit()
+            )
+
+            if not results_with_scores:
+                return ui.div(
+                    ui.p("No results found", class_="text-info"),
+                    class_="alert alert-info",
+                )
+
+            metric_type = "similarity"
+            if len(results_with_scores) >= 2:
+                score1, score2 = results_with_scores[0][1], results_with_scores[1][1]
+                if score1 < score2:
+                    metric_type = "distance"
+
+            result_cards = []
+            filtered_count = 0
+
+            for idx, (doc, score) in enumerate(results_with_scores, 1):
+                if score < score_threshold:
+                    filtered_count += 1
+                    continue
+
+                source = doc.metadata.get("source", "Unknown")
+                last_modified = doc.metadata.get("last_modified", 0)
+                content = doc.page_content
+
+                if base_url and source:
+                    source_link = ui.a(
+                        source,
+                        href=f"{base_url}/{quote(source)}",
+                        target="_blank",
+                        class_="text-primary",
+                    )
+                else:
+                    source_link = ui.span(source, class_="text-muted")
+
+                modified_display = ""
+                if last_modified:
+                    dt = datetime.fromtimestamp(last_modified)
+                    modified_display = dt.strftime("%Y-%m-%d %H:%M:%S")
+
+                card = ui.card(
+                    ui.card_header(
+                        ui.div(
+                            ui.strong(f"Result {idx}"),
+                            ui.span(
+                                f"{metric_type.title()}: {score:.4f}",
+                                class_="badge bg-success ms-2",
+                            ),
+                        )
+                    ),
+                    ui.div(
+                        ui.tags.pre(
+                            content,
+                            class_="bg-light p-3 rounded",
+                            style="white-space: pre-wrap;",
+                        ),
+                        class_="mb-3",
+                    ),
+                    ui.div(
+                        ui.strong("Source: "),
+                        source_link,
+                        class_="mb-1",
+                    ),
+                    (
+                        ui.div(
+                            ui.strong("Modified: "),
+                            ui.span(modified_display, class_="text-muted"),
+                            class_="mb-1",
+                        )
+                        if modified_display
+                        else None
+                    ),
+                    class_="mb-3",
+                )
+                result_cards.append(card)
+
+            if filtered_count > 0:
+                alert = ui.div(
+                    ui.p(
+                        f"{filtered_count} result(s) filtered by score threshold "
+                        f"({score_threshold})",
+                        class_="mb-0",
+                    ),
+                    class_="alert alert-warning mb-3",
+                )
+                result_cards.insert(0, alert)
+
+            header = ui.h3(
+                f"Found {len(result_cards) - (1 if filtered_count > 0 else 0)} results",
+                class_="mb-3",
+            )
+            result_cards.insert(0, header)
+
+            return ui.TagList(*result_cards)
+
+    return App(app_ui, server)

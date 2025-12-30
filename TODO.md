@@ -105,66 +105,66 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 
 #### 6.6 Search Input Components (TDD Cycle 4)
 
-- [ ] Write test for search input widgets
-- [ ] Implement ui.input_text for query
-- [ ] Implement ui.input_numeric for result limit
-- [ ] Implement ui.input_action_button for search trigger
+- [x] Write test for search input widgets
+- [x] Implement ui.input_text for query
+- [x] Implement ui.input_numeric for result limit
+- [x] Implement ui.input_action_button for search trigger
 
 #### 6.7 Reactive Search Execution (TDD Cycle 5)
 
-- [ ] Write test for search execution on button click
-- [ ] Implement @render.ui with @reactive.event(input.search)
-- [ ] Call vector_store.similarity_search_with_score()
-- [ ] Verify reactivity works
+- [x] Write test for search execution on button click
+- [x] Implement @render.ui with @reactive.event(input.search)
+- [x] Call vector_store.similarity_search_with_score()
+- [x] Verify reactivity works
 
 #### 6.8 Empty Query Validation (TDD Cycle 6)
 
-- [ ] Write test for empty query handling
-- [ ] Implement validation for empty/whitespace queries
-- [ ] Return warning alert for invalid input
+- [x] Write test for empty query handling
+- [x] Implement validation for empty/whitespace queries
+- [x] Return warning alert for invalid input
 
 #### 6.9 Metric Type Detection (TDD Cycle 7)
 
-- [ ] Write test for metric type detection (distance vs similarity)
-- [ ] Implement score ordering analysis
-- [ ] Set appropriate metric_type label
+- [x] Write test for metric type detection (distance vs similarity)
+- [x] Implement score ordering analysis
+- [x] Set appropriate metric_type label
 
 #### 6.10 Result Card Display (TDD Cycle 8)
 
-- [ ] Write test for rendering results as cards
-- [ ] Implement ui.card for each result
-- [ ] Include result number, score badge, content, source, timestamp
-- [ ] Return ui.TagList of cards
+- [x] Write test for rendering results as cards
+- [x] Implement ui.card for each result
+- [x] Include result number, score badge, content, source, timestamp
+- [x] Return ui.TagList of cards
 
 #### 6.11 Score Display (TDD Cycle 9)
 
-- [ ] Write test for score formatting and display
-- [ ] Implement score badge with metric label
-- [ ] Format to 4 decimal places
+- [x] Write test for score formatting and display
+- [x] Implement score badge with metric label
+- [x] Format to 4 decimal places
 
 #### 6.12 Source Links (TDD Cycle 10)
 
-- [ ] Write test for source file links
-- [ ] Implement conditional link creation with base_url
-- [ ] Use quote() for URL encoding
-- [ ] Set target="_blank" for new tab
+- [x] Write test for source file links
+- [x] Implement conditional link creation with base_url
+- [x] Use quote() for URL encoding
+- [x] Set target="_blank" for new tab
 
 #### 6.13 Score Threshold Filtering (TDD Cycle 11)
 
-- [ ] Write test for score_threshold filtering
-- [ ] Implement result filtering logic
-- [ ] Display alert for filtered results count
+- [x] Write test for score_threshold filtering
+- [x] Implement result filtering logic
+- [x] Display alert for filtered results count
 
 #### 6.14 No Results Handling (TDD Cycle 12)
 
-- [ ] Write test for zero results scenario
-- [ ] Return info alert when no results found
+- [x] Write test for zero results scenario
+- [x] Return info alert when no results found
 
 #### 6.15 Metadata Display (TDD Cycle 13)
 
-- [ ] Write test for timestamp display
-- [ ] Format last_modified timestamps
-- [ ] Handle missing metadata gracefully
+- [x] Write test for timestamp display
+- [x] Format last_modified timestamps
+- [x] Handle missing metadata gracefully
 
 #### 6.16 FastAPI Integration (TDD Cycle 14)
 

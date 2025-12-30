@@ -248,7 +248,7 @@ def create_app(
         return response
 
     if mount_shiny:
-        from epistemon.web.shiny_app import create_shiny_app
+        from epistemon.web.shiny_ui import create_shiny_app
 
         shiny_app = create_shiny_app(
             vector_store, base_url=base_url, score_threshold=score_threshold
