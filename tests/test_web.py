@@ -2,10 +2,12 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from langchain_core.documents import Document
 from langchain_core.embeddings import FakeEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon.indexing import load_and_chunk_markdown
+from epistemon.indexing.vector_store_manager import create_vector_store_manager
 from epistemon.web import create_app
 
 
@@ -286,3 +288,59 @@ def test_files_endpoint_can_sort_by_date() -> None:
     assert len(files) == 3
     modified_times = [f["last_modified"] for f in files]
     assert modified_times == [3, 2, 1]
+
+
+def test_files_endpoint_with_vector_store_manager() -> None:
+    base_directory = Path("tests/data")
+    store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    docs = [
+        Document(
+            page_content="Content A",
+            metadata={"source": "file_a.md", "last_modified": 1234567890.0},
+        ),
+        Document(
+            page_content="Content B",
+            metadata={"source": "file_b.md", "last_modified": 1234567900.0},
+        ),
+    ]
+    store.add_documents(docs)
+    manager = create_vector_store_manager(store, base_directory)
+    app = create_app(store, vector_store_manager=manager)
+    client = TestClient(app)
+
+    response = client.get("/files")
+
+    files = response.json()["files"]
+    assert len(files) == 2
+    sources = {f["source"] for f in files}
+    assert "file_a.md" in sources
+    assert "file_b.md" in sources
+
+
+def test_files_endpoint_with_manager_sorts_correctly() -> None:
+    base_directory = Path("tests/data")
+    store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    docs = [
+        Document(
+            page_content="C",
+            metadata={"source": "zebra.md", "last_modified": 3.0},
+        ),
+        Document(
+            page_content="B",
+            metadata={"source": "alpha.md", "last_modified": 2.0},
+        ),
+    ]
+    store.add_documents(docs)
+    manager = create_vector_store_manager(store, base_directory)
+    app = create_app(store, vector_store_manager=manager)
+    client = TestClient(app)
+
+    response = client.get("/files", params={"sort_by": "name"})
+    files = response.json()["files"]
+    sources = [f["source"] for f in files]
+    assert sources == ["alpha.md", "zebra.md"]
+
+    response = client.get("/files", params={"sort_by": "date"})
+    files = response.json()["files"]
+    modified_times = [f["last_modified"] for f in files]
+    assert modified_times == [3.0, 2.0]
