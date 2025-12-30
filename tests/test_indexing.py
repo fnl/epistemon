@@ -2,10 +2,13 @@ import time
 from pathlib import Path
 
 import pytest
+from langchain_community.vectorstores import DuckDB
 from langchain_core.embeddings import FakeEmbeddings
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import OpenAIEmbeddings
+from langchain_qdrant import QdrantVectorStore
+from langchain_weaviate import WeaviateVectorStore
 
 from epistemon.config import Configuration
 from epistemon.indexing import (
@@ -443,6 +446,37 @@ def test_vector_store_uses_openai_embeddings() -> None:
 
     assert isinstance(vector_store.embeddings, OpenAIEmbeddings)
     assert vector_store.embeddings.model == "text-embedding-3-small"
+
+
+def test_vector_store_uses_weaviate(tmp_path: Path) -> None:
+    config = create_test_config(
+        vector_store_type="weaviate", vector_store_path=str(tmp_path / "weaviate_db")
+    )
+
+    vector_store = create_vector_store(config)
+
+    assert isinstance(vector_store, WeaviateVectorStore)
+    assert vector_store._client is not None
+
+
+def test_vector_store_uses_qdrant(tmp_path: Path) -> None:
+    config = create_test_config(
+        vector_store_type="qdrant", vector_store_path=str(tmp_path / "qdrant_db")
+    )
+
+    vector_store = create_vector_store(config)
+
+    assert isinstance(vector_store, QdrantVectorStore)
+
+
+def test_vector_store_uses_duckdb(tmp_path: Path) -> None:
+    config = create_test_config(
+        vector_store_type="duckdb", vector_store_path=str(tmp_path / "duckdb_data")
+    )
+
+    vector_store = create_vector_store(config)
+
+    assert isinstance(vector_store, DuckDB)
 
 
 def test_markdown_structure_based_chunking() -> None:

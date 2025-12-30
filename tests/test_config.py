@@ -146,7 +146,7 @@ vector_store_type: "invalid_store"
 
     with pytest.raises(
         ValueError,
-        match="Invalid vector_store_type.*Must be one of: inmemory, chroma",
+        match=r"Invalid vector_store_type.*Must be one of: inmemory, chroma, weaviate, duckdb, qdrant",
     ):
         load_config(config_path)
 
@@ -235,3 +235,19 @@ input_directory: 123
 
     with pytest.raises(ValueError, match="input_directory must be a string"):
         load_config(config_path)
+
+
+@pytest.mark.parametrize(
+    "vector_store_type",
+    ["inmemory", "chroma", "weaviate", "duckdb", "qdrant"],
+)
+def test_load_config_accepts_all_valid_vector_store_types(
+    temp_yaml_file: Callable[[str], str], vector_store_type: str
+) -> None:
+    """Test that all valid vector store types are accepted."""
+    config_content = f"""
+vector_store_type: "{vector_store_type}"
+"""
+    config_path = temp_yaml_file(config_content)
+    config = load_config(config_path)
+    assert config.vector_store_type == vector_store_type

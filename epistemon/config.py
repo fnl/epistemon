@@ -7,7 +7,13 @@ from typing import Any, Final, Optional
 import yaml
 
 VALID_EMBEDDING_PROVIDERS: Final[list[str]] = ["fake", "huggingface", "openai"]
-VALID_VECTOR_STORE_TYPES: Final[list[str]] = ["inmemory", "chroma"]
+VALID_VECTOR_STORE_TYPES: Final[list[str]] = [
+    "inmemory",
+    "chroma",
+    "weaviate",
+    "duckdb",
+    "qdrant",
+]
 
 
 @dataclass(frozen=True)
