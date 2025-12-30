@@ -10,6 +10,7 @@ A very basic semantic search engine over Markdown files:
 - A web frontend can be used to submit queries to the vector store.
 - Matching is similarity-based, comparing the embeddings of the query and chunks.
 - The vector store can be updated by re-running the indexing.
+- In parallel, provide keyword-based search results to compare (BM25).
 
 ## V2: RAG Agent
 

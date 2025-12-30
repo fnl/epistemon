@@ -384,3 +384,43 @@ def test_files_endpoint_returns_iso_formatted_dates() -> None:
     assert isinstance(last_modified, str)
     parsed_date = datetime.fromisoformat(last_modified)
     assert parsed_date == datetime.fromtimestamp(timestamp)
+
+
+def test_search_endpoint_handles_missing_query_parameter(
+    vector_store: VectorStore,
+) -> None:
+    app = create_app(vector_store)
+    client = TestClient(app)
+
+    response = client.get("/search")
+
+    assert response.status_code == 422
+
+
+def test_search_endpoint_handles_invalid_limit_parameter(
+    vector_store: VectorStore,
+) -> None:
+    app = create_app(vector_store)
+    client = TestClient(app)
+
+    response = client.get("/search", params={"q": "test", "limit": "invalid"})
+
+    assert response.status_code == 422
+
+
+def test_search_endpoint_handles_vector_store_errors(
+    vector_store: VectorStore,
+) -> None:
+    from unittest.mock import Mock
+
+    broken_store = Mock(spec=VectorStore)
+    broken_store.similarity_search_with_score.side_effect = Exception(
+        "Vector store error"
+    )
+    app = create_app(broken_store)
+    client = TestClient(app)
+
+    response = client.get("/search", params={"q": "test", "limit": 5})
+
+    assert response.status_code == 500
+    assert "error" in response.json()

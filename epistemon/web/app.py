@@ -179,7 +179,13 @@ def create_app(
         if not q or not q.strip():
             return {"results": []}
 
-        results_with_scores = vector_store.similarity_search_with_score(q, k=limit)
+        try:
+            results_with_scores = vector_store.similarity_search_with_score(q, k=limit)
+        except Exception as e:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Search failed", "detail": str(e)},
+            )
 
         metric_type = "similarity"
         if len(results_with_scores) >= 2:

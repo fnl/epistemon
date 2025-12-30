@@ -6,6 +6,7 @@ import uvicorn
 
 from epistemon.config import load_config
 from epistemon.indexing.indexer import index
+from epistemon.indexing.vector_store_manager import create_vector_store_manager
 from epistemon.vector_store_factory import create_vector_store
 from epistemon.web import create_app
 
@@ -27,6 +28,9 @@ def main() -> None:
         base_url="http://localhost:8000/files",
         score_threshold=config.score_threshold,
         files_directory=Path(config.input_directory),
+        vector_store_manager=create_vector_store_manager(
+            vector_store, Path(config.input_directory)
+        ),
     )
 
     print("\n" + "=" * 60)
