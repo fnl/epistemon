@@ -54,15 +54,26 @@ Note: VectorStoreRetriever doesn't expose similarity_search_with_score(), which 
 
 #### 6.2 GET /files File Listing
 
-- [ ] Write test for the GET /files endpoint to return a list of all indexed files
-- [ ] Write test to check the presence of all file metadata in response
-- [ ] Implement file list retrieval from vector store with metadata
-- [ ] Write test for empty index handling (no files in store)
-- [ ] Implement empty index response handling
-- [ ] Write test for sorting files by name or date
-- [ ] Implement file sorting and response serialization
+- [x] Write test for the GET /files endpoint to return a list of all indexed files
+- [x] Write test to check the presence of all file metadata in response
+- [x] Implement file list retrieval from vector store with metadata
+- [x] Write test for empty index handling (no files in store)
+- [x] Implement empty index response handling
+- [x] Write test for sorting files by name or date
+- [x] Implement file sorting and response serialization
 
-Note: File list retrieval may require using official vector store clients for efficient iteration.
+Note: File list retrieval implemented by iterating through InMemoryVectorStore.store dictionary.
+
+#### 6.2.1 Vector Store Manager Abstraction (Refactoring)
+
+- [ ] Write test for VectorStoreManager.get_indexed_files() with InMemoryVectorStore
+- [ ] Implement VectorStoreManager class with get_indexed_files() method
+- [ ] Write test for VectorStoreManager.get_indexed_files() with Chroma
+- [ ] Implement Chroma support in get_indexed_files()
+- [ ] Refactor GET /files endpoint to use VectorStoreManager
+- [ ] Update all tests to use VectorStoreManager where appropriate
+
+Note: This abstraction will allow get_indexed_files() to work across different vector store implementations without accessing internal attributes.
 
 #### 6.3 API Error Handling
 
