@@ -140,45 +140,51 @@ def create_app(
                 },
             )
 
-        files_dict: dict[str, dict[str, str | float | int]] = {}
+        try:
+            files_dict: dict[str, dict[str, str | float | int]] = {}
 
-        if vector_store_manager:
-            indexed_files = vector_store_manager.get_indexed_files()
-            for abs_path, mtime in indexed_files.items():
-                abs_path_obj = Path(abs_path)
-                try:
-                    relative_path = abs_path_obj.relative_to(
-                        vector_store_manager.base_directory
-                    )
-                    source = str(relative_path)
-                    if source not in files_dict:
+            if vector_store_manager:
+                indexed_files = vector_store_manager.get_indexed_files()
+                for abs_path, mtime in indexed_files.items():
+                    abs_path_obj = Path(abs_path)
+                    try:
+                        relative_path = abs_path_obj.relative_to(
+                            vector_store_manager.base_directory
+                        )
+                        source = str(relative_path)
+                        if source not in files_dict:
+                            iso_date = datetime.fromtimestamp(mtime).isoformat()
+                            files_dict[source] = {
+                                "source": source,
+                                "last_modified": iso_date,
+                            }
+                    except ValueError:
+                        continue
+            elif isinstance(vector_store, InMemoryVectorStore):
+                for _doc_id, doc in vector_store.store.items():
+                    metadata = doc.get("metadata", {})
+                    source = metadata.get("source", "")
+                    if source and source not in files_dict:
+                        mtime = metadata.get("last_modified", 0)
                         iso_date = datetime.fromtimestamp(mtime).isoformat()
                         files_dict[source] = {
                             "source": source,
                             "last_modified": iso_date,
                         }
-                except ValueError:
-                    continue
-        elif isinstance(vector_store, InMemoryVectorStore):
-            for _doc_id, doc in vector_store.store.items():
-                metadata = doc.get("metadata", {})
-                source = metadata.get("source", "")
-                if source and source not in files_dict:
-                    mtime = metadata.get("last_modified", 0)
-                    iso_date = datetime.fromtimestamp(mtime).isoformat()
-                    files_dict[source] = {
-                        "source": source,
-                        "last_modified": iso_date,
-                    }
 
-        files_list = list(files_dict.values())
+            files_list = list(files_dict.values())
 
-        if sort_by == "name":
-            files_list.sort(key=lambda f: f["source"])
-        elif sort_by == "date":
-            files_list.sort(key=lambda f: f["last_modified"], reverse=True)
+            if sort_by == "name":
+                files_list.sort(key=lambda f: f["source"])
+            elif sort_by == "date":
+                files_list.sort(key=lambda f: f["last_modified"], reverse=True)
 
-        return {"files": files_list}
+            return {"files": files_list}
+        except Exception as e:
+            return JSONResponse(
+                status_code=500,
+                content={"error": "Failed to retrieve file list", "detail": str(e)},
+            )
 
     @app.get("/search", response_model=None)
     def search_endpoint(

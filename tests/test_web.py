@@ -436,3 +436,18 @@ def test_files_endpoint_handles_invalid_sort_by_parameter(
 
     assert response.status_code == 400
     assert "error" in response.json()
+
+
+def test_files_endpoint_handles_vector_store_errors() -> None:
+    from unittest.mock import Mock
+
+    broken_store = Mock(spec=InMemoryVectorStore)
+    broken_store.store = Mock()
+    broken_store.store.items.side_effect = Exception("Vector store error")
+    app = create_app(broken_store)
+    client = TestClient(app)
+
+    response = client.get("/files")
+
+    assert response.status_code == 500
+    assert "error" in response.json()
