@@ -60,11 +60,10 @@ This project builds a semantic search engine over Markdown (`.md`) files using *
 - **LangChain** for:
   - Document loading
   - Chunking
-  - Embeddings (configurable)
-  - Vector store (configurable)
+  - Embeddings (configurable: Huggingface or OpenAI)
+  - Vector store (in memory, Chroma, Weaviate, Qdrant, or DuckDB)
 - **uv** for project management and dependency resolution
-
-- **In-memory embeddings and vector store** for tests (fast and deterministic)
+- **Shiny** as a reactive UI
 
 ---
 
