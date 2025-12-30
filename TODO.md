@@ -77,8 +77,14 @@ Note: VectorStoreManager abstraction now allows get_indexed_files() to work acro
 
 #### 6.3 API Error Handling
 
-- [ ] Write test for error handling in endpoints
-- [ ] Implement comprehensive error handling and error responses
+- [x] Write test for error handling in endpoints
+- [x] Implement comprehensive error handling and error responses
+
+Note: Comprehensive error handling implemented for all endpoints:
+- GET /search: validates parameters (422), handles vector store errors (500)
+- GET /files: validates sort_by parameter (400), handles vector store errors (500)
+- GET /files/{path}: returns 404/403 for not found/access denied, handles file read errors (500)
+All error responses follow consistent JSON format with "error" and "detail" fields.
 
 ### Shiny UI Migration
 
