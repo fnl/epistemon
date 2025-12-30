@@ -117,21 +117,21 @@ def create_shiny_app(
                     ui.div(
                         ui.tags.pre(
                             content,
-                            class_="bg-light p-3 rounded",
+                            class_="bg-light p-2 rounded",
                             style="white-space: pre-wrap;",
                         ),
-                        class_="mb-3",
+                        class_="mb-2",
                     ),
                     ui.div(
                         ui.strong("Source: "),
                         source_link,
-                        class_="mb-1",
+                        class_="mb-0 small",
                     ),
                     (
                         ui.div(
                             ui.strong("Modified: "),
                             ui.span(modified_display, class_="text-muted"),
-                            class_="mb-1",
+                            class_="mb-0 small",
                         )
                         if modified_display
                         else None
