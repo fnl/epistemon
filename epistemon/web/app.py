@@ -1,6 +1,7 @@
 """FastAPI application for semantic search."""
 
 from pathlib import Path
+from typing import Optional
 from urllib.parse import quote, unquote
 
 import markdown
@@ -8,6 +9,8 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from langchain_core.vectorstores import VectorStore
+
+from epistemon.indexing.vector_store_manager import VectorStoreManager
 
 STATIC_DIR = Path(__file__).parent / "static"
 
@@ -17,6 +20,7 @@ def create_app(
     base_url: str = "",
     score_threshold: float = 0.0,
     files_directory: Path | None = None,
+    vector_store_manager: Optional[VectorStoreManager] = None,
 ) -> FastAPI:
     app = FastAPI()
 
@@ -128,7 +132,23 @@ def create_app(
     ) -> dict[str, list[dict[str, str | float | int]]]:
         files_dict: dict[str, dict[str, str | float | int]] = {}
 
-        if hasattr(vector_store, "store"):
+        if vector_store_manager:
+            indexed_files = vector_store_manager.get_indexed_files()
+            for abs_path, mtime in indexed_files.items():
+                abs_path_obj = Path(abs_path)
+                try:
+                    relative_path = abs_path_obj.relative_to(
+                        vector_store_manager.base_directory
+                    )
+                    source = str(relative_path)
+                    if source not in files_dict:
+                        files_dict[source] = {
+                            "source": source,
+                            "last_modified": mtime,
+                        }
+                except ValueError:
+                    continue
+        elif hasattr(vector_store, "store"):
             for _doc_id, doc in vector_store.store.items():
                 metadata = doc.get("metadata", {})
                 source = metadata.get("source", "")
