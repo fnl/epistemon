@@ -92,8 +92,8 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 
 #### 6.4 Setup and Dependencies (TDD Cycle 2)
 
-- [ ] Add shiny to dependencies via uv
-- [ ] Verify shiny installation
+- [x] Add shiny to dependencies via uv
+- [x] Verify shiny installation
 
 #### 6.5 Basic Shiny App Structure (TDD Cycle 3)
 
