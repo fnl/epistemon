@@ -424,3 +424,15 @@ def test_search_endpoint_handles_vector_store_errors(
 
     assert response.status_code == 500
     assert "error" in response.json()
+
+
+def test_files_endpoint_handles_invalid_sort_by_parameter(
+    vector_store: VectorStore,
+) -> None:
+    app = create_app(vector_store)
+    client = TestClient(app)
+
+    response = client.get("/files", params={"sort_by": "invalid"})
+
+    assert response.status_code == 400
+    assert "error" in response.json()

@@ -130,7 +130,16 @@ def create_app(
     @app.get("/files", response_model=None)
     def list_files_endpoint(
         sort_by: str = Query("name", description="Sort by 'name' or 'date'"),
-    ) -> dict[str, list[dict[str, str | float | int]]]:
+    ) -> dict[str, list[dict[str, str | float | int]]] | JSONResponse:
+        if sort_by not in ["name", "date"]:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": "Invalid sort_by parameter",
+                    "detail": "sort_by must be 'name' or 'date'",
+                },
+            )
+
         files_dict: dict[str, dict[str, str | float | int]] = {}
 
         if vector_store_manager:
