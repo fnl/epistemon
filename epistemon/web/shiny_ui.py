@@ -56,9 +56,11 @@ def create_shiny_app(
             query = input.query()
 
             if not query or not query.strip():
-                return ui.div(
-                    ui.p("Please enter a search query", class_="text-warning"),
-                    class_="alert alert-warning",
+                return ui.TagList(
+                    ui.div(
+                        ui.p("Please enter a search query", class_="text-warning"),
+                        class_="alert alert-warning",
+                    )
                 )
 
             results_with_scores = vector_store.similarity_search_with_score(
@@ -66,9 +68,11 @@ def create_shiny_app(
             )
 
             if not results_with_scores:
-                return ui.div(
-                    ui.p("No results found", class_="text-info"),
-                    class_="alert alert-info",
+                return ui.TagList(
+                    ui.div(
+                        ui.p("No results found", class_="text-info"),
+                        class_="alert alert-info",
+                    )
                 )
 
             metric_type = "similarity"
