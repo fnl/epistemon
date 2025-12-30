@@ -215,3 +215,19 @@ def test_files_endpoint_returns_list_of_indexed_files(
     assert isinstance(files, list)
     assert len(files) > 0
     assert any("sample.md" in file["source"] for file in files)
+
+
+def test_files_endpoint_includes_all_metadata(vector_store: VectorStore) -> None:
+    app = create_app(vector_store)
+    client = TestClient(app)
+
+    response = client.get("/files")
+
+    files = response.json()["files"]
+    assert len(files) > 0
+    for file in files:
+        assert "source" in file
+        assert "last_modified" in file
+        assert isinstance(file["source"], str)
+        assert isinstance(file["last_modified"], (int, float))
+        assert file["last_modified"] > 0
