@@ -244,3 +244,45 @@ def test_files_endpoint_handles_empty_index() -> None:
     files = response.json()["files"]
     assert isinstance(files, list)
     assert len(files) == 0
+
+
+def test_files_endpoint_can_sort_by_name() -> None:
+    from langchain_core.documents import Document
+
+    store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    docs = [
+        Document(page_content="C", metadata={"source": "zebra.md", "last_modified": 3}),
+        Document(page_content="B", metadata={"source": "alpha.md", "last_modified": 2}),
+        Document(page_content="A", metadata={"source": "gamma.md", "last_modified": 1}),
+    ]
+    store.add_documents(docs)
+    app = create_app(store)
+    client = TestClient(app)
+
+    response = client.get("/files", params={"sort_by": "name"})
+
+    files = response.json()["files"]
+    assert len(files) == 3
+    sources = [f["source"] for f in files]
+    assert sources == ["alpha.md", "gamma.md", "zebra.md"]
+
+
+def test_files_endpoint_can_sort_by_date() -> None:
+    from langchain_core.documents import Document
+
+    store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    docs = [
+        Document(page_content="C", metadata={"source": "zebra.md", "last_modified": 3}),
+        Document(page_content="B", metadata={"source": "alpha.md", "last_modified": 2}),
+        Document(page_content="A", metadata={"source": "gamma.md", "last_modified": 1}),
+    ]
+    store.add_documents(docs)
+    app = create_app(store)
+    client = TestClient(app)
+
+    response = client.get("/files", params={"sort_by": "date"})
+
+    files = response.json()["files"]
+    assert len(files) == 3
+    modified_times = [f["last_modified"] for f in files]
+    assert modified_times == [3, 2, 1]

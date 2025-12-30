@@ -123,7 +123,9 @@ def create_app(
             return HTMLResponse(content=html_template)
 
     @app.get("/files", response_model=None)
-    def list_files_endpoint() -> dict[str, list[dict[str, str | float | int]]]:
+    def list_files_endpoint(
+        sort_by: str = Query("name", description="Sort by 'name' or 'date'"),
+    ) -> dict[str, list[dict[str, str | float | int]]]:
         files_dict: dict[str, dict[str, str | float | int]] = {}
 
         if hasattr(vector_store, "store"):
@@ -137,6 +139,12 @@ def create_app(
                     }
 
         files_list = list(files_dict.values())
+
+        if sort_by == "name":
+            files_list.sort(key=lambda f: f["source"])
+        elif sort_by == "date":
+            files_list.sort(key=lambda f: f["last_modified"], reverse=True)
+
         return {"files": files_list}
 
     @app.get("/search", response_model=None)
