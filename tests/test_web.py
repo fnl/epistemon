@@ -451,3 +451,19 @@ def test_files_endpoint_handles_vector_store_errors() -> None:
 
     assert response.status_code == 500
     assert "error" in response.json()
+
+
+def test_files_path_endpoint_handles_file_read_errors(tmp_path: Path) -> None:
+    from unittest.mock import patch
+
+    test_file = tmp_path / "test.md"
+    test_file.write_text("# Test")
+    vector_store_fixture = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_app(vector_store_fixture, files_directory=tmp_path)
+    client = TestClient(app)
+
+    with patch("pathlib.Path.read_text", side_effect=PermissionError("Access denied")):
+        response = client.get("/files/test.md")
+
+    assert response.status_code == 500
+    assert "error" in response.json()

@@ -33,8 +33,8 @@ def create_app(
 
     if files_directory is not None:
 
-        @app.get("/files/{file_path:path}")
-        def serve_markdown_as_html(file_path: str) -> HTMLResponse:
+        @app.get("/files/{file_path:path}", response_model=None)
+        def serve_markdown_as_html(file_path: str) -> HTMLResponse | JSONResponse:
             decoded_path = unquote(file_path)
             full_path = files_directory / decoded_path
 
@@ -44,7 +44,14 @@ def create_app(
             if not full_path.is_relative_to(files_directory):
                 raise HTTPException(status_code=403, detail="Access denied")
 
-            markdown_content = full_path.read_text()
+            try:
+                markdown_content = full_path.read_text()
+            except Exception as e:
+                return JSONResponse(
+                    status_code=500,
+                    content={"error": "Failed to read file", "detail": str(e)},
+                )
+
             html_content = markdown.markdown(
                 markdown_content,
                 extensions=["tables", "fenced_code", "codehilite"],
