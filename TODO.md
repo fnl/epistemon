@@ -81,10 +81,11 @@ Note: VectorStoreManager abstraction now allows get_indexed_files() to work acro
 - [x] Implement comprehensive error handling and error responses
 
 Note: Comprehensive error handling implemented for all endpoints:
+
 - GET /search: validates parameters (422), handles vector store errors (500)
 - GET /files: validates sort_by parameter (400), handles vector store errors (500)
 - GET /files/{path}: returns 404/403 for not found/access denied, handles file read errors (500)
-All error responses follow consistent JSON format with "error" and "detail" fields.
+  All error responses follow consistent JSON format with "error" and "detail" fields.
 
 ### Shiny UI Migration
 
@@ -147,7 +148,7 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 - [x] Write test for source file links
 - [x] Implement conditional link creation with base_url
 - [x] Use quote() for URL encoding
-- [x] Set target="_blank" for new tab
+- [x] Set target="\_blank" for new tab
 
 #### 6.13 Score Threshold Filtering (TDD Cycle 11)
 
@@ -176,15 +177,12 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 
 #### 6.17 Root Path Handling (TDD Cycle 15)
 
-- [ ] Write test for root path redirect
-- [ ] Redirect GET / to /app when Shiny is mounted
-- [ ] Archive or remove static/index.html
+- [ ] Replace the current HTML UI at GET / with the Shiny app (always).
+- [ ] Remove static/index.html and anything else that is left from the original UI.
 
 #### 6.18 Future RAG Comparison Preparation (TDD Cycle 16)
 
-- [ ] Document architecture for side-by-side comparison
-- [ ] Add commented skeleton with ui.layout_columns(col_widths=[4,4,4])
-- [ ] Create placeholders for Semantic/RAG/Advanced agent columns
+- [ ] Document architecture plan for side-by-side comparison in ROADMAP.md
 
 #### 6.19 Manual UI Testing
 
