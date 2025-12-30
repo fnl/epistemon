@@ -36,183 +36,45 @@ Performance achieved with FakeEmbeddings: 0.23ms per file for new indexing (43x 
 
 Implemented FastAPI GET /search endpoint with VectorStoreRetriever, configurable result limits, score-based ranking, empty query handling, score threshold filtering with alerts, source file links with URL encoding, automatic metric type detection (distance vs similarity), and comprehensive metadata inclusion (content snippets, similarity scores, last modified timestamps). Added GET /files/{path} endpoint to serve markdown files as formatted HTML.
 
-## Phase 6: Web UI Module (TDD)
+## Phase 6: Web UI Module (TDD) - COMPLETE
 
-### Core Refactoring
+Migrated from vanilla HTML/JavaScript to Shiny for Python to enable future side-by-side RAG comparison features.
 
-#### 6.1 Refactor to VectorStore Interface (TDD Cycle 1)
+**Completed:**
+- [x] Refactored to VectorStore interface (removed VectorStoreRetriever indirection)
+- [x] Implemented FastAPI endpoints: GET /search, GET /files, GET /files/{path}
+- [x] Added VectorStoreManager abstraction for cross-store file listing (InMemory, Chroma)
+- [x] Comprehensive error handling with consistent JSON responses (400, 404, 422, 500)
+- [x] Full Shiny UI implementation with reactive search, metric detection, result cards
+- [x] Score threshold filtering, source links, metadata display (timestamps)
+- [x] Root path (/) redirects to Shiny app at /app/
+- [x] Removed legacy static HTML UI
 
-- [x] Write test verifying create_app() works with VectorStore instead of VectorStoreRetriever
-- [x] Update create_app() signature to accept vector_store: VectorStore parameter
-- [x] Update /search endpoint to use vector_store.similarity_search_with_score() directly
-- [x] Remove retriever.vectorstore indirection
-- [x] Update all existing tests to pass VectorStore instances
+**Features:**
+- Search input with configurable result limit
+- Automatic metric type detection (Distance vs Similarity)
+- Score badges with metric labels (e.g., "Similarity: 0.8532")
+- Clickable source links, formatted timestamps
+- Empty query validation, no-results handling
 
-Note: VectorStoreRetriever doesn't expose similarity_search_with_score(), which is needed for score display. Using VectorStore directly is cleaner and more flexible.
-
-### FastAPI Endpoints (Remaining Work)
-
-#### 6.2 GET /files File Listing
-
-- [x] Write test for the GET /files endpoint to return a list of all indexed files
-- [x] Write test to check the presence of all file metadata in response
-- [x] Implement file list retrieval from vector store with metadata
-- [x] Write test for empty index handling (no files in store)
-- [x] Implement empty index response handling
-- [x] Write test for sorting files by name or date
-- [x] Implement file sorting and response serialization
-
-Note: File list retrieval implemented by iterating through InMemoryVectorStore.store dictionary.
-
-#### 6.2.1 Vector Store Manager Abstraction (Refactoring)
-
-- [x] Write test for VectorStoreManager.get_indexed_files() with InMemoryVectorStore
-- [x] Implement VectorStoreManager class with get_indexed_files() method
-- [x] Write test for VectorStoreManager.get_indexed_files() with Chroma
-- [x] Implement Chroma support in get_indexed_files()
-- [x] Refactor GET /files endpoint to use VectorStoreManager
-- [x] Update all tests to use VectorStoreManager where appropriate
-
-Note: VectorStoreManager abstraction now allows get_indexed_files() to work across different vector store implementations. The web API maintains backward compatibility while supporting the new manager pattern.
-
-#### 6.3 API Error Handling
-
-- [x] Write test for error handling in endpoints
-- [x] Implement comprehensive error handling and error responses
-
-Note: Comprehensive error handling implemented for all endpoints:
-
-- GET /search: validates parameters (422), handles vector store errors (500)
-- GET /files: validates sort_by parameter (400), handles vector store errors (500)
-- GET /files/{path}: returns 404/403 for not found/access denied, handles file read errors (500)
-  All error responses follow consistent JSON format with "error" and "detail" fields.
-
-### Shiny UI Migration
-
-Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future side-by-side RAG comparison features while maintaining FastAPI endpoints for programmatic access.
-
-#### 6.4 Setup and Dependencies (TDD Cycle 2)
-
-- [x] Add shiny to dependencies via uv
-- [x] Verify shiny installation
-
-#### 6.5 Basic Shiny App Structure (TDD Cycle 3)
-
-- [x] Write test for create_shiny_app() factory function
-- [x] Implement epistemon/web/shiny_app.py with app structure
-- [x] Create app_ui with page layout and sidebar
-- [x] Create server function skeleton
-- [x] Return App instance
-
-#### 6.6 Search Input Components (TDD Cycle 4)
-
-- [x] Write test for search input widgets
-- [x] Implement ui.input_text for query
-- [x] Implement ui.input_numeric for result limit
-- [x] Implement ui.input_action_button for search trigger
-
-#### 6.7 Reactive Search Execution (TDD Cycle 5)
-
-- [x] Write test for search execution on button click
-- [x] Implement @render.ui with @reactive.event(input.search)
-- [x] Call vector_store.similarity_search_with_score()
-- [x] Verify reactivity works
-
-#### 6.8 Empty Query Validation (TDD Cycle 6)
-
-- [x] Write test for empty query handling
-- [x] Implement validation for empty/whitespace queries
-- [x] Return warning alert for invalid input
-
-#### 6.9 Metric Type Detection (TDD Cycle 7)
-
-- [x] Write test for metric type detection (distance vs similarity)
-- [x] Implement score ordering analysis
-- [x] Set appropriate metric_type label
-
-#### 6.10 Result Card Display (TDD Cycle 8)
-
-- [x] Write test for rendering results as cards
-- [x] Implement ui.card for each result
-- [x] Include result number, score badge, content, source, timestamp
-- [x] Return ui.TagList of cards
-
-#### 6.11 Score Display (TDD Cycle 9)
-
-- [x] Write test for score formatting and display
-- [x] Implement score badge with metric label
-- [x] Format to 4 decimal places
-
-#### 6.12 Source Links (TDD Cycle 10)
-
-- [x] Write test for source file links
-- [x] Implement conditional link creation with base_url
-- [x] Use quote() for URL encoding
-- [x] Set target="\_blank" for new tab
-
-#### 6.13 Score Threshold Filtering (TDD Cycle 11)
-
-- [x] Write test for score_threshold filtering
-- [x] Implement result filtering logic
-- [x] Display alert for filtered results count
-
-#### 6.14 No Results Handling (TDD Cycle 12)
-
-- [x] Write test for zero results scenario
-- [x] Return info alert when no results found
-
-#### 6.15 Metadata Display (TDD Cycle 13)
-
-- [x] Write test for timestamp display
-- [x] Format last_modified timestamps
-- [x] Handle missing metadata gracefully
-
-#### 6.16 FastAPI Integration (TDD Cycle 14)
-
-- [x] Write test for Shiny app mounting
-- [x] Update create_app() to accept optional mount_shiny parameter
-- [x] Mount Shiny app at /app when enabled
-- [x] Keep /search and /files APIs at root
-- [x] Verify both UI and API endpoints work
-
-#### 6.17 Root Path Handling (TDD Cycle 15)
-
-- [x] Replace the current HTML UI at GET / with the Shiny app (always).
-- [x] Remove static/index.html and anything else that is left from the original UI.
-
-#### 6.18 Future RAG Comparison Preparation (TDD Cycle 16)
-
-- [ ] Document architecture plan for side-by-side comparison in ROADMAP.md
-
-#### 6.19 Manual UI Testing
-
-- [ ] Test search functionality via Shiny UI
-- [ ] Verify all display elements work correctly
-- [ ] Compare behavior with original HTML/JS UI
-- [ ] Validate API endpoints remain functional
-- [ ] Test /app and root redirect
+**Remaining:**
+- [ ] Document architecture plan for side-by-side RAG comparison in ROADMAP.md
+- [ ] Manual UI testing (search functionality, display elements, API validation)
 
 ## Phase 7: CLI Commands (TDD) - COMPLETE
 
-### 7.1 upsert-index Command
+Implemented two CLI entry points for production use.
 
-- [x] Write test for upsert-index command execution
-- [x] Create epistemon/cli.py module and implement index_command function
-- [x] Implement configuration loading
-- [x] Implement indexing trigger logic
-- [x] Add progress logging
-- [x] Add error handling and user messages
-- [x] Configure upsert-index script in pyproject.toml
+**7.1 upsert-index Command:**
+- [x] Loads configuration, creates vector store, triggers incremental indexing
+- [x] Progress logging and comprehensive error handling
+- Usage: `uv run upsert-index [--config CONFIG]`
 
-### 7.2 web-ui Command
-
-- [x] Write test for web-ui command execution
-- [x] Implement server startup code (similar to demo.py)
-- [x] Add configuration loading
-- [x] Add shutdown handling
-- [x] Configure web-ui script in pyproject.toml
-
-Note: Implemented `web_ui_command()` function that loads configuration, creates vector store, creates FastAPI app with Shiny UI, and runs uvicorn server. Created `web_ui_main()` entry point with argument parsing for --config, --host, and --port options. Shutdown is handled naturally by uvicorn (Ctrl+C).
+**7.2 web-ui Command:**
+- [x] Starts FastAPI + Shiny web server with uvicorn
+- [x] Configurable host, port, and config file
+- [x] Natural shutdown handling (Ctrl+C)
+- Usage: `uv run web-ui [--config CONFIG] [--host HOST] [--port PORT]`
 
 ## Phase 8: Integration and End-to-End Testing
 
