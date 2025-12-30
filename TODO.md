@@ -9,7 +9,7 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 - [x] Core indexing functionality with incremental updates
 - [x] Search API with FastAPI endpoints
 - [x] Web UI migration to Shiny
-- [ ] CLI commands for indexing and web server
+- [x] CLI commands for indexing and web server
 - [ ] Production ready
 
 ## Phase 1: Project Setup and Configuration
@@ -192,7 +192,7 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 - [ ] Validate API endpoints remain functional
 - [ ] Test /app and root redirect
 
-## Phase 7: CLI Commands (TDD)
+## Phase 7: CLI Commands (TDD) - COMPLETE
 
 ### 7.1 upsert-index Command
 
@@ -206,11 +206,13 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 
 ### 7.2 web-ui Command
 
-- [ ] Write test for web-ui command execution
-- [ ] Implement server startup code (similar to demo.py)
-- [ ] Add configuration loading
-- [ ] Add shutdown handling
-- [ ] Configure web-ui script in pyproject.toml
+- [x] Write test for web-ui command execution
+- [x] Implement server startup code (similar to demo.py)
+- [x] Add configuration loading
+- [x] Add shutdown handling
+- [x] Configure web-ui script in pyproject.toml
+
+Note: Implemented `web_ui_command()` function that loads configuration, creates vector store, creates FastAPI app with Shiny UI, and runs uvicorn server. Created `web_ui_main()` entry point with argument parsing for --config, --host, and --port options. Shutdown is handled naturally by uvicorn (Ctrl+C).
 
 ## Phase 8: Integration and End-to-End Testing
 

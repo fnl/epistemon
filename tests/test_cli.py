@@ -1,11 +1,12 @@
 """Tests for CLI commands."""
 
 import logging
+from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 
-from epistemon.cli import main, upsert_index_command
+from epistemon.cli import main, upsert_index_command, web_ui_command, web_ui_main
 from epistemon.config import Configuration
 
 
@@ -129,3 +130,63 @@ def test_main_function_calls_command_with_config_path() -> None:
     ):
         main()
         mock_command.assert_called_once_with("custom.yaml")
+
+
+def test_web_ui_command_starts_server(test_config: Configuration) -> None:
+    with (
+        patch("epistemon.cli.load_config", return_value=test_config),
+        patch("epistemon.cli.create_vector_store") as mock_create_store,
+        patch("epistemon.cli.create_app") as mock_create_app,
+        patch("epistemon.cli.create_vector_store_manager") as mock_create_manager,
+        patch("epistemon.cli.uvicorn.run") as mock_uvicorn_run,
+    ):
+        mock_vector_store = Mock()
+        mock_create_store.return_value = mock_vector_store
+        mock_app = Mock()
+        mock_create_app.return_value = mock_app
+        mock_manager = Mock()
+        mock_create_manager.return_value = mock_manager
+
+        web_ui_command(None, "127.0.0.1", 8000)
+
+        mock_create_store.assert_called_once_with(test_config)
+        mock_create_app.assert_called_once()
+        call_args = mock_create_app.call_args[0]
+        call_kwargs = mock_create_app.call_args[1]
+        assert call_args[0] == mock_vector_store
+        assert call_kwargs["base_url"] == "http://127.0.0.1:8000/files"
+        assert call_kwargs["score_threshold"] == test_config.score_threshold
+        assert call_kwargs["files_directory"] == Path(test_config.input_directory)
+        assert call_kwargs["vector_store_manager"] == mock_manager
+        mock_uvicorn_run.assert_called_once_with(mock_app, host="127.0.0.1", port=8000)
+
+
+def test_web_ui_main_function_calls_command_without_args() -> None:
+    with (
+        patch("sys.argv", ["web-ui"]),
+        patch("epistemon.cli.web_ui_command") as mock_command,
+    ):
+        web_ui_main()
+        mock_command.assert_called_once_with(None, "127.0.0.1", 8000)
+
+
+def test_web_ui_main_function_calls_command_with_args() -> None:
+    with (
+        patch(
+            "sys.argv",
+            [
+                "web-ui",
+                "--config",
+                "custom.yaml",
+                "--host",
+                "0.0.0.0",  # noqa: S104
+                "--port",
+                "9000",
+            ],
+        ),
+        patch("epistemon.cli.web_ui_command") as mock_command,
+    ):
+        web_ui_main()
+        mock_command.assert_called_once_with(
+            "custom.yaml", "0.0.0.0", 9000  # noqa: S104
+        )

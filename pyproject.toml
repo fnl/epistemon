@@ -25,6 +25,7 @@ dependencies = [
 
 [project.scripts]
 upsert-index = "epistemon.cli:main"
+web-ui = "epistemon.cli:web_ui_main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["epistemon"]

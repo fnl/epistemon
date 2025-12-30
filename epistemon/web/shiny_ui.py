@@ -128,9 +128,8 @@ def create_shiny_app(
                         ui.div(
                             ui.strong(f"Result {idx}", class_="me-2"),
                             ui.span(
-                                f"{score:.4f}",
+                                f"{metric_type.title()}: {score:.4f}",
                                 class_=f"badge {score_class} rounded-pill",
-                                title=f"{metric_type.title()} score",
                             ),
                         ),
                         class_="d-flex align-items-center",
