@@ -66,14 +66,14 @@ Note: File list retrieval implemented by iterating through InMemoryVectorStore.s
 
 #### 6.2.1 Vector Store Manager Abstraction (Refactoring)
 
-- [ ] Write test for VectorStoreManager.get_indexed_files() with InMemoryVectorStore
-- [ ] Implement VectorStoreManager class with get_indexed_files() method
-- [ ] Write test for VectorStoreManager.get_indexed_files() with Chroma
-- [ ] Implement Chroma support in get_indexed_files()
-- [ ] Refactor GET /files endpoint to use VectorStoreManager
-- [ ] Update all tests to use VectorStoreManager where appropriate
+- [x] Write test for VectorStoreManager.get_indexed_files() with InMemoryVectorStore
+- [x] Implement VectorStoreManager class with get_indexed_files() method
+- [x] Write test for VectorStoreManager.get_indexed_files() with Chroma
+- [x] Implement Chroma support in get_indexed_files()
+- [x] Refactor GET /files endpoint to use VectorStoreManager
+- [x] Update all tests to use VectorStoreManager where appropriate
 
-Note: This abstraction will allow get_indexed_files() to work across different vector store implementations without accessing internal attributes.
+Note: VectorStoreManager abstraction now allows get_indexed_files() to work across different vector store implementations. The web API maintains backward compatibility while supporting the new manager pattern.
 
 #### 6.3 API Error Handling
 
