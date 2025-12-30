@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
+from epistemon import __version__
 from epistemon.indexing.vector_store_manager import VectorStoreManager
 
 STATIC_DIR = Path(__file__).parent / "static"
@@ -23,7 +24,11 @@ def create_app(
     files_directory: Path | None = None,
     vector_store_manager: Optional[VectorStoreManager] = None,
 ) -> FastAPI:
-    app = FastAPI()
+    app = FastAPI(
+        title="Epistemon API",
+        description="Semantic Markdown Search API using LangChain and vector embeddings",
+        version=__version__,
+    )
 
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 

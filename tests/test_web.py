@@ -467,3 +467,20 @@ def test_files_path_endpoint_handles_file_read_errors(tmp_path: Path) -> None:
 
     assert response.status_code == 500
     assert "error" in response.json()
+
+
+def test_openapi_schema_has_custom_title_and_description(
+    vector_store: VectorStore,
+) -> None:
+    from epistemon import __version__
+
+    app = create_app(vector_store)
+    client = TestClient(app)
+
+    response = client.get("/openapi.json")
+
+    assert response.status_code == 200
+    openapi_schema = response.json()
+    assert openapi_schema["info"]["title"] == "Epistemon API"
+    assert "Semantic Markdown Search" in openapi_schema["info"]["description"]
+    assert openapi_schema["info"]["version"] == __version__
