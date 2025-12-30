@@ -37,8 +37,7 @@ def run_server() -> None:
     vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
     vector_store.add_documents(chunks)
 
-    retriever = vector_store.as_retriever()
-    app = create_app(retriever)
+    app = create_app(vector_store)
 
     uvicorn.run(app, host="127.0.0.1", port=8765, log_level="error")
 
@@ -91,8 +90,7 @@ def run_server_with_config(vector_store_path: str) -> None:
 
     vector_store = create_vector_store(config)
 
-    retriever = vector_store.as_retriever()
-    app = create_app(retriever)
+    app = create_app(vector_store)
 
     uvicorn.run(app, host="127.0.0.1", port=8766, log_level="error")
 

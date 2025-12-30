@@ -22,11 +22,8 @@ def main() -> None:
 
     print("\nIndexing complete!")
 
-    print("Creating retriever...")
-    retriever = vector_store.as_retriever()
-
     app = create_app(
-        retriever,
+        vector_store,
         base_url="http://localhost:8000/files",
         score_threshold=config.score_threshold,
         files_directory=Path(config.input_directory),

@@ -7,13 +7,13 @@ import markdown
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from langchain_core.vectorstores import VectorStoreRetriever
+from langchain_core.vectorstores import VectorStore
 
 STATIC_DIR = Path(__file__).parent / "static"
 
 
 def create_app(
-    retriever: VectorStoreRetriever,
+    vector_store: VectorStore,
     base_url: str = "",
     score_threshold: float = 0.0,
     files_directory: Path | None = None,
@@ -130,9 +130,7 @@ def create_app(
         if not q or not q.strip():
             return {"results": []}
 
-        results_with_scores = retriever.vectorstore.similarity_search_with_score(
-            q, k=limit
-        )
+        results_with_scores = vector_store.similarity_search_with_score(q, k=limit)
 
         metric_type = "similarity"
         if len(results_with_scores) >= 2:

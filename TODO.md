@@ -42,11 +42,11 @@ Implemented FastAPI GET /search endpoint with VectorStoreRetriever, configurable
 
 #### 6.1 Refactor to VectorStore Interface (TDD Cycle 1)
 
-- [ ] Write test verifying create_app() works with VectorStore instead of VectorStoreRetriever
-- [ ] Update create_app() signature to accept vector_store: VectorStore parameter
-- [ ] Update /search endpoint to use vector_store.similarity_search_with_score() directly
-- [ ] Remove retriever.vectorstore indirection
-- [ ] Update all existing tests to pass VectorStore instances
+- [x] Write test verifying create_app() works with VectorStore instead of VectorStoreRetriever
+- [x] Update create_app() signature to accept vector_store: VectorStore parameter
+- [x] Update /search endpoint to use vector_store.similarity_search_with_score() directly
+- [x] Remove retriever.vectorstore indirection
+- [x] Update all existing tests to pass VectorStore instances
 
 Note: VectorStoreRetriever doesn't expose similarity_search_with_score(), which is needed for score display. Using VectorStore directly is cleaner and more flexible.
 

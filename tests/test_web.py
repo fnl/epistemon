@@ -3,26 +3,37 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 from langchain_core.embeddings import FakeEmbeddings
-from langchain_core.vectorstores import InMemoryVectorStore, VectorStoreRetriever
+from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon.indexing import load_and_chunk_markdown
 from epistemon.web import create_app
 
 
 @pytest.fixture
-def retriever() -> VectorStoreRetriever:
+def vector_store() -> VectorStore:
     test_file = Path("tests/data/sample.md")
     base_directory = Path("tests/data")
     chunks = load_and_chunk_markdown(
         test_file, chunk_size=500, chunk_overlap=100, base_directory=base_directory
     )
-    vector_store = InMemoryVectorStore(FakeEmbeddings(size=384))
-    vector_store.add_documents(chunks)
-    return vector_store.as_retriever()
+    store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    store.add_documents(chunks)
+    return store
 
 
-def test_root_serves_html(retriever: VectorStoreRetriever) -> None:
-    app = create_app(retriever)
+def test_create_app_accepts_vector_store(vector_store: VectorStore) -> None:
+    app = create_app(vector_store, score_threshold=-1.0)
+    client = TestClient(app)
+
+    response = client.get("/search", params={"q": "LangChain", "limit": 3})
+
+    results = response.json()["results"]
+    assert len(results) > 0
+    assert all("score" in result for result in results)
+
+
+def test_root_serves_html(vector_store: VectorStore) -> None:
+    app = create_app(vector_store)
     client = TestClient(app)
 
     response = client.get("/")
@@ -31,8 +42,8 @@ def test_root_serves_html(retriever: VectorStoreRetriever) -> None:
     assert b"Epistemon" in response.content
 
 
-def test_search_returns_results(retriever: VectorStoreRetriever) -> None:
-    app = create_app(retriever, score_threshold=-1.0)
+def test_search_returns_results(vector_store: VectorStore) -> None:
+    app = create_app(vector_store, score_threshold=-1.0)
     client = TestClient(app)
 
     response = client.get("/search", params={"q": "LangChain", "limit": 3})
@@ -42,8 +53,8 @@ def test_search_returns_results(retriever: VectorStoreRetriever) -> None:
     assert len(results) <= 3
 
 
-def test_search_respects_limit(retriever: VectorStoreRetriever) -> None:
-    app = create_app(retriever, score_threshold=0.0)
+def test_search_respects_limit(vector_store: VectorStore) -> None:
+    app = create_app(vector_store, score_threshold=0.0)
     client = TestClient(app)
 
     results_1 = client.get("/search", params={"q": "LangChain", "limit": 1}).json()[
@@ -57,8 +68,8 @@ def test_search_respects_limit(retriever: VectorStoreRetriever) -> None:
     assert len(results_3) <= 3
 
 
-def test_search_results_ranked_by_score(retriever: VectorStoreRetriever) -> None:
-    app = create_app(retriever, score_threshold=-1.0)
+def test_search_results_ranked_by_score(vector_store: VectorStore) -> None:
+    app = create_app(vector_store, score_threshold=-1.0)
     client = TestClient(app)
 
     response = client.get("/search", params={"q": "LangChain", "limit": 5})
@@ -74,8 +85,8 @@ def test_search_results_ranked_by_score(retriever: VectorStoreRetriever) -> None
     ), f"Scores should be monotonic but got: {scores}"
 
 
-def test_search_handles_empty_query(retriever: VectorStoreRetriever) -> None:
-    app = create_app(retriever)
+def test_search_handles_empty_query(vector_store: VectorStore) -> None:
+    app = create_app(vector_store)
     client = TestClient(app)
 
     response = client.get("/search", params={"q": "", "limit": 5})
@@ -83,9 +94,9 @@ def test_search_handles_empty_query(retriever: VectorStoreRetriever) -> None:
     assert response.json()["results"] == []
 
 
-def test_search_filters_by_score_threshold(retriever: VectorStoreRetriever) -> None:
-    client_low = TestClient(create_app(retriever, score_threshold=-1.0))
-    client_high = TestClient(create_app(retriever, score_threshold=1000000.0))
+def test_search_filters_by_score_threshold(vector_store: VectorStore) -> None:
+    client_low = TestClient(create_app(vector_store, score_threshold=-1.0))
+    client_high = TestClient(create_app(vector_store, score_threshold=1000000.0))
 
     results_low = client_low.get(
         "/search", params={"q": "LangChain", "limit": 5}
@@ -98,8 +109,8 @@ def test_search_filters_by_score_threshold(retriever: VectorStoreRetriever) -> N
     assert len(results_high) == 0
 
 
-def test_search_returns_alert_when_no_matches(retriever: VectorStoreRetriever) -> None:
-    app = create_app(retriever, score_threshold=1000000.0)
+def test_search_returns_alert_when_no_matches(vector_store: VectorStore) -> None:
+    app = create_app(vector_store, score_threshold=1000000.0)
     client = TestClient(app)
 
     response = client.get("/search", params={"q": "LangChain", "limit": 5})
@@ -110,9 +121,9 @@ def test_search_returns_alert_when_no_matches(retriever: VectorStoreRetriever) -
     assert "alert" in data
 
 
-def test_search_results_include_source_link(retriever: VectorStoreRetriever) -> None:
+def test_search_results_include_source_link(vector_store: VectorStore) -> None:
     base_url = "http://localhost:8000/files"
-    app = create_app(retriever, base_url=base_url, score_threshold=-1.0)
+    app = create_app(vector_store, base_url=base_url, score_threshold=-1.0)
     client = TestClient(app)
 
     response = client.get("/search", params={"q": "LangChain", "limit": 1})
@@ -129,8 +140,8 @@ def test_files_endpoint_serves_markdown() -> None:
     from pathlib import Path
 
     test_data_dir = Path("tests/data")
-    retriever_fixture = InMemoryVectorStore(FakeEmbeddings(size=384)).as_retriever()
-    app = create_app(retriever_fixture, files_directory=test_data_dir)
+    vector_store_fixture = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_app(vector_store_fixture, files_directory=test_data_dir)
     client = TestClient(app)
 
     response = client.get("/files/sample.md")
@@ -141,10 +152,10 @@ def test_files_endpoint_serves_markdown() -> None:
     assert b"<h1>" in response.content.lower() or b"<h2>" in response.content.lower()
 
 
-def test_end_to_end_search_and_file_retrieval(retriever: VectorStoreRetriever) -> None:
+def test_end_to_end_search_and_file_retrieval(vector_store: VectorStore) -> None:
     test_data_dir = Path("tests/data")
     app = create_app(
-        retriever,
+        vector_store,
         base_url="http://testserver/files",
         files_directory=test_data_dir,
         score_threshold=-1.0,
@@ -167,8 +178,8 @@ def test_end_to_end_search_and_file_retrieval(retriever: VectorStoreRetriever) -
     assert "LangChain" in content or len(content) > 0
 
 
-def test_search_results_include_metadata(retriever: VectorStoreRetriever) -> None:
-    app = create_app(retriever, score_threshold=-1.0)
+def test_search_results_include_metadata(vector_store: VectorStore) -> None:
+    app = create_app(vector_store, score_threshold=-1.0)
     client = TestClient(app)
 
     response = client.get("/search", params={"q": "LangChain", "limit": 1})
