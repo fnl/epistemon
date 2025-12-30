@@ -8,7 +8,7 @@ import markdown
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from langchain_core.vectorstores import VectorStore
+from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon.indexing.vector_store_manager import VectorStoreManager
 
@@ -148,7 +148,7 @@ def create_app(
                         }
                 except ValueError:
                     continue
-        elif hasattr(vector_store, "store"):
+        elif isinstance(vector_store, InMemoryVectorStore):
             for _doc_id, doc in vector_store.store.items():
                 metadata = doc.get("metadata", {})
                 source = metadata.get("source", "")
