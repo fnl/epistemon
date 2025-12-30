@@ -220,6 +220,8 @@ def test_files_endpoint_returns_list_of_indexed_files(
 
 
 def test_files_endpoint_includes_all_metadata(vector_store: VectorStore) -> None:
+    from datetime import datetime
+
     app = create_app(vector_store)
     client = TestClient(app)
 
@@ -231,8 +233,8 @@ def test_files_endpoint_includes_all_metadata(vector_store: VectorStore) -> None
         assert "source" in file
         assert "last_modified" in file
         assert isinstance(file["source"], str)
-        assert isinstance(file["last_modified"], (int, float))
-        assert file["last_modified"] > 0
+        assert isinstance(file["last_modified"], str)
+        datetime.fromisoformat(file["last_modified"])
 
 
 def test_files_endpoint_handles_empty_index() -> None:
@@ -270,6 +272,8 @@ def test_files_endpoint_can_sort_by_name() -> None:
 
 
 def test_files_endpoint_can_sort_by_date() -> None:
+    from datetime import datetime
+
     from langchain_core.documents import Document
 
     store = InMemoryVectorStore(FakeEmbeddings(size=384))
@@ -287,7 +291,12 @@ def test_files_endpoint_can_sort_by_date() -> None:
     files = response.json()["files"]
     assert len(files) == 3
     modified_times = [f["last_modified"] for f in files]
-    assert modified_times == [3, 2, 1]
+    expected_times = [
+        datetime.fromtimestamp(3).isoformat(),
+        datetime.fromtimestamp(2).isoformat(),
+        datetime.fromtimestamp(1).isoformat(),
+    ]
+    assert modified_times == expected_times
 
 
 def test_files_endpoint_with_vector_store_manager() -> None:
@@ -318,6 +327,8 @@ def test_files_endpoint_with_vector_store_manager() -> None:
 
 
 def test_files_endpoint_with_manager_sorts_correctly() -> None:
+    from datetime import datetime
+
     base_directory = Path("tests/data")
     store = InMemoryVectorStore(FakeEmbeddings(size=384))
     docs = [
@@ -343,4 +354,33 @@ def test_files_endpoint_with_manager_sorts_correctly() -> None:
     response = client.get("/files", params={"sort_by": "date"})
     files = response.json()["files"]
     modified_times = [f["last_modified"] for f in files]
-    assert modified_times == [3.0, 2.0]
+    expected_times = [
+        datetime.fromtimestamp(3.0).isoformat(),
+        datetime.fromtimestamp(2.0).isoformat(),
+    ]
+    assert modified_times == expected_times
+
+
+def test_files_endpoint_returns_iso_formatted_dates() -> None:
+    from datetime import datetime
+
+    store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    timestamp = 1234567890.5
+    docs = [
+        Document(
+            page_content="Content",
+            metadata={"source": "test.md", "last_modified": timestamp},
+        ),
+    ]
+    store.add_documents(docs)
+    app = create_app(store)
+    client = TestClient(app)
+
+    response = client.get("/files")
+
+    files = response.json()["files"]
+    assert len(files) == 1
+    last_modified = files[0]["last_modified"]
+    assert isinstance(last_modified, str)
+    parsed_date = datetime.fromisoformat(last_modified)
+    assert parsed_date == datetime.fromtimestamp(timestamp)

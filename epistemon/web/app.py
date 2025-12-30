@@ -1,5 +1,6 @@
 """FastAPI application for semantic search."""
 
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 from urllib.parse import quote, unquote
@@ -142,9 +143,10 @@ def create_app(
                     )
                     source = str(relative_path)
                     if source not in files_dict:
+                        iso_date = datetime.fromtimestamp(mtime).isoformat()
                         files_dict[source] = {
                             "source": source,
-                            "last_modified": mtime,
+                            "last_modified": iso_date,
                         }
                 except ValueError:
                     continue
@@ -153,9 +155,11 @@ def create_app(
                 metadata = doc.get("metadata", {})
                 source = metadata.get("source", "")
                 if source and source not in files_dict:
+                    mtime = metadata.get("last_modified", 0)
+                    iso_date = datetime.fromtimestamp(mtime).isoformat()
                     files_dict[source] = {
                         "source": source,
-                        "last_modified": metadata.get("last_modified", 0),
+                        "last_modified": iso_date,
                     }
 
         files_list = list(files_dict.values())
