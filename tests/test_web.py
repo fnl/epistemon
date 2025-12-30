@@ -231,3 +231,16 @@ def test_files_endpoint_includes_all_metadata(vector_store: VectorStore) -> None
         assert isinstance(file["source"], str)
         assert isinstance(file["last_modified"], (int, float))
         assert file["last_modified"] > 0
+
+
+def test_files_endpoint_handles_empty_index() -> None:
+    empty_store = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_app(empty_store)
+    client = TestClient(app)
+
+    response = client.get("/files")
+
+    assert response.status_code == 200
+    files = response.json()["files"]
+    assert isinstance(files, list)
+    assert len(files) == 0
