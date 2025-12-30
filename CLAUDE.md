@@ -61,3 +61,10 @@ Two-tier approach:
 - Supports incremental updates
 - Easy metadata filtering
 - Open for extension to more stores
+
+## Web UI
+
+We will use Shiny for Python as the UI:
+https://shiny.posit.co/py/docs/overview.html
+Refer to those documents to undersstand how to use Shiny.
+There is a sample shiny setup in ./shiny_app_example.py to re-use in the implementation of the UI.
