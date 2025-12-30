@@ -16,3 +16,6 @@ config.yaml
 # Data directories
 /data/
 /docs/
+
+# Example/reference files
+shiny_app_example.py
