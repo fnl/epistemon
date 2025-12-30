@@ -196,13 +196,13 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 
 ### 7.1 upsert-index Command
 
-- [ ] Write test for upsert-index command execution
-- [ ] Create epistemon/cli.py module and implement index_command function
-- [ ] Implement configuration loading
-- [ ] Implement indexing trigger logic
-- [ ] Add progress logging
-- [ ] Add error handling and user messages
-- [ ] Configure upsert-index script in pyproject.toml
+- [x] Write test for upsert-index command execution
+- [x] Create epistemon/cli.py module and implement index_command function
+- [x] Implement configuration loading
+- [x] Implement indexing trigger logic
+- [x] Add progress logging
+- [x] Add error handling and user messages
+- [x] Configure upsert-index script in pyproject.toml
 
 ### 7.2 web-ui Command
 
