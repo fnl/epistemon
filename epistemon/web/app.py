@@ -23,6 +23,7 @@ def create_app(
     score_threshold: float = 0.0,
     files_directory: Path | None = None,
     vector_store_manager: Optional[VectorStoreManager] = None,
+    mount_shiny: bool = False,
 ) -> FastAPI:
     app = FastAPI(
         title="Epistemon API",
@@ -245,5 +246,13 @@ def create_app(
             return JSONResponse(content=response, status_code=204)
 
         return response
+
+    if mount_shiny:
+        from epistemon.web.shiny_app import create_shiny_app
+
+        shiny_app = create_shiny_app(
+            vector_store, base_url=base_url, score_threshold=score_threshold
+        )
+        app.mount("/app", shiny_app)
 
     return app

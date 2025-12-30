@@ -168,11 +168,11 @@ Goal: Replace vanilla HTML/JavaScript UI with Shiny for Python to enable future 
 
 #### 6.16 FastAPI Integration (TDD Cycle 14)
 
-- [ ] Write test for Shiny app mounting
-- [ ] Update create_app() to accept optional mount_shiny parameter
-- [ ] Mount Shiny app at /app when enabled
-- [ ] Keep /search and /files APIs at root
-- [ ] Verify both UI and API endpoints work
+- [x] Write test for Shiny app mounting
+- [x] Update create_app() to accept optional mount_shiny parameter
+- [x] Mount Shiny app at /app when enabled
+- [x] Keep /search and /files APIs at root
+- [x] Verify both UI and API endpoints work
 
 #### 6.17 Root Path Handling (TDD Cycle 15)
 

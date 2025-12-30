@@ -484,3 +484,26 @@ def test_openapi_schema_has_custom_title_and_description(
     assert openapi_schema["info"]["title"] == "Epistemon API"
     assert "Semantic Markdown Search" in openapi_schema["info"]["description"]
     assert openapi_schema["info"]["version"] == __version__
+
+
+def test_shiny_app_can_be_mounted_at_app_path(vector_store: VectorStore) -> None:
+    app = create_app(vector_store, mount_shiny=True)
+    client = TestClient(app)
+
+    response = client.get("/app/")
+
+    assert response.status_code == 200
+    assert b"Epistemon" in response.content
+
+
+def test_api_endpoints_work_when_shiny_is_mounted(vector_store: VectorStore) -> None:
+    app = create_app(vector_store, mount_shiny=True, score_threshold=-1.0)
+    client = TestClient(app)
+
+    search_response = client.get("/search", params={"q": "LangChain", "limit": 3})
+    files_response = client.get("/files")
+
+    assert search_response.status_code == 200
+    assert len(search_response.json()["results"]) > 0
+    assert files_response.status_code == 200
+    assert len(files_response.json()["files"]) > 0
