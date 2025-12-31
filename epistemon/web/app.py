@@ -1,5 +1,6 @@
 """FastAPI application for semantic search."""
 
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -12,6 +13,8 @@ from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon import __version__
 from epistemon.indexing.vector_store_manager import VectorStoreManager
+
+logger = logging.getLogger(__name__)
 
 
 def create_app(
@@ -32,6 +35,7 @@ def create_app(
         return RedirectResponse(url="/app/", status_code=307)
 
     if files_directory is not None:
+        logger.info("Serving files from directory: %s", files_directory)
 
         @app.get("/files/{file_path:path}", response_model=None)
         def serve_markdown_as_html(file_path: str) -> HTMLResponse | JSONResponse:
