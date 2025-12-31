@@ -36,7 +36,6 @@ def create_shiny_app(
                     "Result Limit",
                     value=5,
                     min=1,
-                    max=20,
                 ),
                 ui.input_action_button(
                     "search",
@@ -54,23 +53,32 @@ def create_shiny_app(
         @reactive.event(input.search)
         def results() -> ui.TagList:
             query = input.query()
+            limit = input.limit()
+
+            if limit is None or limit < 1:
+                return ui.TagList(
+                    ui.div(
+                        ui.p("Result limit must be at least 1", class_="text-dark"),
+                        class_="alert alert-warning",
+                    )
+                )
 
             if not query or not query.strip():
                 return ui.TagList(
                     ui.div(
-                        ui.p("Please enter a search query", class_="text-warning"),
+                        ui.p("Please enter a search query", class_="text-dark"),
                         class_="alert alert-warning",
                     )
                 )
 
             results_with_scores = vector_store.similarity_search_with_score(
-                query, k=input.limit()
+                query, k=limit
             )
 
             if not results_with_scores:
                 return ui.TagList(
                     ui.div(
-                        ui.p("No results found", class_="text-info"),
+                        ui.p("No results found", class_="text-dark"),
                         class_="alert alert-info",
                     )
                 )

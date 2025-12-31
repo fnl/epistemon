@@ -92,3 +92,29 @@ def test_shiny_app_with_populated_vector_store() -> None:
 
     assert isinstance(app, App)
     assert len(vector_store.similarity_search_with_score("test", k=1)) > 0
+
+
+def test_vector_store_usage_with_validated_limit() -> None:
+    from unittest.mock import patch
+
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+
+    with patch.object(
+        vector_store,
+        "similarity_search_with_score",
+        wraps=vector_store.similarity_search_with_score,
+    ) as mock_search:
+        mock_doc = Document(page_content="test", metadata={})
+        mock_search.return_value = [(mock_doc, 0.5)]
+
+        test_file = Path("tests/data/sample.md")
+        base_directory = Path("tests/data")
+        chunks = load_and_chunk_markdown(
+            test_file, chunk_size=500, chunk_overlap=100, base_directory=base_directory
+        )
+        vector_store.add_documents(chunks)
+
+        result = vector_store.similarity_search_with_score("test", k=5)
+
+        assert len(result) > 0
+        mock_search.assert_called_with("test", k=5)
