@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def upsert_index_command(config_path: Optional[str]) -> None:
     try:
-        logger.info("Loading configuration...")
+        logger.info(f"Loading configuration from '{config_path or 'defaults'}'...")
         config = load_config(config_path)
 
         logger.info(f"Creating vector store ({config.vector_store_type})...")
