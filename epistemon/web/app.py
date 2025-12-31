@@ -39,7 +39,56 @@ def create_app(
             full_path = files_directory / decoded_path
 
             if not full_path.exists():
-                raise HTTPException(status_code=404, detail="File not found")
+                html_404 = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - File Not Found</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 0 20px;
+            text-align: center;
+            color: #333;
+        }
+        h1 {
+            font-size: 3em;
+            margin-bottom: 0.5em;
+            color: #d32f2f;
+        }
+        p {
+            font-size: 1.2em;
+            margin-bottom: 1em;
+            color: #666;
+        }
+        code {
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        a {
+            color: #0969da;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>404</h1>
+    <p>File not found</p>
+    <p>The requested file <code>{decoded_path}</code> does not exist.</p>
+    <p><a href="/app">Return to search</a></p>
+</body>
+</html>
+"""
+                return HTMLResponse(content=html_404, status_code=404)
 
             if not full_path.is_relative_to(files_directory):
                 raise HTTPException(status_code=403, detail="Access denied")

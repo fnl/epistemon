@@ -477,6 +477,33 @@ def test_openapi_schema_has_custom_title_and_description(
     assert openapi_schema["info"]["version"] == __version__
 
 
+def test_files_endpoint_handles_spaces_in_path(tmp_path: Path) -> None:
+    test_file = tmp_path / "file with spaces.md"
+    test_file.write_text("# Test File With Spaces")
+    vector_store_fixture = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_app(vector_store_fixture, files_directory=tmp_path)
+    client = TestClient(app)
+
+    response = client.get("/files/file%20with%20spaces.md")
+
+    assert response.status_code == 200
+    assert "text/html" in response.headers.get("content-type", "").lower()
+    assert b"Test File With Spaces" in response.content
+
+
+def test_files_endpoint_returns_html_404_page(tmp_path: Path) -> None:
+    vector_store_fixture = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_app(vector_store_fixture, files_directory=tmp_path)
+    client = TestClient(app)
+
+    response = client.get("/files/nonexistent.md")
+
+    assert response.status_code == 404
+    assert "text/html" in response.headers.get("content-type", "").lower()
+    assert b"<html" in response.content.lower()
+    assert b"404" in response.content or b"not found" in response.content.lower()
+
+
 def test_shiny_app_is_available_at_app_path(vector_store: VectorStore) -> None:
     app = create_app(vector_store)
     client = TestClient(app)
