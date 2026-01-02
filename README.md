@@ -1,19 +1,20 @@
 # Semantic Markdown Search
 
-A lightweight semantic search application for indexing and querying Markdown files. The project provides a command-line indexing workflow and a web-based UI for browsing indexed files and running semantic search queries. It is designed for local-first usage, fast iteration, and easy configurability.
+A lightweight semantic search application for indexing and retrieving information in Markdown files. The project provides a command-line indexing workflow and a web-based UI for researching the indexed content. It is designed for local-first usage, fast iteration, and easy configurability.
 
 ## Use Cases
 
+- Visualize different retrieval strategies and their impact.
 - Experiment with different embedding models and vector stores.
 - Explore the effect of chunking strategies on semantic search results.
 - Make local/personal content more readily available to an AI assistant.
 
 ## Overview
 
-This project builds a semantic search engine over Markdown (`.md`) files using **Python** and **LangChain**. It supports:
+This project builds a semantic search engine over Markdown (`.md`) files using **Python**. It supports:
 
 - Incremental indexing of Markdown files from a configurable input directory
-- Persistent storage of embeddings and metadata in a vector store on the host
+- Persistent storage of embeddings and metadata in a vector store
 - Automatic detection of new and modified files on re-index
 - A search API endpoint to query for document chunks
 - A web UI to:
@@ -38,8 +39,8 @@ This project builds a semantic search engine over Markdown (`.md`) files using *
 ### Persistent Vector Store
 
 - Embeddings are stored in a persistent vector database on the host
-- Supports configurable vector store backends supported by LangChain
-- Metadata is stored alongside embeddings to enable file-level inspection
+- Supports configurable vector store backends (Chroma, Weaviate, DuckDB, Qdrant)
+- Metadata is stored alongside embeddings to enable provenance tracking and updates
 
 ### Semantic Search
 
@@ -107,7 +108,7 @@ uv run upsert-index  # or python demo.py
 
 This is necessary because the incremental indexing system tracks file modification times, not configuration changes. Files that haven't been modified won't be re-chunked automatically, leaving old chunks with the previous chunk size in the database.
 
-## Commands
+## Commands/Usage
 
 The project is built and managed using **uv**. Two primary commands are exposed via `pyproject.toml`.
 To set up the dependencies according to the latest lock-file:
@@ -173,7 +174,7 @@ To run E2E tests install the Playwright Chromium browser:
 uv run playwright install chromium
 ```
 
-And run slow tests like the Weaviate vector store tests, E2E tests, or performance tests:
+And run those **slow** tests like the Weaviate vector store tests, E2E tests, or performance tests:
 
 ```bash
 uv run pytest tests -m slow
