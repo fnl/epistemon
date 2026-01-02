@@ -41,6 +41,7 @@ Implemented FastAPI GET /search endpoint with VectorStoreRetriever, configurable
 Migrated from vanilla HTML/JavaScript to Shiny for Python to enable future side-by-side RAG comparison features.
 
 **Completed:**
+
 - [x] Refactored to VectorStore interface (removed VectorStoreRetriever indirection)
 - [x] Implemented FastAPI endpoints: GET /search, GET /files, GET /files/{path}
 - [x] Added VectorStoreManager abstraction for cross-store file listing (InMemory, Chroma)
@@ -51,6 +52,7 @@ Migrated from vanilla HTML/JavaScript to Shiny for Python to enable future side-
 - [x] Removed legacy static HTML UI
 
 **Features:**
+
 - Search input with configurable result limit
 - Automatic metric type detection (Distance vs Similarity)
 - Score badges with metric labels (e.g., "Similarity: 0.8532")
@@ -58,6 +60,7 @@ Migrated from vanilla HTML/JavaScript to Shiny for Python to enable future side-
 - Empty query validation, no-results handling
 
 **Remaining:**
+
 - [ ] Document architecture plan for side-by-side RAG comparison in ROADMAP.md
 - [ ] Manual UI testing (search functionality, display elements, API validation)
 
@@ -66,11 +69,13 @@ Migrated from vanilla HTML/JavaScript to Shiny for Python to enable future side-
 Implemented two CLI entry points for production use.
 
 **7.1 upsert-index Command:**
+
 - [x] Loads configuration, creates vector store, triggers incremental indexing
 - [x] Progress logging and comprehensive error handling
 - Usage: `uv run upsert-index [--config CONFIG]`
 
 **7.2 web-ui Command:**
+
 - [x] Starts FastAPI + Shiny web server with uvicorn
 - [x] Configurable host, port, and config file
 - [x] Natural shutdown handling (Ctrl+C)
