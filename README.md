@@ -15,11 +15,12 @@ This project builds a semantic search engine over Markdown (`.md`) files using *
 
 - Incremental indexing of Markdown files from a configurable input directory
 - Persistent storage of embeddings and metadata in a vector store
+- BM25 keyword-based indexing for traditional search
 - Automatic detection of new and modified files on re-index
 - A search API endpoint to query for document chunks
 - A web UI to:
   - View indexed files
-  - Perform semantic search queries
+  - Compare search strategies: keyword (BM25), semantic (embeddings), and RAG-generated answers
   - Inspect ranked search results by relevance
 
 ## Key Features
@@ -42,12 +43,28 @@ This project builds a semantic search engine over Markdown (`.md`) files using *
 - Supports configurable vector store backends (Chroma, Weaviate, DuckDB, Qdrant)
 - Metadata is stored alongside embeddings to enable provenance tracking and updates
 
-### Semantic Search
+### Search Strategy Comparison
 
+The application implements three different retrieval approaches for side-by-side comparison:
+
+**Keyword Search (BM25)**
+- Traditional term-frequency ranking
+- Excellent for exact term matching and known terminology
+- Fast and deterministic
+
+**Semantic Search (Embeddings)**
 - Queries are embedded and matched against stored chunks
-- Returns a configurable number of top-ranked chunks
-- Results are ordered by semantic similarity score
-- Each result includes its source file and content snippet
+- Returns top-ranked chunks ordered by semantic similarity score
+- Understands conceptual relationships beyond keyword overlap
+- Each result includes source file and content snippet
+
+**RAG Answer Generation**
+- Retrieves relevant chunks using semantic search
+- Generates natural language answers from retrieved context
+- Two-step process: retrieve then generate
+- Provides synthesized responses instead of raw chunks
+
+The web UI displays results from all three strategies, allowing direct comparison of what each approach surfaces and how they differ in precision, recall, and usefulness.
 
 ### Web Application
 
@@ -63,6 +80,8 @@ This project builds a semantic search engine over Markdown (`.md`) files using *
   - Chunking
   - Embeddings (configurable: Huggingface or OpenAI)
   - Vector store (in memory, Chroma, Weaviate, Qdrant, or DuckDB)
+  - BM25 retrieval
+  - RAG chain composition
 - **uv** for project management and dependency resolution
 - **Shiny** as a reactive UI
 
