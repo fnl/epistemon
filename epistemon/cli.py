@@ -11,6 +11,7 @@ import uvicorn
 from epistemon.config import load_config
 from epistemon.indexing.indexer import index
 from epistemon.indexing.vector_store_manager import create_vector_store_manager
+from epistemon.logging_config import setup_logging
 from epistemon.vector_store_factory import create_vector_store
 from epistemon.web import create_app
 
@@ -65,10 +66,7 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
 
 
 def main() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(levelname)s: %(message)s",
-    )
+    setup_logging()
 
     parser = argparse.ArgumentParser(
         description="Update the search index from markdown files"
@@ -84,10 +82,7 @@ def main() -> None:
 
 
 def web_ui_main() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(levelname)s: %(message)s",
-    )
+    setup_logging()
 
     parser = argparse.ArgumentParser(
         description="Start the Epistemon web UI and API server"
