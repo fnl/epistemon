@@ -1,6 +1,7 @@
 ## Notes
 
-- Refer to the AGENTS.md file to understand how to track work and understand the current status of project with `bd`.
+- Refer to the AGENTS.md file to understand how to track work and understand the current status of project with `bd` (Beads).
+- When working on a Beads task, you are expected to follow a TDD-based approach.
 - Remember that you have a HTTP MCP servier docs-langchain to refer to LangChain documentation.
 - The project is about implementing a beefed up semantic search engine example described in https://docs.langchain.com/oss/python/langchain/knowledge-base
 - Add explanations and insights about the project in CLAUDE.md here, the README.md, or the ROADMAP.md.
