@@ -1,6 +1,6 @@
 # Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+This project uses **bd** (beads) for issue tracking. Run `bd prime` to get started.
 
 ## Quick Reference
 
@@ -38,7 +38,7 @@ bd sync               # Sync with git
 - NEVER stop before pushing - that leaves work stranded locally
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
-- Use TDD to work on tasks using the following cycle of 3 steps:
+- Use TDD to work on the tasks, using the following cycle of 3 steps:
   1. Check if a test for the planned functionality already exists; If not, write the test.
   2. Only once you have a failing test, start implementing the minimal code to pass the test.
   3. If the passing tests fulfill all acceptance criteria of the task, you are done. If not, continue the cycle.
