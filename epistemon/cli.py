@@ -36,7 +36,7 @@ def upsert_index_command(config_path: Optional[str]) -> None:
 
 def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
     try:
-        logger.info("Loading configuration...")
+        logger.info(f"Loading configuration from {config_path or 'defaults'}...")
         config = load_config(config_path)
 
         logger.info(f"Creating vector store ({config.vector_store_type})...")
