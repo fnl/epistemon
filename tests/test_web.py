@@ -504,6 +504,20 @@ def test_files_endpoint_returns_html_404_page(tmp_path: Path) -> None:
     assert b"404" in response.content or b"not found" in response.content.lower()
 
 
+def test_files_endpoint_handles_non_markdown_files(tmp_path: Path) -> None:
+    pdf_file = tmp_path / "document.pdf"
+    pdf_file.write_bytes(b"%PDF-1.4\n%binary content")
+    vector_store_fixture = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_app(vector_store_fixture, files_directory=tmp_path)
+    client = TestClient(app)
+
+    response = client.get("/files/document.pdf")
+
+    assert response.status_code == 200
+    assert "application/pdf" in response.headers.get("content-type", "").lower()
+    assert response.content == b"%PDF-1.4\n%binary content"
+
+
 def test_shiny_app_is_available_at_app_path(vector_store: VectorStore) -> None:
     app = create_app(vector_store)
     client = TestClient(app)

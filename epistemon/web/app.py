@@ -1,6 +1,7 @@
 """FastAPI application for semantic search."""
 
 import logging
+import mimetypes
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -8,7 +9,7 @@ from urllib.parse import quote, unquote
 
 import markdown
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon import __version__
@@ -38,7 +39,9 @@ def create_app(
         logger.info("Serving files from directory: %s", files_directory)
 
         @app.get("/files/{file_path:path}", response_model=None)
-        def serve_markdown_as_html(file_path: str) -> HTMLResponse | JSONResponse:
+        def serve_markdown_as_html(
+            file_path: str,
+        ) -> HTMLResponse | JSONResponse | FileResponse:
             decoded_path = unquote(file_path)
             full_path = files_directory / decoded_path
 
@@ -96,6 +99,13 @@ def create_app(
 
             if not full_path.is_relative_to(files_directory):
                 raise HTTPException(status_code=403, detail="Access denied")
+
+            file_suffix = full_path.suffix.lower()
+            if file_suffix not in [".md", ".markdown"]:
+                mime_type, _ = mimetypes.guess_type(str(full_path))
+                return FileResponse(
+                    path=full_path, media_type=mime_type or "application/octet-stream"
+                )
 
             try:
                 markdown_content = full_path.read_text()
