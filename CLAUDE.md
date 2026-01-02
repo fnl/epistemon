@@ -1,12 +1,11 @@
 ## Notes
 
-- Refer to the TODO.md file to understand the current status of the development process.
+- Refer to the AGENTS.md file to understand how to track work and understand the current status of project with `bd`.
 - Remember that you have a HTTP MCP servier docs-langchain to refer to LangChain documentation.
 - The project is about implementing a beefed up semantic search engine example described in https://docs.langchain.com/oss/python/langchain/knowledge-base
-- Don't add more to the TODO.md file than tasks; Add explanations in CLAUDE.md here, or in other supporting markdown files.
-- Once you have completed your current tasks according to the TODO.md file, and before committing changes to git, update the status of the TODO items to reflect on what has been done.
+- Add explanations and insights about the project in CLAUDE.md here, the README.md, or the ROADMAP.md.
 - When you have a list of planned steps, write one test, make it green, refactor, and git commmit the result. Only then move on to the next test. Never plan writing more than one testat a time. Refer to the testing rules.
-- There is no need to run black, ruff, and mypy manually in this project, because they now are run by the pre-commit hook.
+- There is no need to run black, ruff, and mypy manually in this project after every step, because they are run by the pre-commit hook.
 
 ## LangChain Architecture Pattern
 
