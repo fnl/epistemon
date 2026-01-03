@@ -149,7 +149,7 @@ def create_shiny_app(
                         )
                     )
 
-                score_class = "bg-primary"
+                score_class = "bg-info"
 
                 card = ui.card(
                     ui.card_header(
