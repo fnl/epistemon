@@ -14,6 +14,7 @@ VALID_VECTOR_STORE_TYPES: Final[list[str]] = [
     "duckdb",
     "qdrant",
 ]
+VALID_LLM_PROVIDERS: Final[list[str]] = ["fake", "openai"]
 
 
 @dataclass(frozen=True)
@@ -32,6 +33,11 @@ class Configuration:
     bm25_k1: float
     bm25_b: float
     bm25_top_k: int
+    llm_provider: str
+    llm_model: str
+    llm_temperature: float
+    rag_enabled: bool
+    rag_max_context_docs: int
 
 
 def load_config(config_path: Optional[str] = None) -> Configuration:
@@ -49,6 +55,11 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "bm25_k1": 1.5,
         "bm25_b": 0.75,
         "bm25_top_k": 5,
+        "llm_provider": "openai",
+        "llm_model": "gpt-4o-mini",
+        "llm_temperature": 0.0,
+        "rag_enabled": True,
+        "rag_max_context_docs": 10,
     }
 
     config_data: dict[str, Any]
@@ -73,6 +84,8 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "vector_store_path",
         "embedding_provider",
         "embedding_model",
+        "llm_provider",
+        "llm_model",
     ]
     for field in string_fields:
         if not isinstance(merged_config[field], str):
@@ -85,6 +98,7 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "chunk_overlap",
         "search_results_limit",
         "bm25_top_k",
+        "rag_max_context_docs",
     ]
     for field in integer_fields:
         if not isinstance(merged_config[field], int):
@@ -92,13 +106,18 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
                 f"{field} must be an integer, got {type(merged_config[field]).__name__}"
             )
 
-    float_fields = ["score_threshold", "bm25_k1", "bm25_b"]
+    float_fields = ["score_threshold", "bm25_k1", "bm25_b", "llm_temperature"]
     for field in float_fields:
         if not isinstance(merged_config[field], (int, float)):
             raise ValueError(
                 f"{field} must be a number, got {type(merged_config[field]).__name__}"
             )
         merged_config[field] = float(merged_config[field])
+
+    if not isinstance(merged_config["rag_enabled"], bool):
+        raise ValueError(
+            f"rag_enabled must be a boolean, got {type(merged_config['rag_enabled']).__name__}"
+        )
 
     if merged_config["embedding_provider"] not in VALID_EMBEDDING_PROVIDERS:
         raise ValueError(
@@ -110,6 +129,12 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         raise ValueError(
             f"Invalid vector_store_type: {merged_config['vector_store_type']}. "
             f"Must be one of: {', '.join(VALID_VECTOR_STORE_TYPES)}"
+        )
+
+    if merged_config["llm_provider"] not in VALID_LLM_PROVIDERS:
+        raise ValueError(
+            f"Invalid llm_provider: {merged_config['llm_provider']}. "
+            f"Must be one of: {', '.join(VALID_LLM_PROVIDERS)}"
         )
 
     if merged_config["chunk_size"] <= 0:
@@ -147,6 +172,16 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
             f"bm25_top_k must be positive, got: {merged_config['bm25_top_k']}"
         )
 
+    if merged_config["llm_temperature"] < 0 or merged_config["llm_temperature"] > 1:
+        raise ValueError(
+            f"llm_temperature must be between 0 and 1, got: {merged_config['llm_temperature']}"
+        )
+
+    if merged_config["rag_max_context_docs"] <= 0:
+        raise ValueError(
+            f"rag_max_context_docs must be positive, got: {merged_config['rag_max_context_docs']}"
+        )
+
     return Configuration(
         input_directory=merged_config["input_directory"],
         embedding_provider=merged_config["embedding_provider"],
@@ -160,4 +195,9 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         bm25_k1=merged_config["bm25_k1"],
         bm25_b=merged_config["bm25_b"],
         bm25_top_k=merged_config["bm25_top_k"],
+        llm_provider=merged_config["llm_provider"],
+        llm_model=merged_config["llm_model"],
+        llm_temperature=merged_config["llm_temperature"],
+        rag_enabled=merged_config["rag_enabled"],
+        rag_max_context_docs=merged_config["rag_max_context_docs"],
     )

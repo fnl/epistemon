@@ -277,3 +277,35 @@ bm25_top_k: 10
     assert config.bm25_k1 == 2.0
     assert config.bm25_b == 0.5
     assert config.bm25_top_k == 10
+
+
+def test_load_config_includes_llm_defaults() -> None:
+    """Test that configuration includes LLM defaults."""
+    config = load_config()
+
+    assert config.llm_provider == "openai"
+    assert config.llm_model == "gpt-4o-mini"
+    assert config.llm_temperature == 0.0
+    assert config.rag_enabled is True
+    assert config.rag_max_context_docs == 10
+
+
+def test_load_config_allows_llm_override(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test that LLM configuration can be overridden."""
+    config_content = """
+llm_provider: "fake"
+llm_model: "test-model"
+llm_temperature: 0.7
+rag_enabled: false
+rag_max_context_docs: 20
+"""
+    config_path = temp_yaml_file(config_content)
+    config = load_config(config_path)
+
+    assert config.llm_provider == "fake"
+    assert config.llm_model == "test-model"
+    assert config.llm_temperature == 0.7
+    assert config.rag_enabled is False
+    assert config.rag_max_context_docs == 20

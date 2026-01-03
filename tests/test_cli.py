@@ -25,6 +25,11 @@ def test_config() -> Configuration:
         bm25_k1=1.5,
         bm25_b=0.75,
         bm25_top_k=5,
+        llm_provider="fake",
+        llm_model="fake-model",
+        llm_temperature=0.0,
+        rag_enabled=False,
+        rag_max_context_docs=10,
     )
 
 
@@ -43,6 +48,11 @@ def chroma_config() -> Configuration:
         bm25_k1=1.5,
         bm25_b=0.75,
         bm25_top_k=5,
+        llm_provider="fake",
+        llm_model="fake-model",
+        llm_temperature=0.0,
+        rag_enabled=False,
+        rag_max_context_docs=10,
     )
 
 
