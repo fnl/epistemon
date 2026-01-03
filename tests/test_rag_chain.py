@@ -96,3 +96,32 @@ def test_empty_context_handling() -> None:
     assert response.query == "What is LangChain?"
     assert len(response.source_documents) == 0
     llm.invoke.assert_not_called()
+
+
+def test_source_document_preservation() -> None:
+    """Test that source documents and metadata are preserved in the response."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    doc1 = Document(
+        page_content="Python is a programming language",
+        metadata={"source": "python.md", "last_modified": 1234567890},
+    )
+    doc2 = Document(
+        page_content="It is widely used",
+        metadata={"source": "usage.md", "last_modified": 1234567891},
+    )
+
+    retriever.retrieve.return_value = [(doc1, 0.95), (doc2, 0.85)]
+    llm.invoke.return_value = Mock(
+        content="Python is a widely used programming language."
+    )
+
+    response = chain.invoke("What is Python?")
+
+    assert len(response.source_documents) == 2
+    assert response.source_documents[0].metadata["source"] == "python.md"
+    assert response.source_documents[0].metadata["last_modified"] == 1234567890
+    assert response.source_documents[1].metadata["source"] == "usage.md"
+    assert response.source_documents[1].metadata["last_modified"] == 1234567891
