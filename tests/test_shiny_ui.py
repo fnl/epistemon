@@ -131,3 +131,13 @@ def test_create_shiny_app_accepts_bm25_retriever() -> None:
     )
 
     assert isinstance(app, App)
+
+
+def test_shiny_app_has_two_column_layout_with_headers() -> None:
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_shiny_app(vector_store)
+
+    ui_html = str(app.ui)
+
+    assert "BM25 (Keyword Search)" in ui_html
+    assert "Semantic (Embedding Search)" in ui_html

@@ -49,7 +49,16 @@ def create_shiny_app(
                 ),
                 width=300,
             ),
-            ui.output_ui("results"),
+            ui.layout_columns(
+                ui.div(
+                    ui.h4("BM25 (Keyword Search)"),
+                    ui.output_ui("bm25_results"),
+                ),
+                ui.div(
+                    ui.h4("Semantic (Embedding Search)"),
+                    ui.output_ui("results"),
+                ),
+            ),
         ),
     )
 
