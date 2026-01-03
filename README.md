@@ -48,17 +48,20 @@ This project builds a semantic search engine over Markdown (`.md`) files using *
 The application implements three different retrieval approaches for side-by-side comparison:
 
 **Keyword Search (BM25)**
+
 - Traditional term-frequency ranking
 - Excellent for exact term matching and known terminology
 - Fast and deterministic
 
 **Semantic Search (Embeddings)**
+
 - Queries are embedded and matched against stored chunks
 - Returns top-ranked chunks ordered by semantic similarity score
 - Understands conceptual relationships beyond keyword overlap
 - Each result includes source file and content snippet
 
 **RAG Answer Generation**
+
 - Retrieves relevant chunks using semantic search
 - Generates natural language answers from retrieved context
 - Two-step process: retrieve then generate
@@ -93,8 +96,9 @@ The web UI displays results from all three strategies, allowing direct compariso
 .
 ├── epistemon/           # Source code
 │   ├── indexing/        # Indexing logic
-│   ├── web/             # Web UI and API
-│   │   └── app.py       # Web UI main.
+│   ├── web/             # Shiny UI and API
+│   │   ├── app.py       # Web UI and API.
+│   │   └── shiny_ui.py  # Shiny (Web) UI.
 │   └── config.py        # Configuration reader
 ├── config.yaml          # Optional configuration
 ├── tests/               # Unit and a few e2e tests
