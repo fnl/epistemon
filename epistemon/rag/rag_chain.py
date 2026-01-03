@@ -53,6 +53,13 @@ class RAGChain:
         results = self.retriever.retrieve(query)
         source_documents = [doc for doc, _score in results]
 
+        if not source_documents:
+            return RAGResponse(
+                answer="No relevant documents were found to answer your question.",
+                source_documents=[],
+                query=query,
+            )
+
         context = self.format_context(source_documents)
 
         prompt = f"""Answer the following question based on the provided context.

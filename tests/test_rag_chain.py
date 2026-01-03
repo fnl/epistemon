@@ -79,3 +79,20 @@ def test_basic_answer_generation() -> None:
     assert len(response.source_documents) == 2
     assert response.source_documents[0] == doc1
     assert response.source_documents[1] == doc2
+
+
+def test_empty_context_handling() -> None:
+    """Test that empty context is handled gracefully without calling the LLM."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    retriever.retrieve.return_value = []
+
+    response = chain.invoke("What is LangChain?")
+
+    assert isinstance(response, RAGResponse)
+    assert "no relevant documents" in response.answer.lower()
+    assert response.query == "What is LangChain?"
+    assert len(response.source_documents) == 0
+    llm.invoke.assert_not_called()
