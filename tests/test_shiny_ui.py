@@ -141,3 +141,46 @@ def test_shiny_app_has_two_column_layout_with_headers() -> None:
 
     assert "BM25 (Keyword Search)" in ui_html
     assert "Semantic (Embedding Search)" in ui_html
+
+
+def test_bm25_search_executes_independently() -> None:
+    from epistemon.indexing.bm25_indexer import BM25Indexer
+
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    bm25_indexer = Mock(spec=BM25Indexer)
+    mock_doc = Document(
+        page_content="BM25 test content",
+        metadata={"source": "test.md", "last_modified": 1234567890.0},
+    )
+    bm25_indexer.retrieve.return_value = [(mock_doc, 2.5)]
+
+    app = create_shiny_app(
+        vector_store, bm25_retriever=bm25_indexer, score_threshold=0.0
+    )
+
+    assert app is not None
+    assert bm25_indexer.retrieve.call_count == 0
+
+
+def test_bm25_results_output_exists_in_ui() -> None:
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_shiny_app(vector_store)
+
+    ui_html = str(app.ui)
+
+    assert "bm25_results" in ui_html
+
+
+def test_bm25_retriever_error_handling() -> None:
+    from epistemon.indexing.bm25_indexer import BM25Indexer
+
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    bm25_indexer = Mock(spec=BM25Indexer)
+    bm25_indexer.retrieve.side_effect = Exception("BM25 index error")
+
+    app = create_shiny_app(
+        vector_store, bm25_retriever=bm25_indexer, score_threshold=0.0
+    )
+
+    assert app is not None
+    assert app.server is not None

@@ -65,6 +65,142 @@ def create_shiny_app(
     def server(input: Inputs, output: Outputs, session: Session) -> None:
         @render.ui
         @reactive.event(input.search)
+        def bm25_results() -> ui.TagList:
+            if bm25_retriever is None:
+                return ui.TagList(
+                    ui.div(
+                        ui.p("BM25 search not available", class_="text-dark"),
+                        class_="alert alert-info",
+                    )
+                )
+
+            query = input.query()
+            limit = input.limit()
+
+            if limit is None or limit < 1:
+                return ui.TagList(
+                    ui.div(
+                        ui.p("Result limit must be at least 1", class_="text-dark"),
+                        class_="alert alert-warning",
+                    )
+                )
+
+            if not query or not query.strip():
+                return ui.TagList(
+                    ui.div(
+                        ui.p("Please enter a search query", class_="text-dark"),
+                        class_="alert alert-warning",
+                    )
+                )
+
+            try:
+                results_with_scores = bm25_retriever.retrieve(query, top_k=limit)
+            except Exception as e:
+                return ui.TagList(
+                    ui.div(
+                        ui.p(f"BM25 search error: {str(e)}", class_="text-dark"),
+                        class_="alert alert-danger",
+                    )
+                )
+
+            if not results_with_scores:
+                return ui.TagList(
+                    ui.div(
+                        ui.p("No results found", class_="text-dark"),
+                        class_="alert alert-info",
+                    )
+                )
+
+            result_cards = []
+            filtered_count = 0
+
+            for idx, (doc, score) in enumerate(results_with_scores, 1):
+                if score < score_threshold:
+                    filtered_count += 1
+                    continue
+
+                source = doc.metadata.get("source", "Unknown")
+                last_modified = doc.metadata.get("last_modified", 0)
+                content = doc.page_content
+
+                if base_url and source:
+                    source_link = ui.a(
+                        source,
+                        href=f"{base_url}/{quote(source)}",
+                        target="_blank",
+                        class_="text-primary",
+                    )
+                else:
+                    source_link = ui.span(source, class_="text-muted")
+
+                modified_display = ""
+                if last_modified:
+                    dt = datetime.fromtimestamp(last_modified)
+                    modified_display = dt.strftime("%Y-%m-%d %H:%M:%S")
+
+                metadata_items = [
+                    ui.span(ui.strong("Source: "), source_link),
+                ]
+                if modified_display:
+                    metadata_items.append(
+                        ui.span(
+                            ui.strong("Modified: "),
+                            ui.span(modified_display, class_="text-muted"),
+                        )
+                    )
+
+                score_class = "bg-primary"
+
+                card = ui.card(
+                    ui.card_header(
+                        ui.div(
+                            ui.strong(f"Result {idx}", class_="me-2"),
+                            ui.span(
+                                f"Score: {score:.4f}",
+                                class_=f"badge {score_class} rounded-pill",
+                            ),
+                        ),
+                        class_="d-flex align-items-center",
+                    ),
+                    ui.div(
+                        ui.tags.pre(
+                            content,
+                            class_="bg-light p-2 rounded mb-2",
+                            style="white-space: pre-wrap;",
+                        ),
+                        ui.tags.ul(
+                            *[
+                                ui.tags.li(item, class_="small")
+                                for item in metadata_items
+                            ],
+                            class_="list-unstyled mb-0",
+                        ),
+                    ),
+                    class_="mb-3",
+                )
+                result_cards.append(card)
+
+            if filtered_count > 0:
+                alert = ui.div(
+                    ui.p(
+                        f"{filtered_count} result(s) filtered by score threshold "
+                        f"({score_threshold})",
+                        class_="mb-0",
+                    ),
+                    class_="alert alert-warning mb-3",
+                )
+                result_cards.insert(0, alert)
+
+            header = ui.h3(
+                f"Found {len(result_cards) - (1 if filtered_count > 0 else 0)} results",
+                class_="mb-3",
+            )
+            result_cards.insert(0, header)
+
+            return ui.TagList(*result_cards)
+
+        @render.ui
+        @reactive.event(input.search)
         def results() -> ui.TagList:
             query = input.query()
             limit = input.limit()
