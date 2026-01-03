@@ -51,3 +51,38 @@ def test_highlight_keywords_wraps_matched_keywords_with_mark_tags() -> None:
 
     assert "<mark>LangChain</mark>" in result
     assert "<mark>framework</mark>" in result
+
+
+def test_highlight_keywords_only_matches_whole_words() -> None:
+    text = "Creativity is important in this situation."
+    query = "it"
+
+    result = highlight_keywords(text, query)
+
+    assert "<mark>it</mark>" not in result
+    assert "Creativity" in result
+    assert "<mark>" not in result
+
+
+def test_highlight_keywords_matches_whole_word_boundaries() -> None:
+    text = "The item is on the list."
+    query = "item is"
+
+    result = highlight_keywords(text, query)
+
+    assert "<mark>item</mark>" in result
+    assert "<mark>is</mark>" in result
+    assert "The <mark>item</mark> <mark>is</mark> on the list." == result
+
+
+def test_bm25_indexer_uses_case_insensitive_indexing() -> None:
+    directory = Path("tests/data")
+    indexer = BM25Indexer(directory)
+
+    results_upper = indexer.retrieve("LANGCHAIN", top_k=3)
+    results_lower = indexer.retrieve("langchain", top_k=3)
+
+    assert len(results_upper) > 0
+    assert len(results_lower) > 0
+    assert results_upper[0][0].page_content == results_lower[0][0].page_content
+    assert abs(results_upper[0][1] - results_lower[0][1]) < 0.01

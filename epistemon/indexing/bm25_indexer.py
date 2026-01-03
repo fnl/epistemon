@@ -27,7 +27,7 @@ def highlight_keywords(text: str, query: str) -> str:
     result = text
 
     for keyword in keywords:
-        pattern = re.compile(re.escape(keyword), re.IGNORECASE)
+        pattern = re.compile(rf"\b{re.escape(keyword)}\b", re.IGNORECASE)
         result = pattern.sub(lambda m: f"<mark>{m.group()}</mark>", result)
 
     return result
@@ -68,7 +68,7 @@ class BM25Indexer:
             logger.warning("No documents found in directory for BM25 indexing")
             return
 
-        tokenized_corpus = [doc.page_content.split() for doc in self.documents]
+        tokenized_corpus = [doc.page_content.lower().split() for doc in self.documents]
         self.bm25_index = BM25Okapi(tokenized_corpus)
 
         logger.info("BM25 index built with %d documents", len(self.documents))
@@ -77,7 +77,7 @@ class BM25Indexer:
         if not self.bm25_index or not self.documents:
             return []
 
-        tokenized_query = query.split()
+        tokenized_query = query.lower().split()
         scores = self.bm25_index.get_scores(tokenized_query)
 
         top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[
