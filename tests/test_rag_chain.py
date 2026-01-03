@@ -51,3 +51,31 @@ def test_format_context_documents() -> None:
     assert "file1.md" in context
     assert "file2.md" in context
     assert context.count("---") >= 1
+
+
+def test_basic_answer_generation() -> None:
+    """Test that the RAG chain generates answers using the LLM."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    doc1 = Document(
+        page_content="LangChain is a framework", metadata={"source": "file1.md"}
+    )
+    doc2 = Document(
+        page_content="It helps build LLM apps", metadata={"source": "file2.md"}
+    )
+
+    retriever.retrieve.return_value = [(doc1, 0.9), (doc2, 0.8)]
+    llm.invoke.return_value = Mock(
+        content="LangChain is a framework for building LLM applications."
+    )
+
+    response = chain.invoke("What is LangChain?")
+
+    assert isinstance(response, RAGResponse)
+    assert response.answer == "LangChain is a framework for building LLM applications."
+    assert response.query == "What is LangChain?"
+    assert len(response.source_documents) == 2
+    assert response.source_documents[0] == doc1
+    assert response.source_documents[1] == doc2

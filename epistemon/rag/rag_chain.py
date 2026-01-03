@@ -40,3 +40,33 @@ class RAGChain:
             formatted_docs.append(f"Source: {source}\n{doc.page_content}")
 
         return "\n\n---\n\n".join(formatted_docs)
+
+    def invoke(self, query: str) -> RAGResponse:
+        """Generate an answer to the query using retrieved documents.
+
+        Args:
+            query: The user's question
+
+        Returns:
+            RAGResponse with the generated answer and source documents
+        """
+        results = self.retriever.retrieve(query)
+        source_documents = [doc for doc, _score in results]
+
+        context = self.format_context(source_documents)
+
+        prompt = f"""Answer the following question based on the provided context.
+
+Context:
+{context}
+
+Question: {query}
+
+Answer:"""
+
+        response = self.llm.invoke(prompt)
+        answer = response.content
+
+        return RAGResponse(
+            answer=answer, source_documents=source_documents, query=query
+        )
