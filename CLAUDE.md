@@ -62,6 +62,56 @@ Two-tier approach:
 - Easy metadata filtering
 - Open for extension to more stores
 
+## BM25 Keyword Search Architecture
+
+Parallel search strategy for comparing keyword-based and semantic approaches:
+
+**In-Memory Rebuild Strategy**
+
+- BM25Indexer rebuilds index from disk on startup
+- No persistent BM25 index storage
+- Fast startup for small-to-medium document sets
+- Uses rank_bm25 library (BM25Okapi algorithm)
+- Simple tokenization with .split() for initial implementation
+
+**Integration with Vector Store**
+
+- BM25 and semantic search operate independently
+- Both use same Document objects and chunking strategy
+- Same markdown files feed both indexes
+- BM25 indexer loads documents via load_and_chunk_markdown()
+- Vector store and BM25 index exist side-by-side
+
+**Comparison with Semantic Search**
+
+BM25 (Keyword):
+- Exact term matching with statistical ranking
+- No ML model or embeddings needed
+- Fast query execution (no embedding step)
+- Scores based on term frequency and inverse document frequency
+- Works well for queries with specific technical terms
+
+Semantic (Embeddings):
+- Understands meaning and context
+- Finds conceptually similar content
+- Requires embedding model (OpenAI, HuggingFace, etc.)
+- Higher computational cost
+- Better for natural language queries
+
+**Implementation Patterns**
+
+Configuration:
+- Enable BM25 via config.yaml bm25.enabled flag
+- Configure chunk size/overlap same as vector store
+- Optional parameter in create_shiny_app()
+
+Code structure:
+- epistemon/indexing/bm25_indexer.py - BM25Indexer class
+- epistemon/web/shiny_ui.py - Dual render functions (bm25_results, results)
+- Side-by-side two-column layout for direct comparison
+- Independent error handling per search type
+- Distinct badge colors (bg-info for BM25, bg-success/primary for semantic)
+
 ## Web UI
 
 We will use Shiny for Python as the UI:
