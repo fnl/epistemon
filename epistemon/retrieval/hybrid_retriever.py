@@ -16,11 +16,14 @@ class HybridRetriever:
         self.bm25_retriever = bm25_retriever
         self.semantic_retriever = semantic_retriever
 
-    def retrieve(self, query: str) -> list[tuple[Document, float]]:
+    def retrieve(
+        self, query: str, max_docs: Optional[int] = None
+    ) -> list[tuple[Document, float]]:
         """Retrieve and merge results from both BM25 and semantic retrievers.
 
         Args:
             query: The search query
+            max_docs: Maximum number of documents to return (None for no limit)
 
         Returns:
             List of (Document, score) tuples, deduplicated and sorted by score
@@ -44,4 +47,8 @@ class HybridRetriever:
                     results_dict[source] = (doc, score)
 
         sorted_results = sorted(results_dict.values(), key=lambda x: x[1], reverse=True)
+
+        if max_docs is not None:
+            return sorted_results[:max_docs]
+
         return sorted_results

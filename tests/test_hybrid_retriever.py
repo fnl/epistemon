@@ -59,3 +59,34 @@ def test_empty_results_handling() -> None:
 
     assert results == []
     assert isinstance(results, list)
+
+
+def test_max_docs_limit_enforcement() -> None:
+    """Test that max_docs parameter limits the number of results returned."""
+    bm25_retriever = Mock()
+    semantic_retriever = Mock()
+
+    doc1 = Document(page_content="Content 1", metadata={"source": "file1.md"})
+    doc2 = Document(page_content="Content 2", metadata={"source": "file2.md"})
+    doc3 = Document(page_content="Content 3", metadata={"source": "file3.md"})
+    doc4 = Document(page_content="Content 4", metadata={"source": "file4.md"})
+
+    bm25_retriever.retrieve.return_value = [
+        (doc1, 0.9),
+        (doc2, 0.7),
+        (doc3, 0.5),
+    ]
+    semantic_retriever.similarity_search_with_score.return_value = [
+        (doc4, 0.6),
+    ]
+
+    retriever = HybridRetriever(
+        bm25_retriever=bm25_retriever, semantic_retriever=semantic_retriever
+    )
+    results = retriever.retrieve("test query", max_docs=2)
+
+    assert len(results) == 2
+    assert results[0][0].metadata["source"] == "file1.md"
+    assert results[0][1] == 0.9
+    assert results[1][0].metadata["source"] == "file2.md"
+    assert results[1][1] == 0.7
