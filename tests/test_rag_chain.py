@@ -125,3 +125,23 @@ def test_source_document_preservation() -> None:
     assert response.source_documents[0].metadata["last_modified"] == 1234567890
     assert response.source_documents[1].metadata["source"] == "usage.md"
     assert response.source_documents[1].metadata["last_modified"] == 1234567891
+
+
+def test_api_error_handling() -> None:
+    """Test that API errors are caught and handled gracefully."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    doc1 = Document(page_content="Some content", metadata={"source": "file.md"})
+
+    retriever.retrieve.return_value = [(doc1, 0.9)]
+    llm.invoke.side_effect = Exception("API rate limit exceeded")
+
+    response = chain.invoke("What is this about?")
+
+    assert isinstance(response, RAGResponse)
+    assert "error" in response.answer.lower()
+    assert "rate limit" in response.answer.lower()
+    assert response.query == "What is this about?"
+    assert len(response.source_documents) == 1

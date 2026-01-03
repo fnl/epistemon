@@ -71,8 +71,11 @@ Question: {query}
 
 Answer:"""
 
-        response = self.llm.invoke(prompt)
-        answer = response.content
+        try:
+            response = self.llm.invoke(prompt)
+            answer = response.content
+        except Exception as e:
+            answer = f"Error generating answer: {str(e)}"
 
         return RAGResponse(
             answer=answer, source_documents=source_documents, query=query
