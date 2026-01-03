@@ -118,3 +118,16 @@ def test_vector_store_usage_with_validated_limit() -> None:
 
         assert len(result) > 0
         mock_search.assert_called_with("test", k=5)
+
+
+def test_create_shiny_app_accepts_bm25_retriever() -> None:
+    from epistemon.indexing.bm25_indexer import BM25Indexer
+
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    bm25_indexer = Mock(spec=BM25Indexer)
+
+    app = create_shiny_app(
+        vector_store, bm25_retriever=bm25_indexer, score_threshold=0.0
+    )
+
+    assert isinstance(app, App)

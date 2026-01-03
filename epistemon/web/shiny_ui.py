@@ -1,16 +1,20 @@
 """Shiny UI for semantic search."""
 
 from datetime import datetime
+from typing import Optional
 from urllib.parse import quote
 
 from langchain_core.vectorstores import VectorStore
 from shiny import App, Inputs, Outputs, Session, reactive, render, ui
+
+from epistemon.indexing.bm25_indexer import BM25Indexer
 
 
 def create_shiny_app(
     vector_store: VectorStore,
     base_url: str = "",
     score_threshold: float = 0.0,
+    bm25_retriever: Optional[BM25Indexer] = None,
 ) -> App:
     """Create a Shiny app for semantic search.
 
@@ -18,6 +22,7 @@ def create_shiny_app(
         vector_store: LangChain vector store
         base_url: Base URL for source file links
         score_threshold: Minimum score threshold for results
+        bm25_retriever: Optional BM25 indexer for keyword search
 
     Returns:
         Configured Shiny App instance

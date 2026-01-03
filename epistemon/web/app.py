@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Redirect
 from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon import __version__
+from epistemon.indexing.bm25_indexer import BM25Indexer
 from epistemon.indexing.vector_store_manager import VectorStoreManager
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ def create_app(
     score_threshold: float = 0.0,
     files_directory: Path | None = None,
     vector_store_manager: Optional[VectorStoreManager] = None,
+    bm25_retriever: Optional[BM25Indexer] = None,
 ) -> FastAPI:
     app = FastAPI(
         title="Epistemon API",
@@ -307,7 +309,10 @@ def create_app(
     from epistemon.web.shiny_ui import create_shiny_app
 
     shiny_app = create_shiny_app(
-        vector_store, base_url=base_url, score_threshold=score_threshold
+        vector_store,
+        base_url=base_url,
+        score_threshold=score_threshold,
+        bm25_retriever=bm25_retriever,
     )
     app.mount("/app", shiny_app)
 
