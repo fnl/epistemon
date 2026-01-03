@@ -22,6 +22,9 @@ def test_config() -> Configuration:
         chunk_overlap=200,
         search_results_limit=5,
         score_threshold=0.0,
+        bm25_k1=1.5,
+        bm25_b=0.75,
+        bm25_top_k=5,
     )
 
 
@@ -37,6 +40,9 @@ def chroma_config() -> Configuration:
         chunk_overlap=200,
         search_results_limit=5,
         score_threshold=0.0,
+        bm25_k1=1.5,
+        bm25_b=0.75,
+        bm25_top_k=5,
     )
 
 

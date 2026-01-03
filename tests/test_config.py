@@ -251,3 +251,29 @@ vector_store_type: "{vector_store_type}"
     config_path = temp_yaml_file(config_content)
     config = load_config(config_path)
     assert config.vector_store_type == vector_store_type
+
+
+def test_load_config_includes_bm25_defaults() -> None:
+    """Test that configuration includes BM25 defaults."""
+    config = load_config()
+
+    assert config.bm25_k1 == 1.5
+    assert config.bm25_b == 0.75
+    assert config.bm25_top_k == 5
+
+
+def test_load_config_allows_bm25_override(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test that BM25 configuration can be overridden."""
+    config_content = """
+bm25_k1: 2.0
+bm25_b: 0.5
+bm25_top_k: 10
+"""
+    config_path = temp_yaml_file(config_content)
+    config = load_config(config_path)
+
+    assert config.bm25_k1 == 2.0
+    assert config.bm25_b == 0.5
+    assert config.bm25_top_k == 10

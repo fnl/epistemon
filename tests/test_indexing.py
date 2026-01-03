@@ -84,6 +84,9 @@ def create_test_config(
         vector_store_path=vector_store_path,
         search_results_limit=5,
         score_threshold=score_threshold,
+        bm25_k1=1.5,
+        bm25_b=0.75,
+        bm25_top_k=5,
     )
 
 

@@ -29,6 +29,9 @@ class Configuration:
     chunk_overlap: int
     search_results_limit: int
     score_threshold: float
+    bm25_k1: float
+    bm25_b: float
+    bm25_top_k: int
 
 
 def load_config(config_path: Optional[str] = None) -> Configuration:
@@ -43,6 +46,9 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "chunk_overlap": 200,
         "search_results_limit": 5,
         "score_threshold": 0.0,
+        "bm25_k1": 1.5,
+        "bm25_b": 0.75,
+        "bm25_top_k": 5,
     }
 
     config_data: dict[str, Any]
@@ -74,14 +80,19 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
                 f"{field} must be a string, got {type(merged_config[field]).__name__}"
             )
 
-    integer_fields = ["chunk_size", "chunk_overlap", "search_results_limit"]
+    integer_fields = [
+        "chunk_size",
+        "chunk_overlap",
+        "search_results_limit",
+        "bm25_top_k",
+    ]
     for field in integer_fields:
         if not isinstance(merged_config[field], int):
             raise ValueError(
                 f"{field} must be an integer, got {type(merged_config[field]).__name__}"
             )
 
-    float_fields = ["score_threshold"]
+    float_fields = ["score_threshold", "bm25_k1", "bm25_b"]
     for field in float_fields:
         if not isinstance(merged_config[field], (int, float)):
             raise ValueError(
@@ -121,6 +132,21 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
             f"score_threshold must be non-negative, got: {merged_config['score_threshold']}"
         )
 
+    if merged_config["bm25_k1"] < 0:
+        raise ValueError(
+            f"bm25_k1 must be non-negative, got: {merged_config['bm25_k1']}"
+        )
+
+    if merged_config["bm25_b"] < 0 or merged_config["bm25_b"] > 1:
+        raise ValueError(
+            f"bm25_b must be between 0 and 1, got: {merged_config['bm25_b']}"
+        )
+
+    if merged_config["bm25_top_k"] <= 0:
+        raise ValueError(
+            f"bm25_top_k must be positive, got: {merged_config['bm25_top_k']}"
+        )
+
     return Configuration(
         input_directory=merged_config["input_directory"],
         embedding_provider=merged_config["embedding_provider"],
@@ -131,4 +157,7 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         chunk_overlap=merged_config["chunk_overlap"],
         search_results_limit=merged_config["search_results_limit"],
         score_threshold=merged_config["score_threshold"],
+        bm25_k1=merged_config["bm25_k1"],
+        bm25_b=merged_config["bm25_b"],
+        bm25_top_k=merged_config["bm25_top_k"],
     )
