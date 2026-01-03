@@ -9,6 +9,7 @@ from typing import Optional
 import uvicorn
 
 from epistemon.config import load_config
+from epistemon.indexing.bm25_indexer import BM25Indexer
 from epistemon.indexing.indexer import index
 from epistemon.indexing.vector_store_manager import create_vector_store_manager
 from epistemon.logging_config import setup_logging
@@ -43,6 +44,13 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
         logger.info(f"Creating vector store ({config.vector_store_type})...")
         vector_store = create_vector_store(config)
 
+        logger.info("Building BM25 keyword search index...")
+        bm25_indexer = BM25Indexer(
+            Path(config.input_directory),
+            chunk_size=config.chunk_size,
+            chunk_overlap=config.chunk_overlap,
+        )
+
         logger.info("Creating web application...")
         app = create_app(
             vector_store,
@@ -52,6 +60,7 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
             vector_store_manager=create_vector_store_manager(
                 vector_store, Path(config.input_directory)
             ),
+            bm25_retriever=bm25_indexer,
         )
 
         logger.info(f"Starting server at http://{host}:{port}")

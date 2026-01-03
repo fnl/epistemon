@@ -206,3 +206,32 @@ def test_web_ui_main_function_calls_command_with_args() -> None:
         mock_command.assert_called_once_with(
             "custom.yaml", "0.0.0.0", 9000  # noqa: S104
         )
+
+
+def test_web_ui_command_creates_bm25_indexer(test_config: Configuration) -> None:
+    with (
+        patch("epistemon.cli.load_config", return_value=test_config),
+        patch("epistemon.cli.create_vector_store") as mock_create_store,
+        patch("epistemon.cli.BM25Indexer") as mock_bm25_indexer,
+        patch("epistemon.cli.create_app") as mock_create_app,
+        patch("epistemon.cli.create_vector_store_manager") as mock_create_manager,
+        patch("epistemon.cli.uvicorn.run"),
+    ):
+        mock_vector_store = Mock()
+        mock_create_store.return_value = mock_vector_store
+        mock_bm25_instance = Mock()
+        mock_bm25_indexer.return_value = mock_bm25_instance
+        mock_app = Mock()
+        mock_create_app.return_value = mock_app
+        mock_manager = Mock()
+        mock_create_manager.return_value = mock_manager
+
+        web_ui_command(None, "127.0.0.1", 8000)
+
+        mock_bm25_indexer.assert_called_once_with(
+            Path(test_config.input_directory),
+            chunk_size=test_config.chunk_size,
+            chunk_overlap=test_config.chunk_overlap,
+        )
+        call_kwargs = mock_create_app.call_args[1]
+        assert call_kwargs["bm25_retriever"] == mock_bm25_instance
