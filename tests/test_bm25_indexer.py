@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from langchain_core.documents import Document
+
 from epistemon.indexing.bm25_indexer import BM25Indexer
 
 
@@ -24,3 +26,17 @@ def test_bm25_indexer_can_query_and_return_results() -> None:
     assert len(results) > 0
     assert len(results) <= 3
     assert all(isinstance(result, str) for result in results)
+
+
+def test_bm25_retriever_returns_documents_with_scores() -> None:
+    directory = Path("tests/data")
+    indexer = BM25Indexer(directory)
+
+    results = indexer.retrieve("LangChain framework", top_k=3)
+
+    assert len(results) > 0
+    assert len(results) <= 3
+    assert all(isinstance(doc, Document) for doc, score in results)
+    assert all(isinstance(score, float) for doc, score in results)
+    assert all(score >= 0 for doc, score in results)
+    assert results[0][1] >= results[1][1]

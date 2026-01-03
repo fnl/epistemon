@@ -3,6 +3,7 @@
 import logging
 from pathlib import Path
 
+from langchain_core.documents import Document
 from rank_bm25 import BM25Okapi
 
 from epistemon.indexing.chunker import load_and_chunk_markdown
@@ -20,11 +21,11 @@ class BM25Indexer:
         self.directory = directory
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
-        self.documents: list[str] = []
+        self.documents: list[Document] = []
         self.bm25_index: BM25Okapi | None = None
         self._build_index()
 
-    def _load_documents_from_disk(self) -> list[str]:
+    def _load_documents_from_disk(self) -> list[Document]:
         documents = []
         markdown_files = collect_markdown_files(self.directory)
 
@@ -35,8 +36,7 @@ class BM25Indexer:
                 chunk_overlap=self.chunk_overlap,
                 base_directory=self.directory,
             )
-            for chunk in chunks:
-                documents.append(chunk.page_content)
+            documents.extend(chunks)
 
         return documents
 
@@ -47,12 +47,14 @@ class BM25Indexer:
             logger.warning("No documents found in directory for BM25 indexing")
             return
 
-        tokenized_corpus = [doc.split() for doc in self.documents]
+        tokenized_corpus = [doc.page_content.split() for doc in self.documents]
         self.bm25_index = BM25Okapi(tokenized_corpus)
 
         logger.info("BM25 index built with %d documents", len(self.documents))
 
-    def search(self, query: str, top_k: int = 5) -> list[str]:
+    def _get_top_indices_and_scores(
+        self, query: str, top_k: int
+    ) -> list[tuple[int, float]]:
         if not self.bm25_index or not self.documents:
             return []
 
@@ -63,4 +65,12 @@ class BM25Indexer:
             :top_k
         ]
 
-        return [self.documents[i] for i in top_indices]
+        return [(i, float(scores[i])) for i in top_indices]
+
+    def search(self, query: str, top_k: int = 5) -> list[str]:
+        indices_and_scores = self._get_top_indices_and_scores(query, top_k)
+        return [self.documents[i].page_content for i, _ in indices_and_scores]
+
+    def retrieve(self, query: str, top_k: int = 5) -> list[tuple[Document, float]]:
+        indices_and_scores = self._get_top_indices_and_scores(query, top_k)
+        return [(self.documents[i], score) for i, score in indices_and_scores]
