@@ -1,8 +1,10 @@
 """Tests for the RAG chain module."""
 
+from unittest.mock import Mock
+
 from langchain_core.documents import Document
 
-from epistemon.rag.rag_chain import RAGResponse
+from epistemon.rag.rag_chain import RAGChain, RAGResponse
 
 
 def test_rag_response_creation() -> None:
@@ -19,3 +21,15 @@ def test_rag_response_creation() -> None:
     assert response.answer == "This is the generated answer"
     assert len(response.source_documents) == 2
     assert response.query == "What is this about?"
+
+
+def test_rag_chain_initialization() -> None:
+    """Test that RAGChain can be instantiated with retriever and LLM."""
+    retriever = Mock()
+    llm = Mock()
+
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    assert chain is not None
+    assert chain.retriever == retriever
+    assert chain.llm == llm
