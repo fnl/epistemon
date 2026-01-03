@@ -52,9 +52,7 @@ class BM25Indexer:
 
         logger.info("BM25 index built with %d documents", len(self.documents))
 
-    def _get_top_indices_and_scores(
-        self, query: str, top_k: int
-    ) -> list[tuple[int, float]]:
+    def retrieve(self, query: str, top_k: int = 5) -> list[tuple[Document, float]]:
         if not self.bm25_index or not self.documents:
             return []
 
@@ -65,12 +63,4 @@ class BM25Indexer:
             :top_k
         ]
 
-        return [(i, float(scores[i])) for i in top_indices]
-
-    def search(self, query: str, top_k: int = 5) -> list[str]:
-        indices_and_scores = self._get_top_indices_and_scores(query, top_k)
-        return [self.documents[i].page_content for i, _ in indices_and_scores]
-
-    def retrieve(self, query: str, top_k: int = 5) -> list[tuple[Document, float]]:
-        indices_and_scores = self._get_top_indices_and_scores(query, top_k)
-        return [(self.documents[i], score) for i, score in indices_and_scores]
+        return [(self.documents[i], float(scores[i])) for i in top_indices]

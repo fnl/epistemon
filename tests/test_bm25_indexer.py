@@ -21,11 +21,12 @@ def test_bm25_indexer_can_query_and_return_results() -> None:
     directory = Path("tests/data")
     indexer = BM25Indexer(directory)
 
-    results = indexer.search("LangChain framework", top_k=3)
+    results = indexer.retrieve("LangChain framework", top_k=3)
 
     assert len(results) > 0
     assert len(results) <= 3
-    assert all(isinstance(result, str) for result in results)
+    assert all(isinstance(doc, Document) for doc, score in results)
+    assert all(isinstance(score, float) for doc, score in results)
 
 
 def test_bm25_retriever_returns_documents_with_scores() -> None:
