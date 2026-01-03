@@ -42,3 +42,20 @@ def test_merge_and_deduplicate_results() -> None:
     assert results[0][1] == 0.9
     assert results[1][0].metadata["source"] == "file2.md"
     assert results[1][1] == 0.7
+
+
+def test_empty_results_handling() -> None:
+    """Test that empty results from both retrievers are handled gracefully."""
+    bm25_retriever = Mock()
+    semantic_retriever = Mock()
+
+    bm25_retriever.retrieve.return_value = []
+    semantic_retriever.similarity_search_with_score.return_value = []
+
+    retriever = HybridRetriever(
+        bm25_retriever=bm25_retriever, semantic_retriever=semantic_retriever
+    )
+    results = retriever.retrieve("test query")
+
+    assert results == []
+    assert isinstance(results, list)
