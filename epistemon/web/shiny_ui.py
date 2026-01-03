@@ -7,7 +7,7 @@ from urllib.parse import quote
 from langchain_core.vectorstores import VectorStore
 from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 
-from epistemon.indexing.bm25_indexer import BM25Indexer
+from epistemon.indexing.bm25_indexer import BM25Indexer, highlight_keywords
 
 
 def create_shiny_app(
@@ -121,7 +121,7 @@ def create_shiny_app(
 
                 source = doc.metadata.get("source", "Unknown")
                 last_modified = doc.metadata.get("last_modified", 0)
-                content = doc.page_content
+                content = highlight_keywords(doc.page_content, query)
 
                 if base_url and source:
                     source_link = ui.a(
@@ -163,10 +163,8 @@ def create_shiny_app(
                         class_="d-flex align-items-center",
                     ),
                     ui.div(
-                        ui.tags.pre(
-                            content,
-                            class_="bg-light p-2 rounded mb-2",
-                            style="white-space: pre-wrap;",
+                        ui.HTML(
+                            f'<pre class="bg-light p-2 rounded mb-2" style="white-space: pre-wrap;">{content}</pre>'
                         ),
                         ui.tags.ul(
                             *[

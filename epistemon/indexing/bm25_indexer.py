@@ -1,6 +1,7 @@
 """In-memory BM25 indexer for keyword-based search."""
 
 import logging
+import re
 from pathlib import Path
 
 from langchain_core.documents import Document
@@ -10,6 +11,26 @@ from epistemon.indexing.chunker import load_and_chunk_markdown
 from epistemon.indexing.file_tracker import collect_markdown_files
 
 logger = logging.getLogger(__name__)
+
+
+def highlight_keywords(text: str, query: str) -> str:
+    """Highlight matched keywords in text with HTML mark tags.
+
+    Args:
+        text: The text to highlight keywords in
+        query: Space-separated query keywords
+
+    Returns:
+        Text with matched keywords wrapped in <mark> tags
+    """
+    keywords = query.split()
+    result = text
+
+    for keyword in keywords:
+        pattern = re.compile(re.escape(keyword), re.IGNORECASE)
+        result = pattern.sub(lambda m: f"<mark>{m.group()}</mark>", result)
+
+    return result
 
 
 class BM25Indexer:

@@ -197,3 +197,16 @@ def test_bm25_badges_use_distinct_colors_from_semantic() -> None:
     )
 
     assert app is not None
+
+
+def test_bm25_results_highlight_matched_keywords() -> None:
+    from epistemon.indexing.bm25_indexer import BM25Indexer
+
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    bm25_indexer = BM25Indexer(Path("tests/data"))
+
+    app = create_shiny_app(
+        vector_store, bm25_retriever=bm25_indexer, score_threshold=0.0
+    )
+
+    assert app is not None

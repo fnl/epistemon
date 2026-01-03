@@ -2,7 +2,7 @@ from pathlib import Path
 
 from langchain_core.documents import Document
 
-from epistemon.indexing.bm25_indexer import BM25Indexer
+from epistemon.indexing.bm25_indexer import BM25Indexer, highlight_keywords
 
 
 def test_bm25_indexer_initializes_from_directory() -> None:
@@ -41,3 +41,13 @@ def test_bm25_retriever_returns_documents_with_scores() -> None:
     assert all(isinstance(score, float) for doc, score in results)
     assert all(score >= 0 for doc, score in results)
     assert results[0][1] >= results[1][1]
+
+
+def test_highlight_keywords_wraps_matched_keywords_with_mark_tags() -> None:
+    text = "LangChain is a framework for building applications with LLMs."
+    query = "langchain framework"
+
+    result = highlight_keywords(text, query)
+
+    assert "<mark>LangChain</mark>" in result
+    assert "<mark>framework</mark>" in result
