@@ -13,3 +13,14 @@ def test_bm25_indexer_initializes_from_directory() -> None:
     assert indexer is not None
     assert indexer.bm25_index is not None
     assert len(indexer.documents) > 0
+
+
+def test_bm25_indexer_can_query_and_return_results() -> None:
+    directory = Path("tests/data")
+    indexer = BM25Indexer(directory)
+
+    results = indexer.search("LangChain framework", top_k=3)
+
+    assert len(results) > 0
+    assert len(results) <= 3
+    assert all(isinstance(result, str) for result in results)

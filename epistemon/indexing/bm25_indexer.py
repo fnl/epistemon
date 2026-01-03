@@ -51,3 +51,16 @@ class BM25Indexer:
         self.bm25_index = BM25Okapi(tokenized_corpus)
 
         logger.info("BM25 index built with %d documents", len(self.documents))
+
+    def search(self, query: str, top_k: int = 5) -> list[str]:
+        if not self.bm25_index or not self.documents:
+            return []
+
+        tokenized_query = query.split()
+        scores = self.bm25_index.get_scores(tokenized_query)
+
+        top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[
+            :top_k
+        ]
+
+        return [self.documents[i] for i in top_indices]
