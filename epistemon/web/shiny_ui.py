@@ -1,7 +1,7 @@
 """Shiny UI for semantic search."""
 
 from datetime import datetime
-from typing import Any, Callable, Optional
+from typing import Any, Optional
 from urllib.parse import quote
 
 from langchain_core.documents import Document
@@ -153,11 +153,11 @@ def _create_results_list(
     return ui.TagList(*cards_with_metadata)
 
 
-def _create_search_ui() -> ui.TagList:
+def _create_search_ui() -> Any:
     """Create the search UI layout.
 
     Returns:
-        TagList with complete UI structure
+        Shiny UI page structure
     """
     return ui.page_fluid(
         ui.panel_title("Epistemon Semantic Search"),
@@ -195,147 +195,147 @@ def _create_search_ui() -> ui.TagList:
     )
 
 
-def _create_bm25_render_function(
+def _execute_bm25_search(
     bm25_retriever: Optional[BM25Indexer],
     base_url: str,
     score_threshold: float,
-) -> Callable[[Inputs], ui.TagList]:
-    """Create BM25 results render function.
+    query: str,
+    limit: Optional[int],
+) -> ui.TagList:
+    """Execute BM25 search and return results UI.
 
     Args:
         bm25_retriever: Optional BM25 indexer
         base_url: Base URL for source links
         score_threshold: Minimum score threshold
+        query: Search query string
+        limit: Result limit
 
     Returns:
-        Render function for BM25 results
+        TagList with BM25 search results
     """
-
-    def bm25_results(input: Inputs) -> ui.TagList:
-        if bm25_retriever is None:
-            return ui.TagList(
-                ui.div(
-                    ui.p("BM25 search not available", class_="text-dark"),
-                    class_="alert alert-info",
-                )
+    if bm25_retriever is None:
+        return ui.TagList(
+            ui.div(
+                ui.p("BM25 search not available", class_="text-dark"),
+                class_="alert alert-info",
             )
+        )
 
-        query = input.query()
-        limit = input.limit()
+    validation_error = _validate_search_inputs(query, limit)
+    if validation_error:
+        return validation_error
 
-        validation_error = _validate_search_inputs(query, limit)
-        if validation_error:
-            return validation_error
+    if limit is None:
+        raise ValueError("Limit cannot be None after validation")
 
-        try:
-            results_with_scores = bm25_retriever.retrieve(query, top_k=limit)
-        except Exception as e:
-            return ui.TagList(
-                ui.div(
-                    ui.p(f"BM25 search error: {str(e)}", class_="text-dark"),
-                    class_="alert alert-danger",
-                )
+    try:
+        results_with_scores = bm25_retriever.retrieve(query, top_k=limit)
+    except Exception as e:
+        return ui.TagList(
+            ui.div(
+                ui.p(f"BM25 search error: {str(e)}", class_="text-dark"),
+                class_="alert alert-danger",
             )
+        )
 
-        if not results_with_scores:
-            return ui.TagList(
-                ui.div(
-                    ui.p("No results found", class_="text-dark"),
-                    class_="alert alert-info",
-                )
+    if not results_with_scores:
+        return ui.TagList(
+            ui.div(
+                ui.p("No results found", class_="text-dark"),
+                class_="alert alert-info",
             )
+        )
 
-        result_cards = []
-        filtered_count = 0
+    result_cards = []
+    filtered_count = 0
 
-        for idx, (doc, score) in enumerate(results_with_scores, 1):
-            if score < score_threshold:
-                filtered_count += 1
-                continue
+    for idx, (doc, score) in enumerate(results_with_scores, 1):
+        if score < score_threshold:
+            filtered_count += 1
+            continue
 
-            content = highlight_keywords(doc.page_content, query)
-            card = _create_result_card(
-                doc=doc,
-                score=score,
-                idx=idx,
-                base_url=base_url,
-                score_class="bg-info",
-                score_label="Score",
-                content=content,
-            )
-            result_cards.append(card)
+        content = highlight_keywords(doc.page_content, query)
+        card = _create_result_card(
+            doc=doc,
+            score=score,
+            idx=idx,
+            base_url=base_url,
+            score_class="bg-info",
+            score_label="Score",
+            content=content,
+        )
+        result_cards.append(card)
 
-        return _create_results_list(result_cards, filtered_count, score_threshold)
-
-    return bm25_results
+    return _create_results_list(result_cards, filtered_count, score_threshold)
 
 
-def _create_semantic_render_function(
+def _execute_semantic_search(
     vector_store: VectorStore,
     base_url: str,
     score_threshold: float,
-) -> Callable[[Inputs], ui.TagList]:
-    """Create semantic search results render function.
+    query: str,
+    limit: Optional[int],
+) -> ui.TagList:
+    """Execute semantic search and return results UI.
 
     Args:
         vector_store: LangChain vector store
         base_url: Base URL for source links
         score_threshold: Minimum score threshold
+        query: Search query string
+        limit: Result limit
 
     Returns:
-        Render function for semantic results
+        TagList with semantic search results
     """
+    validation_error = _validate_search_inputs(query, limit)
+    if validation_error:
+        return validation_error
 
-    def semantic_results(input: Inputs) -> ui.TagList:
-        query = input.query()
-        limit = input.limit()
+    if limit is None:
+        raise ValueError("Limit cannot be None after validation")
 
-        validation_error = _validate_search_inputs(query, limit)
-        if validation_error:
-            return validation_error
+    results_with_scores = vector_store.similarity_search_with_score(query, k=limit)
 
-        results_with_scores = vector_store.similarity_search_with_score(query, k=limit)
-
-        if not results_with_scores:
-            return ui.TagList(
-                ui.div(
-                    ui.p("No results found", class_="text-dark"),
-                    class_="alert alert-info",
-                )
+    if not results_with_scores:
+        return ui.TagList(
+            ui.div(
+                ui.p("No results found", class_="text-dark"),
+                class_="alert alert-info",
             )
+        )
 
-        metric_type = "similarity"
-        if len(results_with_scores) >= 2:
-            score1, score2 = results_with_scores[0][1], results_with_scores[1][1]
-            if score1 < score2:
-                metric_type = "distance"
+    metric_type = "similarity"
+    if len(results_with_scores) >= 2:
+        score1, score2 = results_with_scores[0][1], results_with_scores[1][1]
+        if score1 < score2:
+            metric_type = "distance"
 
-        result_cards = []
-        filtered_count = 0
+    result_cards = []
+    filtered_count = 0
 
-        for idx, (doc, score) in enumerate(results_with_scores, 1):
-            if score < score_threshold:
-                filtered_count += 1
-                continue
+    for idx, (doc, score) in enumerate(results_with_scores, 1):
+        if score < score_threshold:
+            filtered_count += 1
+            continue
 
-            score_class = "bg-success" if score > 0.7 else "bg-primary"
-            if metric_type == "distance":
-                score_class = "bg-primary" if score < 0.5 else "bg-secondary"
+        score_class = "bg-success" if score > 0.7 else "bg-primary"
+        if metric_type == "distance":
+            score_class = "bg-primary" if score < 0.5 else "bg-secondary"
 
-            card = _create_result_card(
-                doc=doc,
-                score=score,
-                idx=idx,
-                base_url=base_url,
-                score_class=score_class,
-                score_label=metric_type.title(),
-                content=doc.page_content,
-            )
-            result_cards.append(card)
+        card = _create_result_card(
+            doc=doc,
+            score=score,
+            idx=idx,
+            base_url=base_url,
+            score_class=score_class,
+            score_label=metric_type.title(),
+            content=doc.page_content,
+        )
+        result_cards.append(card)
 
-        return _create_results_list(result_cards, filtered_count, score_threshold)
-
-    return semantic_results
+    return _create_results_list(result_cards, filtered_count, score_threshold)
 
 
 def create_shiny_app(
@@ -358,14 +358,18 @@ def create_shiny_app(
     app_ui = _create_search_ui()
 
     def server(input: Inputs, output: Outputs, session: Session) -> None:
-        bm25_render_fn = _create_bm25_render_function(
-            bm25_retriever, base_url, score_threshold
-        )
-        semantic_render_fn = _create_semantic_render_function(
-            vector_store, base_url, score_threshold
-        )
+        @render.ui
+        @reactive.event(input.search)
+        def bm25_results() -> ui.TagList:
+            return _execute_bm25_search(
+                bm25_retriever, base_url, score_threshold, input.query(), input.limit()
+            )
 
-        output.bm25_results = render.ui(reactive.event(input.search))(bm25_render_fn)
-        output.results = render.ui(reactive.event(input.search))(semantic_render_fn)
+        @render.ui
+        @reactive.event(input.search)
+        def results() -> ui.TagList:
+            return _execute_semantic_search(
+                vector_store, base_url, score_threshold, input.query(), input.limit()
+            )
 
     return App(app_ui, server)
