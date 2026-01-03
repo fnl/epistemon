@@ -33,3 +33,21 @@ def test_rag_chain_initialization() -> None:
     assert chain is not None
     assert chain.retriever == retriever
     assert chain.llm == llm
+
+
+def test_format_context_documents() -> None:
+    """Test that documents are formatted with clear separators and metadata."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    doc1 = Document(page_content="Content from file 1", metadata={"source": "file1.md"})
+    doc2 = Document(page_content="Content from file 2", metadata={"source": "file2.md"})
+
+    context = chain.format_context([doc1, doc2])
+
+    assert "Content from file 1" in context
+    assert "Content from file 2" in context
+    assert "file1.md" in context
+    assert "file2.md" in context
+    assert context.count("---") >= 1

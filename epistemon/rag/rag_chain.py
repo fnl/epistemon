@@ -21,3 +21,22 @@ class RAGChain:
     def __init__(self, retriever: Any, llm: Any) -> None:
         self.retriever = retriever
         self.llm = llm
+
+    def format_context(self, documents: list[Document]) -> str:
+        """Format retrieved documents into context for the LLM.
+
+        Args:
+            documents: List of retrieved documents
+
+        Returns:
+            Formatted context string with document content and metadata
+        """
+        if not documents:
+            return ""
+
+        formatted_docs = []
+        for doc in documents:
+            source = doc.metadata.get("source", "Unknown")
+            formatted_docs.append(f"Source: {source}\n{doc.page_content}")
+
+        return "\n\n---\n\n".join(formatted_docs)
