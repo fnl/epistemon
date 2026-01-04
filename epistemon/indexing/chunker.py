@@ -61,4 +61,9 @@ def load_and_chunk_markdown(
                 "File %s produced no chunks (empty or whitespace-only)", source
             )
 
+        filename_without_extension = file_path.stem
+        source_suffix = f"\n\nSource: {filename_without_extension}"
+        for chunk in chunks:
+            chunk.page_content += source_suffix
+
         return chunks

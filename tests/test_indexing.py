@@ -775,3 +775,13 @@ def test_chunks_do_not_end_with_dangling_headlines() -> None:
                 f"Chunk ends with dangling headline: '{last_line}'\n"
                 f"Full chunk:\n{chunk.page_content}"
             )
+
+
+def test_chunks_include_filename_in_content() -> None:
+    test_file = Path("tests/data/sample.md")
+    chunks = load_and_chunk_markdown(test_file, chunk_size=500, chunk_overlap=100)
+
+    assert len(chunks) > 0
+
+    for chunk in chunks:
+        assert chunk.page_content.endswith("\n\nSource: sample")
