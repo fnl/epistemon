@@ -51,6 +51,22 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
             chunk_overlap=config.chunk_overlap,
         )
 
+        rag_chain = None
+        if config.rag_enabled:
+            logger.info("Creating RAG chain...")
+            from epistemon.indexing.hybrid_retriever import HybridRetriever
+            from epistemon.llm_factory import create_llm
+            from epistemon.retrieval.rag_chain import RAGChain
+
+            hybrid_retriever = HybridRetriever(
+                bm25_retriever=bm25_indexer,
+                vector_store=vector_store,
+                bm25_weight=config.hybrid_bm25_weight,
+                semantic_weight=config.hybrid_semantic_weight,
+            )
+            llm = create_llm(config)
+            rag_chain = RAGChain(retriever=hybrid_retriever, llm=llm)
+
         logger.info("Creating web application...")
         app = create_app(
             vector_store,
@@ -61,6 +77,7 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
                 vector_store, Path(config.input_directory)
             ),
             bm25_retriever=bm25_indexer,
+            rag_chain=rag_chain,
         )
 
         logger.info(f"Starting server at http://{host}:{port}")
