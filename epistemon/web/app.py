@@ -186,6 +186,56 @@ def _serve_markdown_file(
     return HTMLResponse(content=html_template)
 
 
+def _collect_files_from_manager(
+    vector_store_manager: VectorStoreManager,
+) -> dict[str, dict[str, str | float | int]]:
+    files_dict: dict[str, dict[str, str | float | int]] = {}
+    indexed_files = vector_store_manager.get_indexed_files()
+    for abs_path, mtime in indexed_files.items():
+        abs_path_obj = Path(abs_path)
+        try:
+            relative_path = abs_path_obj.relative_to(
+                vector_store_manager.base_directory
+            )
+            source = str(relative_path)
+            if source not in files_dict:
+                iso_date = datetime.fromtimestamp(mtime).isoformat()
+                files_dict[source] = {
+                    "source": source,
+                    "last_modified": iso_date,
+                }
+        except ValueError:
+            continue
+    return files_dict
+
+
+def _collect_files_from_vector_store(
+    vector_store: InMemoryVectorStore,
+) -> dict[str, dict[str, str | float | int]]:
+    files_dict: dict[str, dict[str, str | float | int]] = {}
+    for _doc_id, doc in vector_store.store.items():
+        metadata = doc.get("metadata", {})
+        source = metadata.get("source", "")
+        if source and source not in files_dict:
+            mtime = metadata.get("last_modified", 0)
+            iso_date = datetime.fromtimestamp(mtime).isoformat()
+            files_dict[source] = {
+                "source": source,
+                "last_modified": iso_date,
+            }
+    return files_dict
+
+
+def _sort_files_list(
+    files_list: list[dict[str, str | float | int]], sort_by: str
+) -> list[dict[str, str | float | int]]:
+    if sort_by == "name":
+        files_list.sort(key=lambda f: f["source"])
+    elif sort_by == "date":
+        files_list.sort(key=lambda f: f["last_modified"], reverse=True)
+    return files_list
+
+
 def _list_indexed_files(
     sort_by: str,
     vector_store: VectorStore,
@@ -201,43 +251,15 @@ def _list_indexed_files(
         )
 
     try:
-        files_dict: dict[str, dict[str, str | float | int]] = {}
-
         if vector_store_manager:
-            indexed_files = vector_store_manager.get_indexed_files()
-            for abs_path, mtime in indexed_files.items():
-                abs_path_obj = Path(abs_path)
-                try:
-                    relative_path = abs_path_obj.relative_to(
-                        vector_store_manager.base_directory
-                    )
-                    source = str(relative_path)
-                    if source not in files_dict:
-                        iso_date = datetime.fromtimestamp(mtime).isoformat()
-                        files_dict[source] = {
-                            "source": source,
-                            "last_modified": iso_date,
-                        }
-                except ValueError:
-                    continue
+            files_dict = _collect_files_from_manager(vector_store_manager)
         elif isinstance(vector_store, InMemoryVectorStore):
-            for _doc_id, doc in vector_store.store.items():
-                metadata = doc.get("metadata", {})
-                source = metadata.get("source", "")
-                if source and source not in files_dict:
-                    mtime = metadata.get("last_modified", 0)
-                    iso_date = datetime.fromtimestamp(mtime).isoformat()
-                    files_dict[source] = {
-                        "source": source,
-                        "last_modified": iso_date,
-                    }
+            files_dict = _collect_files_from_vector_store(vector_store)
+        else:
+            files_dict = {}
 
         files_list = list(files_dict.values())
-
-        if sort_by == "name":
-            files_list.sort(key=lambda f: f["source"])
-        elif sort_by == "date":
-            files_list.sort(key=lambda f: f["last_modified"], reverse=True)
+        files_list = _sort_files_list(files_list, sort_by)
 
         return {"files": files_list}
     except Exception as e:
