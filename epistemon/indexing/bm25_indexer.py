@@ -12,34 +12,19 @@ from epistemon.indexing.file_tracker import collect_markdown_files
 
 logger = logging.getLogger(__name__)
 
-ENGLISH_STOP_WORDS = frozenset(
-    {
-        "a",
-        "an",
-        "and",
-        "are",
-        "as",
-        "at",
-        "be",
-        "by",
-        "for",
-        "from",
-        "has",
-        "he",
-        "in",
-        "is",
-        "it",
-        "its",
-        "of",
-        "on",
-        "that",
-        "the",
-        "to",
-        "was",
-        "will",
-        "with",
-    }
-)
+
+def load_stopwords() -> frozenset[str]:
+    """Load English stop-words from file.
+
+    Returns:
+        Frozen set of lowercase stop-words
+    """
+    stopwords_file = Path(__file__).parent / "stopwords.txt"
+    with stopwords_file.open("r") as f:
+        return frozenset(line.strip().lower() for line in f if line.strip())
+
+
+ENGLISH_STOP_WORDS = load_stopwords()
 
 
 def tokenize(text: str) -> list[str]:

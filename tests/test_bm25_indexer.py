@@ -98,3 +98,15 @@ def test_bm25_indexer_filters_common_stopwords() -> None:
     assert len(results_content) > 0
     for _doc, score in results_with_stopwords:
         assert score < results_content[0][1] or score == 0.0
+
+
+def test_bm25_indexer_filters_query_words() -> None:
+    directory = Path("tests/data")
+    indexer = BM25Indexer(directory)
+
+    results_with_query_words = indexer.retrieve("how what when where why", top_k=3)
+    results_content = indexer.retrieve("langchain", top_k=3)
+
+    assert len(results_content) > 0
+    for _doc, score in results_with_query_words:
+        assert score < results_content[0][1] or score == 0.0
