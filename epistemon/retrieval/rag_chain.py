@@ -50,12 +50,12 @@ class RAGResponse:
 def load_default_prompt_template() -> str:
     """Load the default RAG prompt template from file.
 
+    Loads from ./prompts/rag_answer_prompt.txt relative to the current working directory.
+
     Returns:
         The default prompt template string with {context} and {query} placeholders
     """
-    default_path = (
-        Path(__file__).parent.parent.parent / "prompts" / "rag_answer_prompt.txt"
-    )
+    default_path = Path("./prompts/rag_answer_prompt.txt")
     with default_path.open("r") as f:
         return f.read()
 
