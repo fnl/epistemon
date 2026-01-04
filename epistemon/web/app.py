@@ -15,6 +15,7 @@ from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 from epistemon import __version__
 from epistemon.indexing.bm25_indexer import BM25Indexer
 from epistemon.indexing.vector_store_manager import VectorStoreManager
+from epistemon.retrieval.rag_chain import RAGChain
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ def create_app(
     files_directory: Path | None = None,
     vector_store_manager: Optional[VectorStoreManager] = None,
     bm25_retriever: Optional[BM25Indexer] = None,
+    rag_chain: Optional[RAGChain] = None,
 ) -> FastAPI:
     app = FastAPI(
         title="Epistemon API",
@@ -313,6 +315,7 @@ def create_app(
         base_url=base_url,
         score_threshold=score_threshold,
         bm25_retriever=bm25_retriever,
+        rag_chain=rag_chain,
     )
     app.mount("/app", shiny_app)
 

@@ -539,3 +539,15 @@ def test_api_endpoints_work_with_shiny_ui(vector_store: VectorStore) -> None:
     assert len(search_response.json()["results"]) > 0
     assert files_response.status_code == 200
     assert len(files_response.json()["files"]) > 0
+
+
+def test_create_app_accepts_rag_chain_parameter(vector_store: VectorStore) -> None:
+    from unittest.mock import Mock
+
+    from epistemon.retrieval.rag_chain import RAGChain
+
+    mock_rag_chain = Mock(spec=RAGChain)
+
+    app = create_app(vector_store, rag_chain=mock_rag_chain)
+
+    assert app is not None
