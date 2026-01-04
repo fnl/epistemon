@@ -165,7 +165,7 @@ def _create_search_ui() -> Any:
         ui.div(
             ui.row(
                 ui.column(
-                    8,
+                    10,
                     ui.input_text(
                         "query",
                         "Search Query",
@@ -173,7 +173,7 @@ def _create_search_ui() -> Any:
                     ),
                 ),
                 ui.column(
-                    2,
+                    1,
                     ui.input_numeric(
                         "limit",
                         "Result Limit",
@@ -182,7 +182,7 @@ def _create_search_ui() -> Any:
                     ),
                 ),
                 ui.column(
-                    2,
+                    1,
                     ui.div(
                         ui.input_action_button(
                             "search",
