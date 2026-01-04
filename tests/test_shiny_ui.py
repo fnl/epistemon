@@ -221,3 +221,16 @@ def test_create_shiny_app_accepts_rag_chain_parameter() -> None:
     app = create_shiny_app(vector_store, rag_chain=rag_chain)
 
     assert isinstance(app, App)
+
+
+def test_search_ui_has_top_bar_layout_without_sidebar() -> None:
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_shiny_app(vector_store)
+
+    ui_dict = app.ui
+    ui_html = ui_dict.get("html", str(ui_dict))
+
+    assert "<aside" not in ui_html
+    assert "collapse-toggle" not in ui_html
+    assert "Search Query" in ui_html or "search query" in ui_html.lower()
+    assert "Result Limit" in ui_html or "result limit" in ui_html.lower()

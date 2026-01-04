@@ -162,35 +162,47 @@ def _create_search_ui() -> Any:
     """
     return ui.page_fluid(
         ui.panel_title("Epistemon Semantic Search"),
-        ui.layout_sidebar(
-            ui.sidebar(
-                ui.input_text(
-                    "query",
-                    "Search Query",
-                    placeholder="Enter your search query...",
+        ui.div(
+            ui.row(
+                ui.column(
+                    6,
+                    ui.input_text(
+                        "query",
+                        "Search Query",
+                        placeholder="Enter your search query...",
+                    ),
                 ),
-                ui.input_numeric(
-                    "limit",
-                    "Result Limit",
-                    value=5,
-                    min=1,
+                ui.column(
+                    2,
+                    ui.input_numeric(
+                        "limit",
+                        "Result Limit",
+                        value=5,
+                        min=1,
+                    ),
                 ),
-                ui.input_action_button(
-                    "search",
-                    "Search",
-                    class_="btn-primary",
+                ui.column(
+                    2,
+                    ui.div(
+                        ui.input_action_button(
+                            "search",
+                            "Search",
+                            class_="btn-primary w-100",
+                        ),
+                        style="padding-top: 25px;",
+                    ),
                 ),
-                width=300,
             ),
-            ui.layout_columns(
-                ui.div(
-                    ui.h4("BM25 (Keyword Search)"),
-                    ui.output_ui("bm25_results"),
-                ),
-                ui.div(
-                    ui.h4("Semantic (Embedding Search)"),
-                    ui.output_ui("results"),
-                ),
+            class_="mb-3",
+        ),
+        ui.layout_columns(
+            ui.div(
+                ui.h4("BM25 (Keyword Search)"),
+                ui.output_ui("bm25_results"),
+            ),
+            ui.div(
+                ui.h4("Semantic (Embedding Search)"),
+                ui.output_ui("results"),
             ),
         ),
     )
