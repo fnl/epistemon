@@ -27,8 +27,8 @@ This project builds a semantic search engine over Markdown (`.md`) files using *
 
 1. `cp example.config.yaml confilg.yaml` and edit to your needs.
 2. `uv sync`
-3. `uv run upsert-index`
-4. `uv run web-ui`
+3. `uv run upsert-index --config config.yaml`
+4. `uv run web-ui --config config.yaml`
 
 ## Key Features
 
