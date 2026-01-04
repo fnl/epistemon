@@ -24,11 +24,12 @@ class RetrieverProtocol(Protocol):
 class LLMProtocol(Protocol):
     """Protocol for Language Models."""
 
-    def invoke(self, prompt: str) -> Any:
-        """Invoke the LLM with a prompt.
+    def invoke(self, input: Any, **kwargs: Any) -> Any:
+        """Invoke the LLM with input.
 
         Args:
-            prompt: The prompt to send to the LLM
+            input: The input to send to the LLM (prompt string or message sequence)
+            **kwargs: Additional arguments for the LLM
 
         Returns:
             Response object with a .content attribute containing the generated text
