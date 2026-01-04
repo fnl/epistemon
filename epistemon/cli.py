@@ -71,13 +71,13 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
         app = create_app(
             vector_store,
             base_url=f"http://{host}:{port}/files",
-            score_threshold=config.score_threshold,
             files_directory=Path(config.input_directory),
             vector_store_manager=create_vector_store_manager(
                 vector_store, Path(config.input_directory)
             ),
             bm25_retriever=bm25_indexer,
             rag_chain=rag_chain,
+            config=config,
         )
 
         logger.info(f"Starting server at http://{host}:{port}")

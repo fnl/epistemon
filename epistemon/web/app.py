@@ -13,6 +13,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Redirect
 from langchain_core.vectorstores import InMemoryVectorStore, VectorStore
 
 from epistemon import __version__
+from epistemon.config import Configuration
 from epistemon.indexing.bm25_indexer import BM25Indexer
 from epistemon.indexing.vector_store_manager import VectorStoreManager
 from epistemon.retrieval.rag_chain import RAGChain
@@ -28,7 +29,11 @@ def create_app(
     vector_store_manager: Optional[VectorStoreManager] = None,
     bm25_retriever: Optional[BM25Indexer] = None,
     rag_chain: Optional[RAGChain] = None,
+    config: Optional[Configuration] = None,
 ) -> FastAPI:
+    if config is not None:
+        score_threshold = config.score_threshold
+
     app = FastAPI(
         title="Epistemon API",
         description="Semantic Markdown Search API using LangChain and vector embeddings",

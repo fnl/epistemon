@@ -177,7 +177,7 @@ def test_web_ui_command_starts_server(test_config: Configuration) -> None:
         call_kwargs = mock_create_app.call_args[1]
         assert call_args[0] == mock_vector_store
         assert call_kwargs["base_url"] == "http://127.0.0.1:8000/files"
-        assert call_kwargs["score_threshold"] == test_config.score_threshold
+        assert call_kwargs["config"] == test_config
         assert call_kwargs["files_directory"] == Path(test_config.input_directory)
         assert call_kwargs["vector_store_manager"] == mock_manager
         mock_uvicorn_run.assert_called_once_with(mock_app, host="127.0.0.1", port=8000)
@@ -241,3 +241,24 @@ def test_web_ui_command_creates_bm25_indexer(test_config: Configuration) -> None
         )
         call_kwargs = mock_create_app.call_args[1]
         assert call_kwargs["bm25_retriever"] == mock_bm25_instance
+
+
+def test_web_ui_command_passes_config_to_create_app(test_config: Configuration) -> None:
+    with (
+        patch("epistemon.cli.load_config", return_value=test_config),
+        patch("epistemon.cli.create_vector_store") as mock_create_store,
+        patch("epistemon.cli.create_app") as mock_create_app,
+        patch("epistemon.cli.create_vector_store_manager") as mock_create_manager,
+        patch("epistemon.cli.uvicorn.run"),
+    ):
+        mock_vector_store = Mock()
+        mock_create_store.return_value = mock_vector_store
+        mock_app = Mock()
+        mock_create_app.return_value = mock_app
+        mock_manager = Mock()
+        mock_create_manager.return_value = mock_manager
+
+        web_ui_command(None, "127.0.0.1", 8000)
+
+        call_kwargs = mock_create_app.call_args[1]
+        assert call_kwargs["config"] == test_config

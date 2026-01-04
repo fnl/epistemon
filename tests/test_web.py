@@ -551,3 +551,40 @@ def test_create_app_accepts_rag_chain_parameter(vector_store: VectorStore) -> No
     app = create_app(vector_store, rag_chain=mock_rag_chain)
 
     assert app is not None
+
+
+def test_create_app_accepts_config_object(vector_store: VectorStore) -> None:
+
+    from epistemon.config import Configuration
+
+    config = Configuration(
+        input_directory="./tests/data",
+        vector_store_type="inmemory",
+        vector_store_path="./data/chroma_db",
+        embedding_provider="fake",
+        embedding_model="fake-model",
+        chunk_size=500,
+        chunk_overlap=200,
+        search_results_limit=5,
+        score_threshold=0.5,
+        bm25_k1=1.5,
+        bm25_b=0.75,
+        bm25_top_k=5,
+        hybrid_bm25_weight=0.3,
+        hybrid_semantic_weight=0.7,
+        llm_provider="fake",
+        llm_model="fake-model",
+        llm_temperature=0.0,
+        rag_enabled=False,
+        rag_max_context_docs=10,
+        rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
+    )
+
+    app = create_app(
+        vector_store,
+        config=config,
+        base_url="http://localhost:8000/files",
+        files_directory=Path("./tests/data"),
+    )
+
+    assert app is not None
