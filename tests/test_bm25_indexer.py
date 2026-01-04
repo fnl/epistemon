@@ -66,13 +66,13 @@ def test_highlight_keywords_only_matches_whole_words() -> None:
 
 def test_highlight_keywords_matches_whole_word_boundaries() -> None:
     text = "The item is on the list."
-    query = "item is"
+    query = "item list"
 
     result = highlight_keywords(text, query)
 
     assert "<mark>item</mark>" in result
-    assert "<mark>is</mark>" in result
-    assert "The <mark>item</mark> <mark>is</mark> on the list." == result
+    assert "<mark>list</mark>" in result
+    assert "The <mark>item</mark> is on the <mark>list</mark>." == result
 
 
 def test_bm25_indexer_uses_case_insensitive_indexing() -> None:
@@ -110,3 +110,19 @@ def test_bm25_indexer_filters_query_words() -> None:
     assert len(results_content) > 0
     for _doc, score in results_with_query_words:
         assert score < results_content[0][1] or score == 0.0
+
+
+def test_highlight_keywords_filters_stopwords() -> None:
+    text = "The framework is a tool for building applications."
+    query = "the framework building"
+
+    result = highlight_keywords(text, query)
+
+    assert "<mark>framework</mark>" in result
+    assert "<mark>building</mark>" in result
+    assert "<mark>The</mark>" not in result
+    assert "<mark>the</mark>" not in result
+    assert (
+        result
+        == "The <mark>framework</mark> is a tool for <mark>building</mark> applications."
+    )

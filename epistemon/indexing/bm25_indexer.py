@@ -43,14 +43,16 @@ def tokenize(text: str) -> list[str]:
 def highlight_keywords(text: str, query: str) -> str:
     """Highlight matched keywords in text with HTML mark tags.
 
+    Filters out stop-words from the query before highlighting.
+
     Args:
         text: The text to highlight keywords in
         query: Space-separated query keywords
 
     Returns:
-        Text with matched keywords wrapped in <mark> tags
+        Text with matched non-stop-word keywords wrapped in <mark> tags
     """
-    keywords = query.split()
+    keywords = tokenize(query)
     result = text
 
     for keyword in keywords:
