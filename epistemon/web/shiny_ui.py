@@ -313,7 +313,15 @@ def _execute_semantic_search(
     if limit is None:
         raise ValueError("Limit cannot be None after validation")
 
-    results_with_scores = vector_store.similarity_search_with_score(query, k=limit)
+    try:
+        results_with_scores = vector_store.similarity_search_with_score(query, k=limit)
+    except Exception as e:
+        return ui.TagList(
+            ui.div(
+                ui.p(f"Semantic search error: {str(e)}", class_="text-dark"),
+                class_="alert alert-danger",
+            )
+        )
 
     if not results_with_scores:
         return ui.TagList(

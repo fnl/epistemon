@@ -349,3 +349,20 @@ def test_rag_answer_handles_processing_errors() -> None:
     result_html = str(result)
     assert "error" in result_html.lower()
     assert "LLM API error" in result_html
+
+
+def test_semantic_search_handles_vector_store_errors() -> None:
+    from langchain_core.vectorstores import VectorStore
+
+    from epistemon.web.shiny_ui import _execute_semantic_search
+
+    broken_store = Mock(spec=VectorStore)
+    broken_store.similarity_search_with_score.side_effect = Exception(
+        "Vector database connection failed"
+    )
+
+    result = _execute_semantic_search(broken_store, "", 0.0, "test query", 5)
+
+    result_html = str(result)
+    assert "error" in result_html.lower()
+    assert "Vector database connection failed" in result_html
