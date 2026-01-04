@@ -29,9 +29,8 @@ repos:
         always_run: true
         args: [tests]
 
+  - repo: https://github.com/pypa/pip-audit
+    rev: v2.10.0
+    hooks:
       - id: pip-audit
-        name: pip-audit
-        entry: uv run pip-audit
-        language: system
-        pass_filenames: false
         stages: [manual]
