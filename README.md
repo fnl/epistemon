@@ -66,14 +66,20 @@ The application implements three different retrieval approaches for side-by-side
 - Generates natural language answers from retrieved context
 - Two-step process: retrieve then generate
 - Provides synthesized responses instead of raw chunks
+- Displays both the generated answer and the source chunks used
+- Full transparency into which documents informed the answer
 
-The web UI displays results from all three strategies, allowing direct comparison of what each approach surfaces and how they differ in precision, recall, and usefulness.
+The web UI displays results from all three strategies, allowing direct comparison of what each approach surfaces and how they differ in precision, recall, and usefulness. The RAG column shows the AI-generated answer at the top, followed by the source document chunks that were used as context, providing full provenance and allowing verification of the answer.
 
 ### Web Application
 
 - Lists all indexed files and basic metadata
 - Provides a search interface for semantic queries
 - Displays ranked search results in a clean, minimal UI
+- Three-column layout comparing search strategies side-by-side:
+  - BM25 keyword search results with highlighted matches
+  - Semantic embedding search results with similarity scores
+  - RAG-generated answers with source context chunks
 
 ## Technology Stack
 
@@ -166,7 +172,10 @@ Once running, the web UI allows users to:
 
 - View the list of indexed files
 - Submit semantic search queries
-- Explore ranked search result chunks
+- Compare results across three search strategies:
+  - BM25 keyword search with term highlighting
+  - Semantic embedding search with similarity scores
+  - RAG answers with generated text and source context
 
 ### Demo
 
