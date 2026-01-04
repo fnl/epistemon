@@ -21,6 +21,15 @@ repos:
         pass_filenames: false
         always_run: true
 
+      - id: complexipy
+        name: complexipy
+        entry: uv run complexipy
+        language: system
+        types: [python]
+        pass_filenames: false
+        always_run: true
+        args: [epistemon]
+
       - id: pytest
         name: pytest
         entry: uv run pytest
