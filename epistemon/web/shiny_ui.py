@@ -163,26 +163,25 @@ def _create_search_ui() -> Any:
     return ui.page_fluid(
         ui.panel_title("Epistemon Semantic Search"),
         ui.div(
-            ui.row(
-                ui.column(
-                    9,
+            ui.div(
+                ui.div(
                     ui.input_text(
                         "query",
                         "Search Query",
                         placeholder="Enter your search query...",
                     ),
+                    class_="col-9",
                 ),
-                ui.column(
-                    2,
+                ui.div(
                     ui.input_numeric(
                         "limit",
                         "Result Limit",
                         value=5,
                         min=1,
                     ),
+                    class_="col-2",
                 ),
-                ui.column(
-                    1,
+                ui.div(
                     ui.div(
                         ui.input_action_button(
                             "search",
@@ -191,7 +190,9 @@ def _create_search_ui() -> Any:
                         ),
                         style="padding-top: 25px;",
                     ),
+                    class_="col-1",
                 ),
+                class_="row",
             ),
             class_="mb-3",
         ),

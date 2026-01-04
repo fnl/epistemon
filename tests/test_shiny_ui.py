@@ -395,9 +395,9 @@ def test_search_bar_uses_majority_of_screen_width() -> None:
 
     ui_html = str(app.ui)
 
-    assert 'class="col-sm-9"' in ui_html
-    assert 'class="col-sm-2"' in ui_html
-    assert 'class="col-sm-1"' in ui_html
+    assert 'class="col-9"' in ui_html
+    assert 'class="col-2"' in ui_html
+    assert 'class="col-1"' in ui_html
 
 
 def test_search_input_triggers_search_on_enter_key() -> None:
