@@ -165,7 +165,7 @@ def _create_search_ui() -> Any:
         ui.div(
             ui.row(
                 ui.column(
-                    6,
+                    8,
                     ui.input_text(
                         "query",
                         "Search Query",
@@ -194,6 +194,17 @@ def _create_search_ui() -> Any:
                 ),
             ),
             class_="mb-3",
+        ),
+        ui.tags.script(
+            """
+            $(document).ready(function() {
+                $('#query').on('keypress', function(e) {
+                    if (e.which === 13) {
+                        $('#search').click();
+                    }
+                });
+            });
+            """
         ),
         ui.layout_columns(
             ui.div(

@@ -366,3 +366,23 @@ def test_semantic_search_handles_vector_store_errors() -> None:
     result_html = str(result)
     assert "error" in result_html.lower()
     assert "Vector database connection failed" in result_html
+
+
+def test_search_bar_uses_majority_of_screen_width() -> None:
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_shiny_app(vector_store)
+
+    ui_html = str(app.ui)
+
+    assert 'class="col-sm-8"' in ui_html or 'class="col-sm-9"' in ui_html
+
+
+def test_search_input_triggers_search_on_enter_key() -> None:
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_shiny_app(vector_store)
+
+    ui_html = str(app.ui)
+
+    assert 'id="query"' in ui_html
+    assert 'id="search"' in ui_html
+    assert "keypress" in ui_html or "addEventListener" in ui_html
