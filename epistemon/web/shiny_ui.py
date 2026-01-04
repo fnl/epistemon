@@ -1,15 +1,19 @@
 """Shiny UI for semantic search."""
 
+import logging
 from datetime import datetime
 from typing import Any, Optional
 from urllib.parse import quote
 
+import markdown
 from langchain_core.documents import Document
 from langchain_core.vectorstores import VectorStore
 from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 
 from epistemon.indexing.bm25_indexer import BM25Indexer, highlight_keywords
 from epistemon.retrieval.rag_chain import RAGChain
+
+logger = logging.getLogger(__name__)
 
 
 def _validate_search_inputs(query: str, limit: Optional[int]) -> Optional[ui.TagList]:
@@ -39,6 +43,21 @@ def _validate_search_inputs(query: str, limit: Optional[int]) -> Optional[ui.Tag
         )
 
     return None
+
+
+def markdown_to_html(text: str) -> str:
+    """Convert markdown text to HTML.
+
+    Args:
+        text: Markdown formatted text
+
+    Returns:
+        HTML formatted text
+
+    Raises:
+        Exception: If markdown conversion fails
+    """
+    return markdown.markdown(text)
 
 
 def _create_result_card(
@@ -421,11 +440,16 @@ def _execute_rag_answer(
             )
         )
 
+    try:
+        answer_html = markdown_to_html(response.answer)
+        answer_content = ui.HTML(answer_html)
+    except Exception as e:
+        logger.warning(f"Failed to convert markdown to HTML, using plain text: {e}")
+        answer_content = ui.p(response.answer, class_="mb-0")
+
     answer_section = ui.card(
         ui.card_header(ui.strong("Answer"), class_="bg-success text-white"),
-        ui.div(
-            ui.p(response.answer, class_="mb-0"),
-        ),
+        ui.div(answer_content),
         class_="mb-3",
     )
 

@@ -1,5 +1,7 @@
 Answer the following question based on the provided context.
 
+Format your answer using markdown for better readability. Use headings, lists, code blocks, and other markdown formatting as appropriate.
+
 Context:
 {context}
 

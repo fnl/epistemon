@@ -222,3 +222,13 @@ def test_invoke_without_k_uses_all_documents() -> None:
     assert response.source_documents[0] == doc1
     assert response.source_documents[1] == doc2
     assert response.source_documents[2] == doc3
+
+
+def test_default_prompt_instructs_llm_to_produce_markdown() -> None:
+    """Test that the default prompt template instructs the LLM to produce markdown."""
+    from epistemon.retrieval.rag_chain import load_default_prompt_template
+
+    prompt = load_default_prompt_template()
+
+    assert "markdown" in prompt.lower()
+    assert "format" in prompt.lower() or "use" in prompt.lower()

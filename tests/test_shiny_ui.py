@@ -373,6 +373,62 @@ def test_llm_api_error_displays_as_alert_not_answer_card() -> None:
     )
 
 
+def test_rag_answer_converts_markdown_to_html() -> None:
+    from epistemon.retrieval.rag_chain import RAGChain, RAGResponse
+    from epistemon.web.shiny_ui import _execute_rag_answer
+
+    rag_chain = Mock(spec=RAGChain)
+    mock_doc = Document(
+        page_content="Test content",
+        metadata={"source": "test.md", "last_modified": 1234567890.0},
+    )
+    mock_response = RAGResponse(
+        answer="# Heading\n\nThis is **bold** text with a [link](http://example.com).",
+        source_documents=[mock_doc],
+        query="test query",
+    )
+    rag_chain.invoke.return_value = mock_response
+
+    result = _execute_rag_answer(rag_chain, "", 0.0, "test query", 5)
+
+    result_html = str(result)
+    assert "<h1>Heading</h1>" in result_html
+    assert "<strong>bold</strong>" in result_html
+    assert '<a href="http://example.com">link</a>' in result_html
+
+
+def test_rag_answer_falls_back_to_plain_text_on_html_conversion_error() -> None:
+    from unittest.mock import patch
+
+    from epistemon.retrieval.rag_chain import RAGChain, RAGResponse
+    from epistemon.web.shiny_ui import _execute_rag_answer
+
+    rag_chain = Mock(spec=RAGChain)
+    mock_doc = Document(
+        page_content="Test content",
+        metadata={"source": "test.md", "last_modified": 1234567890.0},
+    )
+    mock_response = RAGResponse(
+        answer="Plain text answer",
+        source_documents=[mock_doc],
+        query="test query",
+    )
+    rag_chain.invoke.return_value = mock_response
+
+    with patch("epistemon.web.shiny_ui.markdown_to_html") as mock_md_to_html:
+        mock_md_to_html.side_effect = Exception("Markdown conversion failed")
+
+        with patch("epistemon.web.shiny_ui.logger") as mock_logger:
+            result = _execute_rag_answer(rag_chain, "", 0.0, "test query", 5)
+
+            mock_logger.warning.assert_called_once()
+            warning_msg = mock_logger.warning.call_args[0][0]
+            assert "markdown" in warning_msg.lower() or "html" in warning_msg.lower()
+
+    result_html = str(result)
+    assert "Plain text answer" in result_html
+
+
 def test_semantic_search_handles_vector_store_errors() -> None:
     from langchain_core.vectorstores import VectorStore
 
