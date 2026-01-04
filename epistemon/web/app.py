@@ -186,6 +186,67 @@ def _serve_markdown_file(
     return HTMLResponse(content=html_template)
 
 
+def _list_indexed_files(
+    sort_by: str,
+    vector_store: VectorStore,
+    vector_store_manager: Optional[VectorStoreManager],
+) -> dict[str, list[dict[str, str | float | int]]] | JSONResponse:
+    if sort_by not in ["name", "date"]:
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "Invalid sort_by parameter",
+                "detail": "sort_by must be 'name' or 'date'",
+            },
+        )
+
+    try:
+        files_dict: dict[str, dict[str, str | float | int]] = {}
+
+        if vector_store_manager:
+            indexed_files = vector_store_manager.get_indexed_files()
+            for abs_path, mtime in indexed_files.items():
+                abs_path_obj = Path(abs_path)
+                try:
+                    relative_path = abs_path_obj.relative_to(
+                        vector_store_manager.base_directory
+                    )
+                    source = str(relative_path)
+                    if source not in files_dict:
+                        iso_date = datetime.fromtimestamp(mtime).isoformat()
+                        files_dict[source] = {
+                            "source": source,
+                            "last_modified": iso_date,
+                        }
+                except ValueError:
+                    continue
+        elif isinstance(vector_store, InMemoryVectorStore):
+            for _doc_id, doc in vector_store.store.items():
+                metadata = doc.get("metadata", {})
+                source = metadata.get("source", "")
+                if source and source not in files_dict:
+                    mtime = metadata.get("last_modified", 0)
+                    iso_date = datetime.fromtimestamp(mtime).isoformat()
+                    files_dict[source] = {
+                        "source": source,
+                        "last_modified": iso_date,
+                    }
+
+        files_list = list(files_dict.values())
+
+        if sort_by == "name":
+            files_list.sort(key=lambda f: f["source"])
+        elif sort_by == "date":
+            files_list.sort(key=lambda f: f["last_modified"], reverse=True)
+
+        return {"files": files_list}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to retrieve file list", "detail": str(e)},
+        )
+
+
 def create_app(
     vector_store: VectorStore,
     base_url: str = "",
@@ -222,60 +283,7 @@ def create_app(
     def list_files_endpoint(
         sort_by: str = Query("name", description="Sort by 'name' or 'date'"),
     ) -> dict[str, list[dict[str, str | float | int]]] | JSONResponse:
-        if sort_by not in ["name", "date"]:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "error": "Invalid sort_by parameter",
-                    "detail": "sort_by must be 'name' or 'date'",
-                },
-            )
-
-        try:
-            files_dict: dict[str, dict[str, str | float | int]] = {}
-
-            if vector_store_manager:
-                indexed_files = vector_store_manager.get_indexed_files()
-                for abs_path, mtime in indexed_files.items():
-                    abs_path_obj = Path(abs_path)
-                    try:
-                        relative_path = abs_path_obj.relative_to(
-                            vector_store_manager.base_directory
-                        )
-                        source = str(relative_path)
-                        if source not in files_dict:
-                            iso_date = datetime.fromtimestamp(mtime).isoformat()
-                            files_dict[source] = {
-                                "source": source,
-                                "last_modified": iso_date,
-                            }
-                    except ValueError:
-                        continue
-            elif isinstance(vector_store, InMemoryVectorStore):
-                for _doc_id, doc in vector_store.store.items():
-                    metadata = doc.get("metadata", {})
-                    source = metadata.get("source", "")
-                    if source and source not in files_dict:
-                        mtime = metadata.get("last_modified", 0)
-                        iso_date = datetime.fromtimestamp(mtime).isoformat()
-                        files_dict[source] = {
-                            "source": source,
-                            "last_modified": iso_date,
-                        }
-
-            files_list = list(files_dict.values())
-
-            if sort_by == "name":
-                files_list.sort(key=lambda f: f["source"])
-            elif sort_by == "date":
-                files_list.sort(key=lambda f: f["last_modified"], reverse=True)
-
-            return {"files": files_list}
-        except Exception as e:
-            return JSONResponse(
-                status_code=500,
-                content={"error": "Failed to retrieve file list", "detail": str(e)},
-            )
+        return _list_indexed_files(sort_by, vector_store, vector_store_manager)
 
     @app.get("/search", response_model=None)
     def search_endpoint(
