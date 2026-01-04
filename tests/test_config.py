@@ -352,3 +352,53 @@ rag_prompt_template_path: "./prompts/custom.txt"
     config = load_config(config_path)
 
     assert config.rag_prompt_template_path == "./prompts/custom.txt"
+
+
+def test_load_config_with_openai_embedding_provider_requires_api_key(
+    temp_yaml_file: Callable[[str], str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test that using OpenAI embedding provider without API key raises an error."""
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    config_content = """
+embedding_provider: "openai"
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(
+        ValueError,
+        match="OPENAI_API_KEY environment variable is required when using openai embedding provider",
+    ):
+        load_config(config_path)
+
+
+def test_load_config_with_openai_llm_provider_requires_api_key(
+    temp_yaml_file: Callable[[str], str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test that using OpenAI LLM provider without API key raises an error."""
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    config_content = """
+llm_provider: "openai"
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(
+        ValueError,
+        match="OPENAI_API_KEY environment variable is required when using openai LLM provider",
+    ):
+        load_config(config_path)
+
+
+def test_load_config_with_openai_providers_and_valid_api_key_succeeds(
+    temp_yaml_file: Callable[[str], str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test that using OpenAI providers with API key succeeds."""
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-key-123")
+    config_content = """
+embedding_provider: "openai"
+llm_provider: "openai"
+"""
+    config_path = temp_yaml_file(config_content)
+    config = load_config(config_path)
+
+    assert config.embedding_provider == "openai"
+    assert config.llm_provider == "openai"

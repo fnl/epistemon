@@ -1,5 +1,6 @@
 """Configuration module for Epistemon."""
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final, Optional
@@ -150,6 +151,18 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
             f"Invalid llm_provider: {merged_config['llm_provider']}. "
             f"Must be one of: {', '.join(VALID_LLM_PROVIDERS)}"
         )
+
+    if merged_config["embedding_provider"] == "openai":
+        if not os.environ.get("OPENAI_API_KEY"):
+            raise ValueError(
+                "OPENAI_API_KEY environment variable is required when using openai embedding provider"
+            )
+
+    if merged_config["llm_provider"] == "openai":
+        if not os.environ.get("OPENAI_API_KEY"):
+            raise ValueError(
+                "OPENAI_API_KEY environment variable is required when using openai LLM provider"
+            )
 
     if merged_config["chunk_size"] <= 0:
         raise ValueError(
