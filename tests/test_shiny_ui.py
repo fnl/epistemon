@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 from unittest.mock import Mock
 
 from langchain_core.documents import Document
@@ -304,7 +305,7 @@ def test_rag_answer_displays_answer_and_sources() -> None:
     assert "This is the generated answer" in result_html
     assert "Source content about testing" in result_html
     assert "test.md" in result_html
-    rag_chain.invoke.assert_called_once_with("test query")
+    rag_chain.invoke.assert_called_once_with("test query", k=5)
 
 
 def test_rag_answer_handles_slow_processing() -> None:
@@ -324,7 +325,7 @@ def test_rag_answer_handles_slow_processing() -> None:
         query="slow query",
     )
 
-    def slow_invoke(query: str) -> RAGResponse:
+    def slow_invoke(query: str, k: Optional[int] = None) -> RAGResponse:
         time.sleep(0.1)
         return mock_response
 

@@ -104,17 +104,22 @@ class RAGChain:
 
         return "\n\n---\n\n".join(formatted_docs)
 
-    def invoke(self, query: str) -> RAGResponse:
+    def invoke(self, query: str, k: Optional[int] = None) -> RAGResponse:
         """Generate an answer to the query using retrieved documents.
 
         Args:
             query: The user's question
+            k: Optional maximum number of documents to use for context.
+                If None, uses all retrieved documents.
 
         Returns:
             RAGResponse with the generated answer and source documents
         """
         results = self.retriever.retrieve(query)
         source_documents = [doc for doc, _score in results]
+
+        if k is not None and k > 0:
+            source_documents = source_documents[:k]
 
         if not source_documents:
             return RAGResponse(

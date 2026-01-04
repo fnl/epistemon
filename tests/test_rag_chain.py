@@ -165,3 +165,60 @@ def test_custom_prompt_template() -> None:
     assert "Context:" in call_args
     assert "Python is great" in call_args
     assert isinstance(response, RAGResponse)
+
+
+def test_invoke_respects_k_limit() -> None:
+    """Test that invoke limits the number of documents when k is specified."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    doc1 = Document(page_content="First doc", metadata={"source": "file1.md"})
+    doc2 = Document(page_content="Second doc", metadata={"source": "file2.md"})
+    doc3 = Document(page_content="Third doc", metadata={"source": "file3.md"})
+    doc4 = Document(page_content="Fourth doc", metadata={"source": "file4.md"})
+
+    retriever.retrieve.return_value = [
+        (doc1, 0.95),
+        (doc2, 0.90),
+        (doc3, 0.85),
+        (doc4, 0.80),
+    ]
+    llm.invoke.return_value = Mock(content="Answer based on limited docs.")
+
+    response = chain.invoke("test query", k=2)
+
+    assert len(response.source_documents) == 2
+    assert response.source_documents[0] == doc1
+    assert response.source_documents[1] == doc2
+
+    call_args = llm.invoke.call_args[0][0]
+    assert "First doc" in call_args
+    assert "Second doc" in call_args
+    assert "Third doc" not in call_args
+    assert "Fourth doc" not in call_args
+
+
+def test_invoke_without_k_uses_all_documents() -> None:
+    """Test that invoke uses all documents when k is not specified."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    doc1 = Document(page_content="First doc", metadata={"source": "file1.md"})
+    doc2 = Document(page_content="Second doc", metadata={"source": "file2.md"})
+    doc3 = Document(page_content="Third doc", metadata={"source": "file3.md"})
+
+    retriever.retrieve.return_value = [
+        (doc1, 0.95),
+        (doc2, 0.90),
+        (doc3, 0.85),
+    ]
+    llm.invoke.return_value = Mock(content="Answer based on all docs.")
+
+    response = chain.invoke("test query")
+
+    assert len(response.source_documents) == 3
+    assert response.source_documents[0] == doc1
+    assert response.source_documents[1] == doc2
+    assert response.source_documents[2] == doc3
