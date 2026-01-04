@@ -40,6 +40,7 @@ class Configuration:
     llm_temperature: float
     rag_enabled: bool
     rag_max_context_docs: int
+    rag_prompt_template_path: str
 
 
 def load_config(config_path: Optional[str] = None) -> Configuration:
@@ -64,6 +65,7 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "llm_temperature": 0.0,
         "rag_enabled": True,
         "rag_max_context_docs": 10,
+        "rag_prompt_template_path": "./prompts/default.txt",
     }
 
     config_data: dict[str, Any]
@@ -90,6 +92,7 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "embedding_model",
         "llm_provider",
         "llm_model",
+        "rag_prompt_template_path",
     ]
     for field in string_fields:
         if not isinstance(merged_config[field], str):
@@ -229,4 +232,5 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         llm_temperature=merged_config["llm_temperature"],
         rag_enabled=merged_config["rag_enabled"],
         rag_max_context_docs=merged_config["rag_max_context_docs"],
+        rag_prompt_template_path=merged_config["rag_prompt_template_path"],
     )

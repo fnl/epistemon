@@ -94,6 +94,7 @@ def create_test_config(
         llm_temperature=0.0,
         rag_enabled=False,
         rag_max_context_docs=10,
+        rag_prompt_template_path="./prompts/default.txt",
     )
 
 

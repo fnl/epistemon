@@ -332,3 +332,23 @@ hybrid_semantic_weight: 0.6
 
     assert config.hybrid_bm25_weight == 0.4
     assert config.hybrid_semantic_weight == 0.6
+
+
+def test_load_config_includes_rag_prompt_template_path_default() -> None:
+    """Test that configuration includes RAG prompt template path default."""
+    config = load_config()
+
+    assert config.rag_prompt_template_path == "./prompts/default.txt"
+
+
+def test_load_config_allows_rag_prompt_template_path_override(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test that RAG prompt template path can be overridden."""
+    config_content = """
+rag_prompt_template_path: "./prompts/custom.txt"
+"""
+    config_path = temp_yaml_file(config_content)
+    config = load_config(config_path)
+
+    assert config.rag_prompt_template_path == "./prompts/custom.txt"
