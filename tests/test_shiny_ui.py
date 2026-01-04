@@ -305,3 +305,47 @@ def test_rag_answer_displays_answer_and_sources() -> None:
     assert "Source content about testing" in result_html
     assert "test.md" in result_html
     rag_chain.invoke.assert_called_once_with("test query")
+
+
+def test_rag_answer_handles_slow_processing() -> None:
+    import time
+
+    from epistemon.retrieval.rag_chain import RAGChain, RAGResponse
+    from epistemon.web.shiny_ui import _execute_rag_answer
+
+    rag_chain = Mock(spec=RAGChain)
+    mock_doc = Document(
+        page_content="Result after delay",
+        metadata={"source": "slow.md", "last_modified": 1234567890.0},
+    )
+    mock_response = RAGResponse(
+        answer="Answer after processing delay",
+        source_documents=[mock_doc],
+        query="slow query",
+    )
+
+    def slow_invoke(query: str) -> RAGResponse:
+        time.sleep(0.1)
+        return mock_response
+
+    rag_chain.invoke.side_effect = slow_invoke
+
+    result = _execute_rag_answer(rag_chain, "", 0.0, "slow query", 5)
+
+    result_html = str(result)
+    assert "Answer after processing delay" in result_html
+    assert "Result after delay" in result_html
+
+
+def test_rag_answer_handles_processing_errors() -> None:
+    from epistemon.retrieval.rag_chain import RAGChain
+    from epistemon.web.shiny_ui import _execute_rag_answer
+
+    rag_chain = Mock(spec=RAGChain)
+    rag_chain.invoke.side_effect = Exception("LLM API error")
+
+    result = _execute_rag_answer(rag_chain, "", 0.0, "test query", 5)
+
+    result_html = str(result)
+    assert "error" in result_html.lower()
+    assert "LLM API error" in result_html
