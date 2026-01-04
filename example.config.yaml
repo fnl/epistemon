@@ -4,32 +4,152 @@
 # The application will run without a config file using the defaults below.
 # Uncomment and modify any field to override the default.
 
+# =============================================================================
+# Input and Storage Configuration
+# =============================================================================
+
 # Input directory containing markdown files to index
 # Default: "./tests/data"
-input_directory: "./tests/data"
+# input_directory: "./tests/data"
 
-# Embedding configuration
-# Default provider: "huggingface" (options: fake, huggingface, openai)
-embedding_provider: "huggingface"
-# Default model: "all-MiniLM-L6-v2"
-embedding_model: "all-MiniLM-L6-v2"
+# Vector store configuration
+# Type of vector store to use for embeddings
+# Options: inmemory, chroma, weaviate, duckdb, qdrant
+# Default: "chroma"
+# vector_store_type: "chroma"
+
+# Path where the vector store data will be persisted
+# Default: "./data/chroma_db"
+# vector_store_path: "./data/chroma_db"
+
+# =============================================================================
+# Embedding Configuration
+# =============================================================================
+
+# Embedding provider to use for document vectorization
+# Options: fake, huggingface, openai
+# Default: "huggingface"
+# embedding_provider: "huggingface"
+
+# Embedding model to use
+# For huggingface: "all-MiniLM-L6-v2" (default, 383 dims, fast, local)
+# For openai: "text-embedding-3-small" (1536 dims, high quality, requires API key)
+# Default: "all-MiniLM-L6-v2"
+# embedding_model: "all-MiniLM-L6-v2"
 
 # For OpenAI embeddings, uncomment and set OPENAI_API_KEY environment variable:
 # embedding_provider: "openai"
 # embedding_model: "text-embedding-3-small"
 
-# Vector store configuration
-# Default type: "chroma" (options: inmemory, chroma)
-vector_store_type: "chroma"
-# Default path: "./data/chroma_db"
-vector_store_path: "./data/chroma_db"
+# =============================================================================
+# Text Chunking Configuration
+# =============================================================================
 
-# Text chunking configuration
-# Default chunk size: 1000 characters
+# Chunk size in characters for splitting documents
+# Larger chunks preserve more context but may reduce retrieval precision
+# Default: 500
 chunk_size: 1000
-# Default overlap: 200 characters
-chunk_overlap: 200
 
-# Search configuration
-# Default results limit: 5
-search_results_limit: 5
+# Overlap between chunks in characters
+# Helps maintain context across chunk boundaries
+# Default: 200
+# chunk_overlap: 200
+
+# =============================================================================
+# Search Configuration
+# =============================================================================
+
+# Maximum number of results to return from searches
+# Default: 5
+# search_results_limit: 5
+
+# Minimum similarity score threshold for results (0.0 to 1.0)
+# Results below this threshold will be filtered out
+# Set to 0.0 to include all results regardless of score
+# Default: 0.0
+# score_threshold: 0.0
+
+# =============================================================================
+# BM25 Keyword Search Configuration
+# =============================================================================
+
+# BM25 (Best Matching 25) is a ranking function for keyword-based search
+
+# k1: Term frequency saturation parameter
+# Controls how quickly term frequency influence saturates
+# Higher values (1.2-2.0) = more weight on term frequency
+# Lower values (0.5-1.2) = less weight on term frequency
+# Typical range: 1.2 to 2.0
+# Default: 1.5
+# bm25_k1: 1.5
+
+# b: Length normalization parameter
+# Controls how much document length affects ranking
+# 0 = no length normalization (raw term frequencies)
+# 1 = full length normalization (penalize long documents)
+# Typical range: 0.5 to 0.9
+# Default: 0.75
+# bm25_b: 0.75
+
+# top_k: Maximum number of BM25 results to return
+# Default: 5
+# bm25_top_k: 5
+
+# =============================================================================
+# Hybrid Search Configuration
+# =============================================================================
+
+# Hybrid search combines BM25 keyword search with semantic embedding search
+# using Reciprocal Rank Fusion (RRF) to merge results
+
+# Weight for BM25 keyword search results in hybrid fusion (0.0 to 1.0)
+# Higher values give more importance to keyword matching
+# Default: 0.3
+# hybrid_bm25_weight: 0.3
+
+# Weight for semantic embedding search results in hybrid fusion (0.0 to 1.0)
+# Higher values give more importance to semantic similarity
+# Default: 0.7
+# hybrid_semantic_weight: 0.7
+
+# =============================================================================
+# LLM Configuration
+# =============================================================================
+
+# LLM provider for RAG (Retrieval-Augmented Generation) question answering
+# Options: fake, openai
+# Default: "openai"
+# llm_provider: "openai"
+
+# LLM model to use for generating answers
+# For openai: "gpt-4o-mini" (default, fast, cost-effective)
+#             "gpt-4o" (more capable, higher quality)
+# Default: "gpt-4o-mini"
+# llm_model: "gpt-4o-mini"
+
+# For OpenAI LLM, set OPENAI_API_KEY environment variable
+
+# Temperature for LLM generation (0.0 to 1.0)
+# 0.0 = deterministic, focused responses
+# 1.0 = creative, varied responses
+# Default: 0.0
+# llm_temperature: 0.0
+
+# =============================================================================
+# RAG (Retrieval-Augmented Generation) Configuration
+# =============================================================================
+
+# Enable or disable RAG question answering
+# When enabled, the system can generate answers using retrieved documents
+# Default: true
+# rag_enabled: true
+
+# Maximum number of documents to include as context for RAG
+# More documents provide more context but increase token usage
+# Default: 10
+# rag_max_context_docs: 10
+
+# Path to the prompt template file for RAG answer generation
+# The template must contain {context} and {query} placeholders
+# Default: "./prompts/rag_answer_prompt.txt"
+# rag_prompt_template_path: "./prompts/rag_answer_prompt.txt"
