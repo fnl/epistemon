@@ -18,6 +18,8 @@ repos:
         args: [--strict]
         additional_dependencies:
           - langchain>=0.3.0
+          - langchain-huggingface>=1.2.0
+          - langchain-openai>=1.1.6
           - types-requests
           - types-pyyaml
           - types-Markdown

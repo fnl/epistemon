@@ -80,6 +80,10 @@ ignore_missing_imports = true
 module = "epistemon.web.*"
 disable_error_code = ["misc"]
 
+[[tool.mypy.overrides]]
+module = "rank_bm25"
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 markers = [
     "slow: slow tests including performance tests and e2e tests (run with -m slow)",

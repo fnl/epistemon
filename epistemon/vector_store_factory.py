@@ -21,9 +21,9 @@ def create_embeddings(config: Configuration) -> Embeddings:
     if config.embedding_provider == "fake":
         return FakeEmbeddings(size=384)
     elif config.embedding_provider == "huggingface":
-        return HuggingFaceEmbeddings(model_name=config.embedding_model)  # type: ignore[no-any-return]
+        return HuggingFaceEmbeddings(model_name=config.embedding_model)
     elif config.embedding_provider == "openai":
-        return OpenAIEmbeddings(model=config.embedding_model)  # type: ignore[no-any-return]
+        return OpenAIEmbeddings(model=config.embedding_model)
     else:
         raise ValueError(f"Unsupported embedding provider: {config.embedding_provider}")
 
