@@ -369,6 +369,38 @@ def _execute_bm25_search(
     return _create_results_list(result_cards, filtered_count, score_threshold)
 
 
+def _detect_metric_type(results_with_scores: list[tuple[Document, float]]) -> str:
+    """Detect whether scores represent similarity or distance metrics.
+
+    Args:
+        results_with_scores: List of (document, score) tuples
+
+    Returns:
+        Either "similarity" or "distance"
+    """
+    if len(results_with_scores) >= 2:
+        score1, score2 = results_with_scores[0][1], results_with_scores[1][1]
+        if score1 < score2:
+            return "distance"
+    return "similarity"
+
+
+def _determine_score_class(score: float, metric_type: str) -> str:
+    """Determine CSS class for score badge based on metric type.
+
+    Args:
+        score: Relevance score value
+        metric_type: Either "similarity" or "distance"
+
+    Returns:
+        CSS class name for score badge
+    """
+    if metric_type == "similarity":
+        return "bg-success" if score > 0.7 else "bg-primary"
+    else:
+        return "bg-primary" if score < 0.5 else "bg-secondary"
+
+
 def _execute_semantic_search(
     vector_store: VectorStore,
     base_url: str,
@@ -424,11 +456,7 @@ def _execute_semantic_search(
             )
         )
 
-    metric_type = "similarity"
-    if len(results_with_scores) >= 2:
-        score1, score2 = results_with_scores[0][1], results_with_scores[1][1]
-        if score1 < score2:
-            metric_type = "distance"
+    metric_type = _detect_metric_type(results_with_scores)
 
     result_cards = []
     filtered_count = 0
@@ -438,9 +466,7 @@ def _execute_semantic_search(
             filtered_count += 1
             continue
 
-        score_class = "bg-success" if score > 0.7 else "bg-primary"
-        if metric_type == "distance":
-            score_class = "bg-primary" if score < 0.5 else "bg-secondary"
+        score_class = _determine_score_class(score, metric_type)
 
         card = _create_result_card(
             doc=doc,

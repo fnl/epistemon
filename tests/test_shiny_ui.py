@@ -564,3 +564,80 @@ def test_semantic_search_shows_no_results_when_query_has_no_matches() -> None:
     assert "no results found" in result_html.lower()
     assert "vector store is empty" not in result_html.lower()
     assert "upsert-index" not in result_html.lower()
+
+
+def test_detect_metric_type_returns_similarity_for_ascending_scores() -> None:
+    from epistemon.web.shiny_ui import _detect_metric_type
+
+    mock_doc1 = Document(page_content="First result", metadata={})
+    mock_doc2 = Document(page_content="Second result", metadata={})
+    results_with_scores = [(mock_doc1, 0.95), (mock_doc2, 0.85)]
+
+    metric_type = _detect_metric_type(results_with_scores)
+
+    assert metric_type == "similarity"
+
+
+def test_detect_metric_type_returns_distance_for_descending_scores() -> None:
+    from epistemon.web.shiny_ui import _detect_metric_type
+
+    mock_doc1 = Document(page_content="First result", metadata={})
+    mock_doc2 = Document(page_content="Second result", metadata={})
+    results_with_scores = [(mock_doc1, 0.15), (mock_doc2, 0.35)]
+
+    metric_type = _detect_metric_type(results_with_scores)
+
+    assert metric_type == "distance"
+
+
+def test_detect_metric_type_returns_similarity_for_single_result() -> None:
+    from epistemon.web.shiny_ui import _detect_metric_type
+
+    mock_doc = Document(page_content="Only result", metadata={})
+    results_with_scores = [(mock_doc, 0.85)]
+
+    metric_type = _detect_metric_type(results_with_scores)
+
+    assert metric_type == "similarity"
+
+
+def test_detect_metric_type_returns_similarity_for_empty_results() -> None:
+    from epistemon.web.shiny_ui import _detect_metric_type
+
+    results_with_scores: list[tuple[Document, float]] = []
+
+    metric_type = _detect_metric_type(results_with_scores)
+
+    assert metric_type == "similarity"
+
+
+def test_determine_score_class_for_high_similarity() -> None:
+    from epistemon.web.shiny_ui import _determine_score_class
+
+    score_class = _determine_score_class(0.85, "similarity")
+
+    assert score_class == "bg-success"
+
+
+def test_determine_score_class_for_low_similarity() -> None:
+    from epistemon.web.shiny_ui import _determine_score_class
+
+    score_class = _determine_score_class(0.5, "similarity")
+
+    assert score_class == "bg-primary"
+
+
+def test_determine_score_class_for_low_distance() -> None:
+    from epistemon.web.shiny_ui import _determine_score_class
+
+    score_class = _determine_score_class(0.3, "distance")
+
+    assert score_class == "bg-primary"
+
+
+def test_determine_score_class_for_high_distance() -> None:
+    from epistemon.web.shiny_ui import _determine_score_class
+
+    score_class = _determine_score_class(0.6, "distance")
+
+    assert score_class == "bg-secondary"
