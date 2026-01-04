@@ -39,8 +39,9 @@ def test_bm25_retriever_returns_documents_with_scores() -> None:
     assert len(results) <= 3
     assert all(isinstance(doc, Document) for doc, score in results)
     assert all(isinstance(score, float) for doc, score in results)
-    assert all(score >= 0 for doc, score in results)
-    assert results[0][1] >= results[1][1]
+    assert all(score > 0 for doc, score in results)
+    if len(results) >= 2:
+        assert results[0][1] >= results[1][1]
 
 
 def test_highlight_keywords_wraps_matched_keywords_with_mark_tags() -> None:
@@ -126,3 +127,12 @@ def test_highlight_keywords_filters_stopwords() -> None:
         result
         == "The <mark>framework</mark> is a tool for <mark>building</mark> applications."
     )
+
+
+def test_bm25_returns_empty_results_for_completely_unmatched_query() -> None:
+    directory = Path("tests/data")
+    indexer = BM25Indexer(directory)
+
+    results = indexer.retrieve("xyzqwertynonexistent", top_k=5)
+
+    assert len(results) == 0

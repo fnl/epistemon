@@ -113,4 +113,10 @@ class BM25Indexer:
             :top_k
         ]
 
-        return [(self.documents[i], float(scores[i])) for i in top_indices]
+        results = [
+            (self.documents[i], float(scores[i]))
+            for i in top_indices
+            if scores[i] > 0.0
+        ]
+
+        return results
