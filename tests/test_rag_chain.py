@@ -232,3 +232,42 @@ def test_default_prompt_instructs_llm_to_produce_markdown() -> None:
 
     assert "markdown" in prompt.lower()
     assert "format" in prompt.lower() or "use" in prompt.lower()
+
+
+def test_format_context_includes_urls_when_base_url_provided() -> None:
+    """Test that context includes full URLs when base_url is provided."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    doc1 = Document(page_content="Content 1", metadata={"source": "docs/file1.md"})
+    doc2 = Document(page_content="Content 2", metadata={"source": "docs/file2.md"})
+
+    context = chain.format_context([doc1, doc2], base_url="http://example.com/files")
+
+    assert "http://example.com/files/docs/file1.md" in context
+    assert "http://example.com/files/docs/file2.md" in context
+    assert "Content 1" in context
+    assert "Content 2" in context
+
+
+def test_invoke_passes_base_url_to_context() -> None:
+    """Test that invoke passes base_url to format_context."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    doc1 = Document(
+        page_content="Test content",
+        metadata={"source": "test.md"},
+    )
+
+    retriever.retrieve.return_value = [(doc1, 0.9)]
+    llm.invoke.return_value = Mock(
+        content="Answer with [source](http://example.com/files/test.md)"
+    )
+
+    chain.invoke("test query", base_url="http://example.com/files")
+
+    call_args = llm.invoke.call_args[0][0]
+    assert "http://example.com/files/test.md" in call_args

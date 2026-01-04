@@ -2,6 +2,8 @@ Answer the following question based on the provided context.
 
 Format your answer using markdown for better readability. Use headings, lists, code blocks, and other markdown formatting as appropriate.
 
+When citing information from the sources, create markdown links to the source URLs provided in the context. Use the format [descriptive text](URL) to link to the sources where you found the information.
+
 Context:
 {context}
 

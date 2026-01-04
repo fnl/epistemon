@@ -432,7 +432,7 @@ def _execute_rag_answer(
         return validation_error
 
     try:
-        response = rag_chain.invoke(query, k=limit)
+        response = rag_chain.invoke(query, k=limit, base_url=base_url)
     except Exception as e:
         return ui.TagList(
             ui.div(

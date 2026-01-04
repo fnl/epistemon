@@ -85,11 +85,12 @@ class RAGChain:
         self.llm = llm
         self.prompt_template = prompt_template or load_default_prompt_template()
 
-    def format_context(self, documents: list[Document]) -> str:
+    def format_context(self, documents: list[Document], base_url: str = "") -> str:
         """Format retrieved documents into context for the LLM.
 
         Args:
             documents: List of retrieved documents
+            base_url: Optional base URL for constructing full URLs to sources
 
         Returns:
             Formatted context string with document content and metadata
@@ -100,17 +101,29 @@ class RAGChain:
         formatted_docs = []
         for doc in documents:
             source = doc.metadata.get("source", "Unknown")
-            formatted_docs.append(f"Source: {source}\n{doc.page_content}")
+            if base_url and source != "Unknown":
+                from urllib.parse import quote
+
+                full_url = f"{base_url}/{quote(source)}"
+                formatted_docs.append(
+                    f"Source: {source}\nURL: {full_url}\n{doc.page_content}"
+                )
+            else:
+                formatted_docs.append(f"Source: {source}\n{doc.page_content}")
 
         return "\n\n---\n\n".join(formatted_docs)
 
-    def invoke(self, query: str, k: Optional[int] = None) -> RAGResponse:
+    def invoke(
+        self, query: str, k: Optional[int] = None, base_url: str = ""
+    ) -> RAGResponse:
         """Generate an answer to the query using retrieved documents.
 
         Args:
             query: The user's question
             k: Optional maximum number of documents to use for context.
                 If None, uses all retrieved documents.
+            base_url: Optional base URL for constructing full URLs to sources
+                in the context provided to the LLM.
 
         Returns:
             RAGResponse with the generated answer and source documents
@@ -128,7 +141,7 @@ class RAGChain:
                 query=query,
             )
 
-        context = self.format_context(source_documents)
+        context = self.format_context(source_documents, base_url=base_url)
         prompt = self.prompt_template.format(context=context, query=query)
 
         response = self.llm.invoke(prompt)
