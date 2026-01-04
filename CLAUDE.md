@@ -5,7 +5,7 @@
 - The project is about implementing a beefed up semantic search engine example described in https://docs.langchain.com/oss/python/langchain/knowledge-base with a RAG agent https://docs.langchain.com/oss/python/langchain/rag and BM25 search.
 - Add explanations and insights about the project in CLAUDE.md here, the README.md, or the ROADMAP.md.
 - When you have a list of planned steps, write one test, make it green, refactor, and git commmit the result. Only then move on to the next test. Never plan writing more than one testat a time. Refer to the testing rules.
-- There is no need to run black, ruff, and mypy manually in this project after every step, because they are run by the pre-commit hook.
+- There is no need to run black, ruff, and ty manually in this project after every step, because they are run by the pre-commit hook.
 
 ## LangChain Architecture Pattern
 

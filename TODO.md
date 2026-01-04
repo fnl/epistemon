@@ -14,7 +14,7 @@ This file tracks the implementation progress of the Semantic Markdown Search app
 
 ## Phase 1: Project Setup and Configuration
 
-Completed project setup with uv package manager, LangChain dependencies (langchain, langchain-community, langchain-text-splitters), embedding models (FakeEmbeddings for testing, HuggingFaceEmbeddings for integration tests, OpenAIEmbeddings for production), vector stores (InMemoryVectorStore for testing, Chroma for production), web framework (FastAPI, uvicorn), YAML configuration (pyyaml), and development tools (black, ruff, mypy, pytest, pip-audit).
+Completed project setup with uv package manager, LangChain dependencies (langchain, langchain-community, langchain-text-splitters), embedding models (FakeEmbeddings for testing, HuggingFaceEmbeddings for integration tests, OpenAIEmbeddings for production), vector stores (InMemoryVectorStore for testing, Chroma for production), web framework (FastAPI, uvicorn), YAML configuration (pyyaml), and development tools (black, ruff, ty, pytest, pip-audit).
 
 Created package structure: epistemon/{indexing,search,web}/, tests/data/, and config.yaml template.
 
