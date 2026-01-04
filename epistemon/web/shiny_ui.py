@@ -222,6 +222,7 @@ def _create_search_ui() -> Any:
             $(document).ready(function() {
                 $('#query').on('keypress', function(e) {
                     if (e.which === 13) {
+                        e.preventDefault();
                         $('#search').click();
                     }
                 });
