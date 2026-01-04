@@ -245,3 +245,63 @@ def test_shiny_app_has_three_column_layout_with_rag() -> None:
     assert "BM25 (Keyword Search)" in ui_html
     assert "Semantic (Embedding Search)" in ui_html
     assert "RAG Answer" in ui_html or "RAG" in ui_html
+
+
+def test_rag_answer_renders_when_rag_chain_provided() -> None:
+    from epistemon.retrieval.rag_chain import RAGChain, RAGResponse
+
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    rag_chain = Mock(spec=RAGChain)
+
+    mock_doc = Document(
+        page_content="Source content about testing",
+        metadata={"source": "test.md", "last_modified": 1234567890.0},
+    )
+    mock_response = RAGResponse(
+        answer="This is the generated answer from RAG",
+        source_documents=[mock_doc],
+        query="test query",
+    )
+    rag_chain.invoke.return_value = mock_response
+
+    app = create_shiny_app(vector_store, rag_chain=rag_chain)
+
+    assert app is not None
+    assert rag_chain.invoke.call_count == 0
+
+
+def test_rag_answer_shows_not_available_when_no_chain() -> None:
+    from epistemon.web.shiny_ui import _execute_rag_answer
+
+    result = _execute_rag_answer(None, "", 0.0, "test query", 5)
+
+    result_html = str(result)
+    assert (
+        "not available" in result_html.lower()
+        or "not implemented" in result_html.lower()
+    )
+
+
+def test_rag_answer_displays_answer_and_sources() -> None:
+    from epistemon.retrieval.rag_chain import RAGChain, RAGResponse
+    from epistemon.web.shiny_ui import _execute_rag_answer
+
+    rag_chain = Mock(spec=RAGChain)
+    mock_doc = Document(
+        page_content="Source content about testing",
+        metadata={"source": "test.md", "last_modified": 1234567890.0},
+    )
+    mock_response = RAGResponse(
+        answer="This is the generated answer",
+        source_documents=[mock_doc],
+        query="test query",
+    )
+    rag_chain.invoke.return_value = mock_response
+
+    result = _execute_rag_answer(rag_chain, "", 0.0, "test query", 5)
+
+    result_html = str(result)
+    assert "This is the generated answer" in result_html
+    assert "Source content about testing" in result_html
+    assert "test.md" in result_html
+    rag_chain.invoke.assert_called_once_with("test query")

@@ -355,6 +355,118 @@ def _execute_semantic_search(
     return _create_results_list(result_cards, filtered_count, score_threshold)
 
 
+def _execute_rag_answer(
+    rag_chain: Optional[RAGChain],
+    base_url: str,
+    score_threshold: float,
+    query: str,
+    limit: Optional[int],
+) -> ui.TagList:
+    """Execute RAG answer generation and return results UI.
+
+    Args:
+        rag_chain: Optional RAG chain
+        base_url: Base URL for source links
+        score_threshold: Minimum score threshold (unused for RAG)
+        query: Search query string
+        limit: Result limit (unused for RAG)
+
+    Returns:
+        TagList with RAG answer and source documents
+    """
+    if rag_chain is None:
+        return ui.TagList(
+            ui.div(
+                ui.p("RAG functionality not available", class_="text-dark"),
+                class_="alert alert-info",
+            )
+        )
+
+    validation_error = _validate_search_inputs(query, limit)
+    if validation_error:
+        return validation_error
+
+    try:
+        response = rag_chain.invoke(query)
+    except Exception as e:
+        return ui.TagList(
+            ui.div(
+                ui.p(f"RAG error: {str(e)}", class_="text-dark"),
+                class_="alert alert-danger",
+            )
+        )
+
+    answer_section = ui.card(
+        ui.card_header(ui.strong("Answer"), class_="bg-success text-white"),
+        ui.div(
+            ui.p(response.answer, class_="mb-0"),
+        ),
+        class_="mb-3",
+    )
+
+    source_cards = []
+    for idx, doc in enumerate(response.source_documents, 1):
+        source = doc.metadata.get("source", "Unknown")
+        last_modified = doc.metadata.get("last_modified", 0)
+
+        if base_url and source:
+            source_link = ui.a(
+                source,
+                href=f"{base_url}/{quote(source)}",
+                target="_blank",
+                class_="text-primary",
+            )
+        else:
+            source_link = ui.span(source, class_="text-muted")
+
+        modified_display = ""
+        if last_modified:
+            dt = datetime.fromtimestamp(last_modified)
+            modified_display = dt.strftime("%Y-%m-%d %H:%M:%S")
+
+        metadata_items = [
+            ui.span(ui.strong("Source: "), source_link),
+        ]
+        if modified_display:
+            metadata_items.append(
+                ui.span(
+                    ui.strong("Modified: "),
+                    ui.span(modified_display, class_="text-muted"),
+                )
+            )
+
+        source_card = ui.card(
+            ui.card_header(
+                ui.strong(f"Source {idx}"),
+                class_="d-flex align-items-center",
+            ),
+            ui.div(
+                ui.HTML(
+                    f'<pre class="bg-light p-2 rounded mb-2" style="white-space: pre-wrap;">{doc.page_content}</pre>'
+                ),
+                ui.tags.ul(
+                    *[ui.tags.li(item, class_="small") for item in metadata_items],
+                    class_="list-unstyled mb-0",
+                ),
+            ),
+            class_="mb-3",
+        )
+        source_cards.append(source_card)
+
+    if not source_cards:
+        source_section = ui.div(
+            ui.p("No source documents available", class_="text-muted small"),
+            class_="mt-2",
+        )
+    else:
+        source_section = ui.div(
+            ui.h5("Source Documents", class_="mt-3 mb-3"),
+            *source_cards,
+        )
+
+    return ui.TagList(answer_section, source_section)
+
+
 def create_shiny_app(
     vector_store: VectorStore,
     base_url: str = "",
@@ -394,11 +506,8 @@ def create_shiny_app(
         @render.ui
         @reactive.event(input.search)
         def rag_answer() -> ui.TagList:
-            return ui.TagList(
-                ui.div(
-                    ui.p("RAG functionality not yet implemented", class_="text-dark"),
-                    class_="alert alert-info",
-                )
+            return _execute_rag_answer(
+                rag_chain, base_url, score_threshold, input.query(), input.limit()
             )
 
     return App(app_ui, server)
