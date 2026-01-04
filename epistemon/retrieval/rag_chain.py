@@ -126,11 +126,8 @@ class RAGChain:
         context = self.format_context(source_documents)
         prompt = self.prompt_template.format(context=context, query=query)
 
-        try:
-            response = self.llm.invoke(prompt)
-            answer = response.content
-        except Exception as e:
-            answer = f"Error generating answer: {str(e)}"
+        response = self.llm.invoke(prompt)
+        answer = response.content
 
         return RAGResponse(
             answer=answer, source_documents=source_documents, query=query

@@ -128,7 +128,9 @@ def test_source_document_preservation() -> None:
 
 
 def test_api_error_handling() -> None:
-    """Test that API errors are caught and handled gracefully."""
+    """Test that API errors are raised to the caller."""
+    import pytest
+
     retriever = Mock()
     llm = Mock()
     chain = RAGChain(retriever=retriever, llm=llm)
@@ -138,13 +140,8 @@ def test_api_error_handling() -> None:
     retriever.retrieve.return_value = [(doc1, 0.9)]
     llm.invoke.side_effect = Exception("API rate limit exceeded")
 
-    response = chain.invoke("What is this about?")
-
-    assert isinstance(response, RAGResponse)
-    assert "error" in response.answer.lower()
-    assert "rate limit" in response.answer.lower()
-    assert response.query == "What is this about?"
-    assert len(response.source_documents) == 1
+    with pytest.raises(Exception, match="API rate limit exceeded"):
+        chain.invoke("What is this about?")
 
 
 def test_custom_prompt_template() -> None:

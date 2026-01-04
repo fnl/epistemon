@@ -351,6 +351,27 @@ def test_rag_answer_handles_processing_errors() -> None:
     assert "LLM API error" in result_html
 
 
+def test_llm_api_error_displays_as_alert_not_answer_card() -> None:
+    from epistemon.retrieval.rag_chain import RAGChain
+    from epistemon.web.shiny_ui import _execute_rag_answer
+
+    rag_chain = Mock(spec=RAGChain)
+    rag_chain.invoke.side_effect = Exception(
+        "Error code: 429 - {'error': {'message': 'You exceeded your current quota'}}"
+    )
+
+    result = _execute_rag_answer(rag_chain, "", 0.0, "test query", 5)
+
+    result_html = str(result)
+    assert "alert alert-danger" in result_html
+    assert "Error code: 429" in result_html
+    assert "exceeded your current quota" in result_html
+    assert (
+        "Answer" not in result_html
+        or 'class="bg-success text-white"' not in result_html
+    )
+
+
 def test_semantic_search_handles_vector_store_errors() -> None:
     from langchain_core.vectorstores import VectorStore
 
