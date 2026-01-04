@@ -204,6 +204,10 @@ def _create_search_ui() -> Any:
                 ui.h4("Semantic (Embedding Search)"),
                 ui.output_ui("results"),
             ),
+            ui.div(
+                ui.h4("RAG Answer"),
+                ui.output_ui("rag_answer"),
+            ),
         ),
     )
 
@@ -385,6 +389,16 @@ def create_shiny_app(
         def results() -> ui.TagList:
             return _execute_semantic_search(
                 vector_store, base_url, score_threshold, input.query(), input.limit()
+            )
+
+        @render.ui
+        @reactive.event(input.search)
+        def rag_answer() -> ui.TagList:
+            return ui.TagList(
+                ui.div(
+                    ui.p("RAG functionality not yet implemented", class_="text-dark"),
+                    class_="alert alert-info",
+                )
             )
 
     return App(app_ui, server)

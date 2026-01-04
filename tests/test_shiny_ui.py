@@ -234,3 +234,14 @@ def test_search_ui_has_top_bar_layout_without_sidebar() -> None:
     assert "collapse-toggle" not in ui_html
     assert "Search Query" in ui_html or "search query" in ui_html.lower()
     assert "Result Limit" in ui_html or "result limit" in ui_html.lower()
+
+
+def test_shiny_app_has_three_column_layout_with_rag() -> None:
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    app = create_shiny_app(vector_store)
+
+    ui_html = str(app.ui)
+
+    assert "BM25 (Keyword Search)" in ui_html
+    assert "Semantic (Embedding Search)" in ui_html
+    assert "RAG Answer" in ui_html or "RAG" in ui_html
