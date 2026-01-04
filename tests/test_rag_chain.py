@@ -4,7 +4,7 @@ from unittest.mock import Mock
 
 from langchain_core.documents import Document
 
-from epistemon.rag.rag_chain import RAGChain, RAGResponse
+from epistemon.retrieval.rag_chain import RAGChain, RAGResponse
 
 
 def test_rag_response_creation() -> None:
