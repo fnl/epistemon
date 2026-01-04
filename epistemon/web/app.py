@@ -147,6 +147,45 @@ HTML_MARKDOWN_TEMPLATE = """
 """
 
 
+def _serve_markdown_file(
+    file_path: str, files_directory: Path
+) -> HTMLResponse | JSONResponse | FileResponse:
+    decoded_path = unquote(file_path)
+    full_path = files_directory / decoded_path
+
+    if not full_path.exists():
+        html_404 = HTML_404_TEMPLATE.format(decoded_path=decoded_path)
+        return HTMLResponse(content=html_404, status_code=404)
+
+    if not full_path.is_relative_to(files_directory):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    file_suffix = full_path.suffix.lower()
+    if file_suffix not in [".md", ".markdown"]:
+        mime_type, _ = mimetypes.guess_type(str(full_path))
+        return FileResponse(
+            path=full_path, media_type=mime_type or "application/octet-stream"
+        )
+
+    try:
+        markdown_content = full_path.read_text()
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Failed to read file", "detail": str(e)},
+        )
+
+    html_content = markdown.markdown(
+        markdown_content,
+        extensions=["tables", "fenced_code", "codehilite"],
+    )
+
+    html_template = HTML_MARKDOWN_TEMPLATE.format(
+        title=decoded_path, content=html_content
+    )
+    return HTMLResponse(content=html_template)
+
+
 def create_app(
     vector_store: VectorStore,
     base_url: str = "",
@@ -177,40 +216,7 @@ def create_app(
         def serve_markdown_as_html(
             file_path: str,
         ) -> HTMLResponse | JSONResponse | FileResponse:
-            decoded_path = unquote(file_path)
-            full_path = files_directory / decoded_path
-
-            if not full_path.exists():
-                html_404 = HTML_404_TEMPLATE.format(decoded_path=decoded_path)
-                return HTMLResponse(content=html_404, status_code=404)
-
-            if not full_path.is_relative_to(files_directory):
-                raise HTTPException(status_code=403, detail="Access denied")
-
-            file_suffix = full_path.suffix.lower()
-            if file_suffix not in [".md", ".markdown"]:
-                mime_type, _ = mimetypes.guess_type(str(full_path))
-                return FileResponse(
-                    path=full_path, media_type=mime_type or "application/octet-stream"
-                )
-
-            try:
-                markdown_content = full_path.read_text()
-            except Exception as e:
-                return JSONResponse(
-                    status_code=500,
-                    content={"error": "Failed to read file", "detail": str(e)},
-                )
-
-            html_content = markdown.markdown(
-                markdown_content,
-                extensions=["tables", "fenced_code", "codehilite"],
-            )
-
-            html_template = HTML_MARKDOWN_TEMPLATE.format(
-                title=decoded_path, content=html_content
-            )
-            return HTMLResponse(content=html_template)
+            return _serve_markdown_file(file_path, files_directory)
 
     @app.get("/files", response_model=None)
     def list_files_endpoint(
