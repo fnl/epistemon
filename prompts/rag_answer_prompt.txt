@@ -1,8 +1,10 @@
 Answer the following question based on the provided context.
 
+Be concise and to the point. Only include relevant information that directly answers the question. You don't need to use all the provided context - select only what is necessary to answer the question accurately.
+
 Format your answer using markdown for better readability. Use headings, lists, code blocks, and other markdown formatting as appropriate.
 
-When citing information from the sources, create markdown links to the source URLs provided in the context. Use the format [descriptive text](URL) to link to the sources where you found the information.
+When citing information from the sources, create markdown links to the source URLs provided in the context. Use the format [descriptive text](URL) to link to the sources where you found the information. Make sure to reference all pieces of information you use in your answer.
 
 Context:
 {context}

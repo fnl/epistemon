@@ -234,6 +234,16 @@ def test_default_prompt_instructs_llm_to_produce_markdown() -> None:
     assert "format" in prompt.lower() or "use" in prompt.lower()
 
 
+def test_default_prompt_instructs_llm_to_be_concise() -> None:
+    """Test that the default prompt template instructs the LLM to be concise."""
+    from epistemon.retrieval.rag_chain import load_default_prompt_template
+
+    prompt = load_default_prompt_template()
+
+    assert "concise" in prompt.lower() or "brief" in prompt.lower()
+    assert "relevant" in prompt.lower() or "necessary" in prompt.lower()
+
+
 def test_format_context_includes_urls_when_base_url_provided() -> None:
     """Test that context includes full URLs when base_url is provided."""
     retriever = Mock()
