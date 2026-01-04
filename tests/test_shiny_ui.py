@@ -529,3 +529,38 @@ def test_search_input_triggers_search_on_enter_key() -> None:
     assert 'id="query"' in ui_html
     assert 'id="search"' in ui_html
     assert "keypress" in ui_html or "addEventListener" in ui_html
+
+
+def test_semantic_search_shows_helpful_message_for_empty_vector_store() -> None:
+    from epistemon.web.shiny_ui import _execute_semantic_search
+
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+
+    result = _execute_semantic_search(vector_store, "", 0.0, "test query", 5)
+
+    result_html = str(result)
+    assert "vector store is empty" in result_html.lower()
+    assert "upsert-index" in result_html.lower()
+
+
+def test_semantic_search_shows_no_results_when_query_has_no_matches() -> None:
+    from epistemon.web.shiny_ui import _execute_semantic_search
+
+    test_file = Path("tests/data/sample.md")
+    base_directory = Path("tests/data")
+    chunks = load_and_chunk_markdown(
+        test_file, chunk_size=500, chunk_overlap=100, base_directory=base_directory
+    )
+
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    vector_store.add_documents(chunks)
+
+    mock_store = Mock(wraps=vector_store)
+    mock_store.similarity_search_with_score.return_value = []
+
+    result = _execute_semantic_search(mock_store, "", 0.0, "xyzabc123", 5)
+
+    result_html = str(result)
+    assert "no results found" in result_html.lower()
+    assert "vector store is empty" not in result_html.lower()
+    assert "upsert-index" not in result_html.lower()

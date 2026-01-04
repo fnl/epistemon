@@ -16,6 +16,53 @@ from epistemon.retrieval.rag_chain import RAGChain
 logger = logging.getLogger(__name__)
 
 
+def _is_vector_store_empty(vector_store: VectorStore) -> bool:
+    """Check if a vector store is empty by checking for any indexed documents.
+
+    Args:
+        vector_store: The vector store to check
+
+    Returns:
+        True if the vector store is empty, False otherwise
+    """
+    try:
+        from langchain_chroma import Chroma
+        from langchain_community.vectorstores import DuckDB
+        from langchain_core.vectorstores import InMemoryVectorStore
+        from langchain_qdrant import QdrantVectorStore
+        from langchain_weaviate import WeaviateVectorStore
+
+        if isinstance(vector_store, InMemoryVectorStore):
+            return len(vector_store.store) == 0
+        elif isinstance(vector_store, Chroma):
+            result = vector_store.get()
+            return not result or not result.get("ids")
+        elif isinstance(vector_store, QdrantVectorStore):
+            points, _next_offset = vector_store.client.scroll(
+                collection_name=vector_store.collection_name,
+                limit=1,
+                with_payload=False,
+                with_vectors=False,
+            )
+            return len(points) == 0
+        elif isinstance(vector_store, WeaviateVectorStore):
+            collection = vector_store._client.collections.get(vector_store._index_name)
+            count = 0
+            for _item in collection.iterator():
+                count += 1
+                break
+            return count == 0
+        elif isinstance(vector_store, DuckDB):
+            result = vector_store._connection.execute(
+                f"SELECT COUNT(*) FROM {vector_store._table_name}"  # noqa: S608
+            ).fetchone()
+            return result is None or result[0] == 0
+        else:
+            return False
+    except Exception:
+        return False
+
+
 def _validate_search_inputs(query: str, limit: Optional[int]) -> Optional[ui.TagList]:
     """Validate search query and limit inputs.
 
@@ -360,6 +407,16 @@ def _execute_semantic_search(
         )
 
     if not results_with_scores:
+        if _is_vector_store_empty(vector_store):
+            return ui.TagList(
+                ui.div(
+                    ui.p(
+                        "Vector store is empty. Run 'upsert-index' to index your documents first.",
+                        class_="text-dark",
+                    ),
+                    class_="alert alert-warning",
+                )
+            )
         return ui.TagList(
             ui.div(
                 ui.p("No results found", class_="text-dark"),
