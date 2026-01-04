@@ -210,3 +210,14 @@ def test_bm25_results_highlight_matched_keywords() -> None:
     )
 
     assert app is not None
+
+
+def test_create_shiny_app_accepts_rag_chain_parameter() -> None:
+    from epistemon.retrieval.rag_chain import RAGChain
+
+    vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
+    rag_chain = Mock(spec=RAGChain)
+
+    app = create_shiny_app(vector_store, rag_chain=rag_chain)
+
+    assert isinstance(app, App)
