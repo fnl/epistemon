@@ -247,6 +247,55 @@ def _list_indexed_files(
         )
 
 
+def _execute_semantic_search(
+    q: str,
+    limit: int,
+    vector_store: VectorStore,
+    score_threshold: float,
+    base_url: str,
+) -> dict[str, list[dict[str, str | float | int]] | str] | JSONResponse:
+    if not q or not q.strip():
+        return {"results": []}
+
+    try:
+        results_with_scores = vector_store.similarity_search_with_score(q, k=limit)
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": "Search failed", "detail": str(e)},
+        )
+
+    metric_type = "similarity"
+    if len(results_with_scores) >= 2:
+        score1, score2 = results_with_scores[0][1], results_with_scores[1][1]
+        if score1 < score2:
+            metric_type = "distance"
+
+    results = []
+    for doc, score in results_with_scores:
+        if score >= score_threshold:
+            source = doc.metadata.get("source", "")
+            last_modified = doc.metadata.get("last_modified", 0)
+            result = {
+                "content": doc.page_content,
+                "source": source,
+                "last_modified": last_modified,
+                "score": float(score),
+                "metric_type": metric_type,
+            }
+            if base_url and source:
+                result["link"] = f"{base_url}/{quote(source)}"
+            results.append(result)
+
+    response: dict[str, list[dict[str, str | float | int]] | str] = {"results": results}
+
+    if score_threshold > 0 and len(results) == 0:
+        response["alert"] = "No results found matching the score threshold"
+        return JSONResponse(content=response, status_code=204)
+
+    return response
+
+
 def create_app(
     vector_store: VectorStore,
     base_url: str = "",
@@ -290,48 +339,9 @@ def create_app(
         q: str = Query(..., description="Search query"),
         limit: int = Query(5, description="Maximum number of results"),
     ) -> dict[str, list[dict[str, str | float | int]] | str] | JSONResponse:
-        if not q or not q.strip():
-            return {"results": []}
-
-        try:
-            results_with_scores = vector_store.similarity_search_with_score(q, k=limit)
-        except Exception as e:
-            return JSONResponse(
-                status_code=500,
-                content={"error": "Search failed", "detail": str(e)},
-            )
-
-        metric_type = "similarity"
-        if len(results_with_scores) >= 2:
-            score1, score2 = results_with_scores[0][1], results_with_scores[1][1]
-            if score1 < score2:
-                metric_type = "distance"
-
-        results = []
-        for doc, score in results_with_scores:
-            if score >= score_threshold:
-                source = doc.metadata.get("source", "")
-                last_modified = doc.metadata.get("last_modified", 0)
-                result = {
-                    "content": doc.page_content,
-                    "source": source,
-                    "last_modified": last_modified,
-                    "score": float(score),
-                    "metric_type": metric_type,
-                }
-                if base_url and source:
-                    result["link"] = f"{base_url}/{quote(source)}"
-                results.append(result)
-
-        response: dict[str, list[dict[str, str | float | int]] | str] = {
-            "results": results
-        }
-
-        if score_threshold > 0 and len(results) == 0:
-            response["alert"] = "No results found matching the score threshold"
-            return JSONResponse(content=response, status_code=204)
-
-        return response
+        return _execute_semantic_search(
+            q, limit, vector_store, score_threshold, base_url
+        )
 
     from epistemon.web.shiny_ui import create_shiny_app
 
