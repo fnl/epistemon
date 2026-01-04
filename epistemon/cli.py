@@ -12,7 +12,10 @@ from epistemon.config import load_config
 from epistemon.indexing.bm25_indexer import BM25Indexer
 from epistemon.indexing.indexer import index
 from epistemon.indexing.vector_store_manager import create_vector_store_manager
+from epistemon.llm_factory import create_llm
 from epistemon.logging_config import setup_logging
+from epistemon.retrieval.hybrid_retriever import HybridRetriever
+from epistemon.retrieval.rag_chain import RAGChain
 from epistemon.vector_store_factory import create_vector_store
 from epistemon.web import create_app
 
@@ -54,10 +57,6 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
         rag_chain = None
         if config.rag_enabled:
             logger.info("Creating RAG chain...")
-            from epistemon.llm_factory import create_llm
-            from epistemon.retrieval.hybrid_retriever import HybridRetriever
-            from epistemon.retrieval.rag_chain import RAGChain
-
             hybrid_retriever = HybridRetriever(
                 bm25_retriever=bm25_indexer,
                 semantic_retriever=vector_store,
