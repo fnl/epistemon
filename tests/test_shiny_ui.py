@@ -375,6 +375,24 @@ def test_llm_api_error_displays_as_alert_not_answer_card() -> None:
     )
 
 
+def test_rag_error_is_logged() -> None:
+    from unittest.mock import patch
+
+    from epistemon.retrieval.rag_chain import RAGChain
+    from epistemon.web.shiny_ui import _execute_rag_answer
+
+    rag_chain = Mock(spec=RAGChain)
+    rag_chain.invoke.side_effect = Exception("API authentication failed")
+
+    with patch("epistemon.web.shiny_ui.logger") as mock_logger:
+        _execute_rag_answer(rag_chain, "", 0.0, "test query", 5)
+
+        mock_logger.error.assert_called_once()
+        call_args = mock_logger.error.call_args[0][0]
+        assert "RAG" in call_args
+        assert "test query" in call_args
+
+
 def test_rag_answer_converts_markdown_to_html() -> None:
     from epistemon.retrieval.rag_chain import RAGChain, RAGResponse
     from epistemon.web.shiny_ui import _execute_rag_answer
@@ -446,6 +464,45 @@ def test_semantic_search_handles_vector_store_errors() -> None:
     result_html = str(result)
     assert "error" in result_html.lower()
     assert "Vector database connection failed" in result_html
+
+
+def test_bm25_error_is_logged() -> None:
+    from unittest.mock import patch
+
+    from epistemon.indexing.bm25_indexer import BM25Indexer
+    from epistemon.web.shiny_ui import _execute_bm25_search
+
+    bm25_indexer = Mock(spec=BM25Indexer)
+    bm25_indexer.retrieve.side_effect = Exception("BM25 index corrupted")
+
+    with patch("epistemon.web.shiny_ui.logger") as mock_logger:
+        _execute_bm25_search(bm25_indexer, "", 0.0, "test query", 5)
+
+        mock_logger.error.assert_called_once()
+        call_args = mock_logger.error.call_args[0][0]
+        assert "BM25" in call_args
+        assert "test query" in call_args
+
+
+def test_semantic_search_error_is_logged() -> None:
+    from unittest.mock import patch
+
+    from langchain_core.vectorstores import VectorStore
+
+    from epistemon.web.shiny_ui import _execute_semantic_search
+
+    broken_store = Mock(spec=VectorStore)
+    broken_store.similarity_search_with_score.side_effect = Exception(
+        "Embedding API error"
+    )
+
+    with patch("epistemon.web.shiny_ui.logger") as mock_logger:
+        _execute_semantic_search(broken_store, "", 0.0, "test query", 5)
+
+        mock_logger.error.assert_called_once()
+        call_args = mock_logger.error.call_args[0][0]
+        assert "Semantic" in call_args
+        assert "test query" in call_args
 
 
 def test_search_bar_uses_majority_of_screen_width() -> None:

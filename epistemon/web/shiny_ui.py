@@ -283,6 +283,7 @@ def _execute_bm25_search(
     try:
         results_with_scores = bm25_retriever.retrieve(query, top_k=limit)
     except Exception as e:
+        logger.error(f"BM25 search error for query '{query}': {e}")
         return ui.TagList(
             ui.div(
                 ui.p(f"BM25 search error: {str(e)}", class_="text-dark"),
@@ -350,6 +351,7 @@ def _execute_semantic_search(
     try:
         results_with_scores = vector_store.similarity_search_with_score(query, k=limit)
     except Exception as e:
+        logger.error(f"Semantic search error for query '{query}': {e}")
         return ui.TagList(
             ui.div(
                 ui.p(f"Semantic search error: {str(e)}", class_="text-dark"),
@@ -434,6 +436,7 @@ def _execute_rag_answer(
     try:
         response = rag_chain.invoke(query, k=limit, base_url=base_url)
     except Exception as e:
+        logger.error(f"RAG error for query '{query}': {e}")
         return ui.TagList(
             ui.div(
                 ui.p(f"RAG error: {str(e)}", class_="text-dark"),
