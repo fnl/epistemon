@@ -145,3 +145,26 @@ def test_api_error_handling() -> None:
     assert "rate limit" in response.answer.lower()
     assert response.query == "What is this about?"
     assert len(response.source_documents) == 1
+
+
+def test_custom_prompt_template() -> None:
+    """Test that custom prompt templates are used correctly."""
+    retriever = Mock()
+    llm = Mock()
+    custom_template = "Context: {context}\n\nQ: {query}\nA:"
+
+    chain = RAGChain(retriever=retriever, llm=llm, prompt_template=custom_template)
+
+    doc1 = Document(page_content="Python is great", metadata={"source": "python.md"})
+
+    retriever.retrieve.return_value = [(doc1, 0.9)]
+    llm.invoke.return_value = Mock(content="Python is a programming language.")
+
+    response = chain.invoke("What is Python?")
+
+    llm.invoke.assert_called_once()
+    call_args = llm.invoke.call_args[0][0]
+    assert "Q: What is Python?" in call_args
+    assert "Context:" in call_args
+    assert "Python is great" in call_args
+    assert isinstance(response, RAGResponse)
