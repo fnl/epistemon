@@ -64,6 +64,29 @@ class HybridRetriever:
         self.semantic_weight = semantic_weight
         self.rrf_k = rrf_k
 
+    def _accumulate_rrf_scores(
+        self,
+        results: list[tuple[Document, float]],
+        weight: float,
+        rrf_scores: dict[str, float],
+        doc_map: dict[str, Document],
+    ) -> None:
+        """Accumulate RRF scores from retriever results.
+
+        Args:
+            results: List of (Document, score) tuples from a retriever
+            weight: Weight to apply to this retriever's contributions
+            rrf_scores: Dictionary to accumulate RRF scores by document source
+            doc_map: Dictionary to store first occurrence of each document
+        """
+        for rank, (doc, _score) in enumerate(results, start=1):
+            source = doc.metadata.get("source", "")
+            rrf_scores[source] = rrf_scores.get(source, 0.0) + weight / (
+                self.rrf_k + rank
+            )
+            if source not in doc_map:
+                doc_map[source] = doc
+
     def retrieve(
         self, query: str, max_docs: Optional[int] = None
     ) -> list[tuple[Document, float]]:
@@ -83,22 +106,12 @@ class HybridRetriever:
         doc_map: dict[str, Document] = {}
 
         bm25_results = self.bm25_retriever.retrieve(query)
-        for rank, (doc, _score) in enumerate(bm25_results, start=1):
-            source = doc.metadata.get("source", "")
-            rrf_scores[source] = rrf_scores.get(source, 0.0) + self.bm25_weight / (
-                self.rrf_k + rank
-            )
-            if source not in doc_map:
-                doc_map[source] = doc
+        self._accumulate_rrf_scores(bm25_results, self.bm25_weight, rrf_scores, doc_map)
 
         semantic_results = self.semantic_retriever.similarity_search_with_score(query)
-        for rank, (doc, _score) in enumerate(semantic_results, start=1):
-            source = doc.metadata.get("source", "")
-            rrf_scores[source] = rrf_scores.get(source, 0.0) + self.semantic_weight / (
-                self.rrf_k + rank
-            )
-            if source not in doc_map:
-                doc_map[source] = doc
+        self._accumulate_rrf_scores(
+            semantic_results, self.semantic_weight, rrf_scores, doc_map
+        )
 
         sorted_results = sorted(
             [(doc_map[source], score) for source, score in rrf_scores.items()],
