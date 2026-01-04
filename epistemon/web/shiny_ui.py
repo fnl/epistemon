@@ -385,7 +385,12 @@ def _execute_rag_answer(
     if rag_chain is None:
         return ui.TagList(
             ui.div(
-                ui.p("RAG functionality not available", class_="text-dark"),
+                ui.p(
+                    "RAG functionality not available. To enable RAG answers, "
+                    "configure an LLM with a valid API key (e.g., OpenAI API key for ChatOpenAI). "
+                    "Set the API key as an environment variable and initialize the RAG chain with a retriever and LLM.",
+                    class_="text-dark",
+                ),
                 class_="alert alert-info",
             )
         )
