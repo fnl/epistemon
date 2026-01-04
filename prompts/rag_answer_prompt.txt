@@ -1,6 +1,8 @@
 Answer the following question based on the provided context.
 
 Be concise and to the point. Only include relevant information that directly answers the question. You don't need to use all the provided context - select only what is necessary to answer the question accurately.
+Beware that not all suggested context is relevant. Critically evaluate the relevance of each piece of context before including it in your answer.
+In some cases, there is no context that matches the question. In such cases, respond with "No relevant information found in the context."
 
 Format your answer using markdown for better readability. Use headings, lists, code blocks, and other markdown formatting as appropriate.
 

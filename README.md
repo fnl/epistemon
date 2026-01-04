@@ -1,6 +1,6 @@
 # Semantic Markdown Search
 
-A lightweight semantic search application for indexing and retrieving information in Markdown files. The project provides a command-line indexing workflow and a web-based UI for researching the indexed content. It is designed for local-first usage, fast iteration, and easy configurability.
+A lightweight semantic search application to experiment with indexing and retrieving information in Markdown files. The project provides a command-line indexing workflow and a web-based UI for researching the indexed content. It is designed for local-first usage, fast iteration, and easy configurability.
 
 ## Use Cases
 
@@ -14,14 +14,21 @@ A lightweight semantic search application for indexing and retrieving informatio
 This project builds a semantic search engine over Markdown (`.md`) files using **Python**. It supports:
 
 - Incremental indexing of Markdown files from a configurable input directory
+  - Automatic detection of new and modified files on re-index
 - Persistent storage of embeddings and metadata in a vector store
 - BM25 keyword-based indexing for traditional search
-- Automatic detection of new and modified files on re-index
-- A search API endpoint to query for document chunks
 - A web UI to:
   - View indexed files
   - Compare search strategies: keyword (BM25), semantic (embeddings), and RAG-generated answers
   - Inspect ranked search results by relevance
+- A search API endpoint to query for document chunks (currently only supports semantic search)
+
+## Quick Start
+
+1. `cp example.config.yaml confilg.yaml` and edit to your needs.
+2. `uv sync`
+3. `uv run upsert-index`
+4. `uv run web-ui`
 
 ## Key Features
 
@@ -62,20 +69,19 @@ The application implements three different retrieval approaches for side-by-side
 
 **RAG Answer Generation**
 
-- Retrieves relevant chunks using semantic search
+- Retrieves relevant chunks using hybrid (keyword and semantic) search
 - Generates natural language answers from retrieved context
 - Two-step process: retrieve then generate
-- Provides synthesized responses instead of raw chunks
 - Displays both the generated answer and the source chunks used
-- Full transparency into which documents informed the answer
+  - Full transparency into which documents informed the answer
 
-The web UI displays results from all three strategies, allowing direct comparison of what each approach surfaces and how they differ in precision, recall, and usefulness. The RAG column shows the AI-generated answer at the top, followed by the source document chunks that were used as context, providing full provenance and allowing verification of the answer.
+The web UI displays the results from all strategies side-by-side, allowing direct comparison of what each approach surfaces and how they differ in precision, recall, and usefulness.
 
 ### Web Application
 
-- Lists all indexed files and basic metadata
-- Provides a search interface for semantic queries
-- Displays ranked search results in a clean, minimal UI
+- Lists all indexed files and basic metadata (`GET /files`)
+- Provides a search interface for semantic queries (`GET /search`)
+- Displays ranked search results in a clean, minimal UI (Shiny)
 - Three-column layout comparing search strategies side-by-side:
   - BM25 keyword search results with highlighted matches
   - Semantic embedding search results with similarity scores
@@ -86,11 +92,10 @@ The web UI displays results from all three strategies, allowing direct compariso
 - **Python**
 - **LangChain** for:
   - Document loading
-  - Chunking
+  - Markdown chunking
   - Embeddings (configurable: Huggingface or OpenAI)
   - Vector store (in memory, Chroma, Weaviate, Qdrant, or DuckDB)
-  - BM25 retrieval
-  - RAG chain composition
+- **rank_bm25** to enable Okapi BM25 keyword-based retrieval
 - **uv** for project management and dependency resolution
 - **Shiny** as a reactive UI
 
@@ -102,11 +107,13 @@ The web UI displays results from all three strategies, allowing direct compariso
 .
 ├── epistemon/           # Source code
 │   ├── indexing/        # Indexing logic
-│   ├── web/             # Shiny UI and API
-│   │   ├── app.py       # Web UI and API.
+│   ├── retrieval/       # Retrieval and answer generation
+│   ├── web/             # Web UI and API
+│   │   ├── app.py       # API and Markdown file serving.
 │   │   └── shiny_ui.py  # Shiny (Web) UI.
 │   └── config.py        # Configuration reader
 ├── config.yaml          # Optional configuration
+├── prompts/             # Prompts used by Epistemon
 ├── tests/               # Unit and a few e2e tests
 │   ├── data/            # Data for tests, such as markdown files
 ├── pyproject.toml       # Project setup
@@ -121,7 +128,6 @@ All major components are configurable from the YAML file, including:
 - Embedding model
 - Vector store backend and storage path
 - Chunk size and overlap settings
-- Number of search results returned per query
 
 Configuration is handled via the config.yaml.
 If none is provided, the defaults are used.
@@ -136,6 +142,10 @@ uv run upsert-index  # or python demo.py
 ```
 
 This is necessary because the incremental indexing system tracks file modification times, not configuration changes. Files that haven't been modified won't be re-chunked automatically, leaving old chunks with the previous chunk size in the database.
+
+### Prompts
+
+All relevant chat completion prompts are stored in `./prompts`
 
 ## Commands/Usage
 
