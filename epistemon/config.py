@@ -65,7 +65,7 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "llm_temperature": 0.0,
         "rag_enabled": True,
         "rag_max_context_docs": 10,
-        "rag_prompt_template_path": "./prompts/default.txt",
+        "rag_prompt_template_path": "./prompts/rag_answer_prompt.txt",
     }
 
     config_data: dict[str, Any]

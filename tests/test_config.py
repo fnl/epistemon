@@ -338,7 +338,7 @@ def test_load_config_includes_rag_prompt_template_path_default() -> None:
     """Test that configuration includes RAG prompt template path default."""
     config = load_config()
 
-    assert config.rag_prompt_template_path == "./prompts/default.txt"
+    assert config.rag_prompt_template_path == "./prompts/rag_answer_prompt.txt"
 
 
 def test_load_config_allows_rag_prompt_template_path_override(

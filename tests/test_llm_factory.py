@@ -28,7 +28,7 @@ def test_create_fake_llm() -> None:
         llm_temperature=0.0,
         rag_enabled=True,
         rag_max_context_docs=10,
-        rag_prompt_template_path="./prompts/default.txt",
+        rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
     )
 
     llm = create_llm(config)
@@ -57,7 +57,7 @@ def test_create_openai_llm() -> None:
         llm_temperature=0.7,
         rag_enabled=True,
         rag_max_context_docs=10,
-        rag_prompt_template_path="./prompts/default.txt",
+        rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
     )
 
     llm = create_llm(config)

@@ -32,7 +32,7 @@ def test_config() -> Configuration:
         llm_temperature=0.0,
         rag_enabled=False,
         rag_max_context_docs=10,
-        rag_prompt_template_path="./prompts/default.txt",
+        rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
     )
 
 
@@ -58,7 +58,7 @@ def chroma_config() -> Configuration:
         llm_temperature=0.0,
         rag_enabled=False,
         rag_max_context_docs=10,
-        rag_prompt_template_path="./prompts/default.txt",
+        rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
     )
 
 
