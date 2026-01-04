@@ -192,7 +192,7 @@ def _create_search_ui() -> Any:
                     ),
                     class_="col-1",
                 ),
-                class_="row",
+                class_="row w-100",
             ),
             class_="mb-3",
         ),

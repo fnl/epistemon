@@ -395,6 +395,7 @@ def test_search_bar_uses_majority_of_screen_width() -> None:
 
     ui_html = str(app.ui)
 
+    assert 'class="row w-100"' in ui_html
     assert 'class="col-9"' in ui_html
     assert 'class="col-2"' in ui_html
     assert 'class="col-1"' in ui_html
