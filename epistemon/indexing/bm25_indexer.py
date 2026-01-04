@@ -12,6 +12,48 @@ from epistemon.indexing.file_tracker import collect_markdown_files
 
 logger = logging.getLogger(__name__)
 
+ENGLISH_STOP_WORDS = frozenset(
+    {
+        "a",
+        "an",
+        "and",
+        "are",
+        "as",
+        "at",
+        "be",
+        "by",
+        "for",
+        "from",
+        "has",
+        "he",
+        "in",
+        "is",
+        "it",
+        "its",
+        "of",
+        "on",
+        "that",
+        "the",
+        "to",
+        "was",
+        "will",
+        "with",
+    }
+)
+
+
+def tokenize(text: str) -> list[str]:
+    """Tokenize text and remove stop words.
+
+    Args:
+        text: The text to tokenize
+
+    Returns:
+        List of lowercase tokens with stop words removed
+    """
+    tokens = text.lower().split()
+    return [token for token in tokens if token not in ENGLISH_STOP_WORDS]
+
 
 def highlight_keywords(text: str, query: str) -> str:
     """Highlight matched keywords in text with HTML mark tags.
@@ -68,7 +110,7 @@ class BM25Indexer:
             logger.warning("No documents found in directory for BM25 indexing")
             return
 
-        tokenized_corpus = [doc.page_content.lower().split() for doc in self.documents]
+        tokenized_corpus = [tokenize(doc.page_content) for doc in self.documents]
         self.bm25_index = BM25Okapi(tokenized_corpus)
 
         logger.info("BM25 index built with %d documents", len(self.documents))
@@ -77,7 +119,7 @@ class BM25Indexer:
         if not self.bm25_index or not self.documents:
             return []
 
-        tokenized_query = query.lower().split()
+        tokenized_query = tokenize(query)
         scores = self.bm25_index.get_scores(tokenized_query)
 
         top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[

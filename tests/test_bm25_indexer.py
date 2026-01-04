@@ -86,3 +86,15 @@ def test_bm25_indexer_uses_case_insensitive_indexing() -> None:
     assert len(results_lower) > 0
     assert results_upper[0][0].page_content == results_lower[0][0].page_content
     assert abs(results_upper[0][1] - results_lower[0][1]) < 0.01
+
+
+def test_bm25_indexer_filters_common_stopwords() -> None:
+    directory = Path("tests/data")
+    indexer = BM25Indexer(directory)
+
+    results_with_stopwords = indexer.retrieve("the a in", top_k=3)
+    results_content = indexer.retrieve("content", top_k=3)
+
+    assert len(results_content) > 0
+    for _doc, score in results_with_stopwords:
+        assert score < results_content[0][1] or score == 0.0
