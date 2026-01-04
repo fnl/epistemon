@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from pathlib import Path
 
 import duckdb
@@ -135,7 +136,7 @@ def test_create_vector_store_manager_returns_chroma_manager(
 
 
 @pytest.fixture
-def weaviate_store(tmp_path: Path) -> WeaviateVectorStore:
+def weaviate_store(tmp_path: Path) -> Iterator[WeaviateVectorStore]:
     client = weaviate.connect_to_embedded(
         persistence_data_path=str(tmp_path / "weaviate_db"),
         version="1.28.8",

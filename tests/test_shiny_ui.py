@@ -228,8 +228,11 @@ def test_search_ui_has_top_bar_layout_without_sidebar() -> None:
     vector_store: VectorStore = InMemoryVectorStore(FakeEmbeddings(size=384))
     app = create_shiny_app(vector_store)
 
-    ui_dict = app.ui
-    ui_html = ui_dict.get("html", str(ui_dict))
+    ui_obj = app.ui
+    if hasattr(ui_obj, "get"):
+        ui_html = ui_obj.get("html", str(ui_obj))  # type: ignore[call-arg]
+    else:
+        ui_html = str(ui_obj)
 
     assert "<aside" not in ui_html
     assert "collapse-toggle" not in ui_html

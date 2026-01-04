@@ -15,7 +15,10 @@ def create_llm(config: Configuration) -> BaseLanguageModel[Any]:
     elif config.llm_provider == "openai":
         openai_llm: BaseLanguageModel[Any] = cast(
             BaseLanguageModel[Any],
-            ChatOpenAI(model=config.llm_model, temperature=config.llm_temperature),
+            ChatOpenAI(
+                model=config.llm_model,  # type: ignore[call-arg]
+                temperature=config.llm_temperature,
+            ),
         )
         return openai_llm
     else:

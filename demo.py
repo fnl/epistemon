@@ -37,7 +37,9 @@ def main() -> None:
         bm25_retriever=bm25_indexer, semantic_retriever=vector_store
     )
 
-    rag_chain = RAGChain(retriever=retriever, llm=ChatOpenAI(model="gpt-5-nano"))
+    rag_chain = RAGChain(
+        retriever=retriever, llm=ChatOpenAI(model="gpt-5-nano")  # type: ignore[call-arg]
+    )
 
     app = create_app(
         vector_store,

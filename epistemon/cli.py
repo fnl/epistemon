@@ -54,13 +54,13 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
         rag_chain = None
         if config.rag_enabled:
             logger.info("Creating RAG chain...")
-            from epistemon.indexing.hybrid_retriever import HybridRetriever
             from epistemon.llm_factory import create_llm
+            from epistemon.retrieval.hybrid_retriever import HybridRetriever
             from epistemon.retrieval.rag_chain import RAGChain
 
             hybrid_retriever = HybridRetriever(
                 bm25_retriever=bm25_indexer,
-                vector_store=vector_store,
+                semantic_retriever=vector_store,
                 bm25_weight=config.hybrid_bm25_weight,
                 semantic_weight=config.hybrid_semantic_weight,
             )
