@@ -87,6 +87,8 @@ def create_test_config(
         bm25_k1=1.5,
         bm25_b=0.75,
         bm25_top_k=5,
+        hybrid_bm25_weight=0.3,
+        hybrid_semantic_weight=0.7,
         llm_provider="fake",
         llm_model="fake-model",
         llm_temperature=0.0,

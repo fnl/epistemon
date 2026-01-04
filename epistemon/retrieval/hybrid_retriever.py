@@ -41,8 +41,8 @@ class HybridRetriever:
         self,
         bm25_retriever: BM25RetrieverProtocol,
         semantic_retriever: SemanticRetrieverProtocol,
-        bm25_weight: float = 0.5,
-        semantic_weight: float = 0.5,
+        bm25_weight: float = 0.3,
+        semantic_weight: float = 0.7,
         rrf_k: int = 60,
     ) -> None:
         """Initialize the hybrid retriever with BM25 and semantic retrievers.
@@ -53,8 +53,8 @@ class HybridRetriever:
             semantic_retriever: A retriever implementing the
                 similarity_search_with_score(query) method that returns
                 list[tuple[Document, float]]
-            bm25_weight: Weight for BM25 results in RRF fusion (default 0.5)
-            semantic_weight: Weight for semantic results in RRF fusion (default 0.5)
+            bm25_weight: Weight for BM25 results in RRF fusion (default 0.3)
+            semantic_weight: Weight for semantic results in RRF fusion (default 0.7)
             rrf_k: Constant for RRF score calculation (default 60). Higher values
                 reduce the impact of rank position differences.
         """

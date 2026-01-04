@@ -309,3 +309,26 @@ rag_max_context_docs: 20
     assert config.llm_temperature == 0.7
     assert config.rag_enabled is False
     assert config.rag_max_context_docs == 20
+
+
+def test_load_config_includes_hybrid_search_weight_defaults() -> None:
+    """Test that configuration includes hybrid search weight defaults."""
+    config = load_config()
+
+    assert config.hybrid_bm25_weight == 0.3
+    assert config.hybrid_semantic_weight == 0.7
+
+
+def test_load_config_allows_hybrid_search_weight_override(
+    temp_yaml_file: Callable[[str], str],
+) -> None:
+    """Test that hybrid search weights can be overridden."""
+    config_content = """
+hybrid_bm25_weight: 0.4
+hybrid_semantic_weight: 0.6
+"""
+    config_path = temp_yaml_file(config_content)
+    config = load_config(config_path)
+
+    assert config.hybrid_bm25_weight == 0.4
+    assert config.hybrid_semantic_weight == 0.6

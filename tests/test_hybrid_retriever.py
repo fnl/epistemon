@@ -19,8 +19,8 @@ def test_hybrid_retriever_initialization() -> None:
     assert retriever is not None
     assert retriever.bm25_retriever == bm25_retriever
     assert retriever.semantic_retriever == semantic_retriever
-    assert retriever.bm25_weight == 0.5
-    assert retriever.semantic_weight == 0.5
+    assert retriever.bm25_weight == 0.3
+    assert retriever.semantic_weight == 0.7
     assert retriever.rrf_k == 60
 
 
@@ -50,8 +50,8 @@ def test_merge_and_deduplicate_results() -> None:
     assert len(results) == 2
     assert results[0][0].metadata["source"] == "file1.md"
     assert results[1][0].metadata["source"] == "file2.md"
-    expected_file1_score = 0.5 / (60 + 1) + 0.5 / (60 + 1)
-    expected_file2_score = 0.5 / (60 + 2) + 0.5 / (60 + 2)
+    expected_file1_score = 0.3 / (60 + 1) + 0.7 / (60 + 1)
+    expected_file2_score = 0.3 / (60 + 2) + 0.7 / (60 + 2)
     assert abs(results[0][1] - expected_file1_score) < 0.0001
     assert abs(results[1][1] - expected_file2_score) < 0.0001
 

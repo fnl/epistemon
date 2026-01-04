@@ -33,6 +33,8 @@ class Configuration:
     bm25_k1: float
     bm25_b: float
     bm25_top_k: int
+    hybrid_bm25_weight: float
+    hybrid_semantic_weight: float
     llm_provider: str
     llm_model: str
     llm_temperature: float
@@ -55,6 +57,8 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "bm25_k1": 1.5,
         "bm25_b": 0.75,
         "bm25_top_k": 5,
+        "hybrid_bm25_weight": 0.3,
+        "hybrid_semantic_weight": 0.7,
         "llm_provider": "openai",
         "llm_model": "gpt-4o-mini",
         "llm_temperature": 0.0,
@@ -106,7 +110,14 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
                 f"{field} must be an integer, got {type(merged_config[field]).__name__}"
             )
 
-    float_fields = ["score_threshold", "bm25_k1", "bm25_b", "llm_temperature"]
+    float_fields = [
+        "score_threshold",
+        "bm25_k1",
+        "bm25_b",
+        "hybrid_bm25_weight",
+        "hybrid_semantic_weight",
+        "llm_temperature",
+    ]
     for field in float_fields:
         if not isinstance(merged_config[field], (int, float)):
             raise ValueError(
@@ -182,6 +193,22 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
             f"rag_max_context_docs must be positive, got: {merged_config['rag_max_context_docs']}"
         )
 
+    if (
+        merged_config["hybrid_bm25_weight"] < 0
+        or merged_config["hybrid_bm25_weight"] > 1
+    ):
+        raise ValueError(
+            f"hybrid_bm25_weight must be between 0 and 1, got: {merged_config['hybrid_bm25_weight']}"
+        )
+
+    if (
+        merged_config["hybrid_semantic_weight"] < 0
+        or merged_config["hybrid_semantic_weight"] > 1
+    ):
+        raise ValueError(
+            f"hybrid_semantic_weight must be between 0 and 1, got: {merged_config['hybrid_semantic_weight']}"
+        )
+
     return Configuration(
         input_directory=merged_config["input_directory"],
         embedding_provider=merged_config["embedding_provider"],
@@ -195,6 +222,8 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         bm25_k1=merged_config["bm25_k1"],
         bm25_b=merged_config["bm25_b"],
         bm25_top_k=merged_config["bm25_top_k"],
+        hybrid_bm25_weight=merged_config["hybrid_bm25_weight"],
+        hybrid_semantic_weight=merged_config["hybrid_semantic_weight"],
         llm_provider=merged_config["llm_provider"],
         llm_model=merged_config["llm_model"],
         llm_temperature=merged_config["llm_temperature"],
