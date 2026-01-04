@@ -1,7 +1,8 @@
 """RAG chain for question answering over documents."""
 
 from dataclasses import dataclass
-from typing import Any, Protocol
+from pathlib import Path
+from typing import Any, Optional, Protocol
 
 from langchain_core.documents import Document
 
@@ -46,14 +47,17 @@ class RAGResponse:
     query: str
 
 
-DEFAULT_PROMPT_TEMPLATE = """Answer the following question based on the provided context.
+def load_default_prompt_template() -> str:
+    """Load the default RAG prompt template from file.
 
-Context:
-{context}
-
-Question: {query}
-
-Answer:"""
+    Returns:
+        The default prompt template string with {context} and {query} placeholders
+    """
+    default_path = (
+        Path(__file__).parent.parent.parent / "prompts" / "rag_answer_prompt.txt"
+    )
+    with default_path.open("r") as f:
+        return f.read()
 
 
 class RAGChain:
@@ -63,7 +67,7 @@ class RAGChain:
         self,
         retriever: RetrieverProtocol,
         llm: LLMProtocol,
-        prompt_template: str = DEFAULT_PROMPT_TEMPLATE,
+        prompt_template: Optional[str] = None,
     ) -> None:
         """Initialize the RAG chain.
 
@@ -75,12 +79,11 @@ class RAGChain:
                 returns an object with a .content attribute. Examples include
                 ChatOpenAI, FakeListLLM, or any LangChain LLM.
             prompt_template: Template for the RAG prompt. Must contain {context}
-                and {query} placeholders. Defaults to a standard question-answering
-                template.
+                and {query} placeholders. If None, loads from ./prompts/rag_answer_prompt.txt
         """
         self.retriever = retriever
         self.llm = llm
-        self.prompt_template = prompt_template
+        self.prompt_template = prompt_template or load_default_prompt_template()
 
     def format_context(self, documents: list[Document]) -> str:
         """Format retrieved documents into context for the LLM.
