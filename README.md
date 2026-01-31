@@ -99,6 +99,50 @@ The web UI displays the results from all strategies side-by-side, allowing direc
 - **uv** for project management and dependency resolution
 - **Shiny** as a reactive UI
 
+## Tracing and Observability (Planned)
+
+Epistemon supports optional tracing of the RAG pipeline via LangFuse.
+When enabled, every RAG invocation is traced end-to-end, giving visibility into
+retrieval quality, LLM generation behavior, token usage, and latency.
+
+### What Gets Traced
+
+- **RAG pipeline** -- the full query-to-answer span, including input query and output answer
+- **Retrieval** -- which documents were retrieved, how many, and from which sources
+- **LLM generation** -- the prompt sent to the model, the completion returned, token counts, and latency (captured automatically via LangChain's callback system)
+
+### Architecture
+
+Tracing is implemented as a wrapper around the RAGChain. A `TracedRAGChain`
+decorates the standard `RAGChain` with LangFuse spans and forwards a
+LangChain `CallbackHandler` to the LLM call. The business logic classes
+(RAGChain, HybridRetriever) are unaware of tracing -- all LangFuse-specific
+code is isolated in a dedicated `tracing` module.
+
+### Requirements
+
+LangFuse requires three environment variables:
+
+| Variable | Description |
+|----------|-------------|
+| `LANGFUSE_SECRET_KEY` | Secret key from your LangFuse project (sk-lf-...) |
+| `LANGFUSE_PUBLIC_KEY` | Public key from your LangFuse project (pk-lf-...) |
+| `LANGFUSE_HOST` | LangFuse host URL (defaults to https://cloud.langfuse.com) |
+
+You can get these from the LangFuse dashboard under Settings > API Keys.
+For self-hosted LangFuse, set `LANGFUSE_HOST` to your instance URL.
+
+### Configuration
+
+Enable tracing in your `config.yaml`:
+
+```yaml
+tracing_enabled: true
+```
+
+Tracing is disabled by default. When disabled, no LangFuse calls are made
+and the RAG pipeline runs without any instrumentation overhead.
+
 ---
 
 ## Project Structure
