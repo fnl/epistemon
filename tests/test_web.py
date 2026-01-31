@@ -578,6 +578,7 @@ def test_create_app_accepts_config_object(vector_store: VectorStore) -> None:
         rag_enabled=False,
         rag_max_context_docs=10,
         rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
+        tracing_enabled=False,
     )
 
     app = create_app(

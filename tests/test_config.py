@@ -388,6 +388,61 @@ llm_provider: "openai"
         load_config(config_path)
 
 
+def test_load_config_tracing_disabled_by_default() -> None:
+    """Test that tracing_enabled defaults to False when not specified."""
+    config = load_config()
+
+    assert config.tracing_enabled is False
+
+
+def test_load_config_tracing_enabled_without_secret_key_raises_error(
+    temp_yaml_file: Callable[[str], str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test that enabling tracing without LANGFUSE_SECRET_KEY raises an error."""
+    monkeypatch.delenv("LANGFUSE_SECRET_KEY", raising=False)
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-test")
+    config_content = """
+tracing_enabled: true
+llm_provider: "fake"
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(ValueError, match="LANGFUSE_SECRET_KEY"):
+        load_config(config_path)
+
+
+def test_load_config_tracing_enabled_without_public_key_raises_error(
+    temp_yaml_file: Callable[[str], str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test that enabling tracing without LANGFUSE_PUBLIC_KEY raises an error."""
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-test")
+    monkeypatch.delenv("LANGFUSE_PUBLIC_KEY", raising=False)
+    config_content = """
+tracing_enabled: true
+llm_provider: "fake"
+"""
+    config_path = temp_yaml_file(config_content)
+
+    with pytest.raises(ValueError, match="LANGFUSE_PUBLIC_KEY"):
+        load_config(config_path)
+
+
+def test_load_config_tracing_enabled_with_valid_keys_succeeds(
+    temp_yaml_file: Callable[[str], str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test that enabling tracing with both LangFuse keys loads successfully."""
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-test")
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-test")
+    config_content = """
+tracing_enabled: true
+llm_provider: "fake"
+"""
+    config_path = temp_yaml_file(config_content)
+    config = load_config(config_path)
+
+    assert config.tracing_enabled is True
+
+
 def test_load_config_with_openai_providers_and_valid_api_key_succeeds(
     temp_yaml_file: Callable[[str], str], monkeypatch: pytest.MonkeyPatch
 ) -> None:

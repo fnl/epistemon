@@ -33,6 +33,7 @@ def test_config() -> Configuration:
         rag_enabled=False,
         rag_max_context_docs=10,
         rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
+        tracing_enabled=False,
     )
 
 
@@ -59,6 +60,7 @@ def chroma_config() -> Configuration:
         rag_enabled=False,
         rag_max_context_docs=10,
         rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
+        tracing_enabled=False,
     )
 
 

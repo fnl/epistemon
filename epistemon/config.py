@@ -42,6 +42,7 @@ class Configuration:
     rag_enabled: bool
     rag_max_context_docs: int
     rag_prompt_template_path: str
+    tracing_enabled: bool
 
 
 def _load_yaml_config(config_path: Optional[str]) -> dict[str, Any]:
@@ -106,10 +107,12 @@ def _validate_field_types(config: dict[str, Any]) -> None:
             )
         config[field] = float(config[field])
 
-    if not isinstance(config["rag_enabled"], bool):
-        raise ValueError(
-            f"rag_enabled must be a boolean, got {type(config['rag_enabled']).__name__}"
-        )
+    boolean_fields = ["rag_enabled", "tracing_enabled"]
+    for field in boolean_fields:
+        if not isinstance(config[field], bool):
+            raise ValueError(
+                f"{field} must be a boolean, got {type(config[field]).__name__}"
+            )
 
 
 def _validate_enum_fields(config: dict[str, Any]) -> None:
@@ -145,6 +148,16 @@ def _check_api_key_requirements(config: dict[str, Any]) -> None:
         if not os.environ.get("OPENAI_API_KEY"):
             raise ValueError(
                 "OPENAI_API_KEY environment variable is required when using openai LLM provider"
+            )
+
+    if config["tracing_enabled"]:
+        if not os.environ.get("LANGFUSE_SECRET_KEY"):
+            raise ValueError(
+                "LANGFUSE_SECRET_KEY environment variable is required when tracing is enabled"
+            )
+        if not os.environ.get("LANGFUSE_PUBLIC_KEY"):
+            raise ValueError(
+                "LANGFUSE_PUBLIC_KEY environment variable is required when tracing is enabled"
             )
 
 
@@ -230,6 +243,7 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         "rag_enabled": True,
         "rag_max_context_docs": 10,
         "rag_prompt_template_path": "./prompts/rag_answer_prompt.txt",
+        "tracing_enabled": False,
     }
 
     config_data = _load_yaml_config(config_path)
@@ -261,4 +275,5 @@ def load_config(config_path: Optional[str] = None) -> Configuration:
         rag_enabled=bool(merged_config["rag_enabled"]),
         rag_max_context_docs=int(merged_config["rag_max_context_docs"]),
         rag_prompt_template_path=str(merged_config["rag_prompt_template_path"]),
+        tracing_enabled=bool(merged_config["tracing_enabled"]),
     )
