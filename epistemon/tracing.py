@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from langchain_core.documents import Document
 
-from epistemon.retrieval.rag_chain import RAGChain, RAGResponse
+from epistemon.retrieval.rag_chain import RAGChain, RAGChainProtocol, RAGResponse
 
 
 class TracedRAGChain:
@@ -68,7 +68,7 @@ class TracedRAGChain:
 
 def create_traced_rag_chain(
     chain: RAGChain, *, tracing_enabled: bool
-) -> RAGChain | TracedRAGChain:
+) -> RAGChainProtocol:
     """Create a RAG chain optionally wrapped with LangFuse tracing.
 
     Args:

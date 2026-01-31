@@ -16,6 +16,7 @@ from epistemon.llm_factory import create_llm
 from epistemon.logging_config import setup_logging
 from epistemon.retrieval.hybrid_retriever import HybridRetriever
 from epistemon.retrieval.rag_chain import RAGChain
+from epistemon.tracing import create_traced_rag_chain
 from epistemon.vector_store_factory import create_vector_store
 from epistemon.web import create_app
 
@@ -65,6 +66,9 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
             )
             llm = create_llm(config)
             rag_chain = RAGChain(retriever=hybrid_retriever, llm=llm)
+            rag_chain = create_traced_rag_chain(
+                rag_chain, tracing_enabled=config.tracing_enabled
+            )
 
         logger.info("Creating web application...")
         app = create_app(

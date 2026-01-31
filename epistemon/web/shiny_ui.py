@@ -11,7 +11,7 @@ from langchain_core.vectorstores import VectorStore
 from shiny import App, Inputs, Outputs, Session, reactive, render, ui
 
 from epistemon.indexing.bm25_indexer import BM25Indexer, highlight_keywords
-from epistemon.retrieval.rag_chain import RAGChain
+from epistemon.retrieval.rag_chain import RAGChainProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -483,7 +483,7 @@ def _execute_semantic_search(
 
 
 def _execute_rag_answer(
-    rag_chain: Optional[RAGChain],
+    rag_chain: Optional[RAGChainProtocol],
     base_url: str,
     score_threshold: float,
     query: str,
@@ -608,7 +608,7 @@ def create_shiny_app(
     base_url: str = "",
     score_threshold: float = 0.0,
     bm25_retriever: Optional[BM25Indexer] = None,
-    rag_chain: Optional[RAGChain] = None,
+    rag_chain: Optional[RAGChainProtocol] = None,
 ) -> App:
     """Create a Shiny app for semantic search.
 

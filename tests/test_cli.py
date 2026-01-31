@@ -245,6 +245,106 @@ def test_web_ui_command_creates_bm25_indexer(test_config: Configuration) -> None
         assert call_kwargs["bm25_retriever"] == mock_bm25_instance
 
 
+def test_web_ui_command_wraps_rag_chain_when_tracing_enabled() -> None:
+    """Test that the RAG chain is wrapped via create_traced_rag_chain when tracing is enabled."""
+    rag_tracing_config = Configuration(
+        input_directory="./tests/data",
+        embedding_provider="fake",
+        embedding_model="fake-model",
+        vector_store_type="inmemory",
+        vector_store_path="./data/chroma_db",
+        chunk_size=500,
+        chunk_overlap=200,
+        search_results_limit=5,
+        score_threshold=0.0,
+        bm25_k1=1.5,
+        bm25_b=0.75,
+        bm25_top_k=5,
+        hybrid_bm25_weight=0.3,
+        hybrid_semantic_weight=0.7,
+        llm_provider="fake",
+        llm_model="fake-model",
+        llm_temperature=0.0,
+        rag_enabled=True,
+        rag_max_context_docs=10,
+        rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
+        tracing_enabled=True,
+    )
+    with (
+        patch("epistemon.cli.load_config", return_value=rag_tracing_config),
+        patch("epistemon.cli.create_vector_store") as mock_create_store,
+        patch("epistemon.cli.create_app") as mock_create_app,
+        patch("epistemon.cli.create_vector_store_manager") as mock_create_manager,
+        patch("epistemon.cli.create_llm") as mock_create_llm,
+        patch("epistemon.cli.create_traced_rag_chain") as mock_create_traced,
+        patch("epistemon.cli.uvicorn.run"),
+    ):
+        mock_create_store.return_value = Mock()
+        mock_create_app.return_value = Mock()
+        mock_create_manager.return_value = Mock()
+        mock_create_llm.return_value = Mock()
+        traced_chain = Mock()
+        mock_create_traced.return_value = traced_chain
+
+        web_ui_command(None, "127.0.0.1", 8000)
+
+        mock_create_traced.assert_called_once()
+        call_kwargs = mock_create_traced.call_args[1]
+        assert call_kwargs["tracing_enabled"] is True
+        app_kwargs = mock_create_app.call_args[1]
+        assert app_kwargs["rag_chain"] is traced_chain
+
+
+def test_web_ui_command_passes_plain_chain_when_tracing_disabled() -> None:
+    """Test that the plain RAGChain is passed when tracing is disabled."""
+    rag_config = Configuration(
+        input_directory="./tests/data",
+        embedding_provider="fake",
+        embedding_model="fake-model",
+        vector_store_type="inmemory",
+        vector_store_path="./data/chroma_db",
+        chunk_size=500,
+        chunk_overlap=200,
+        search_results_limit=5,
+        score_threshold=0.0,
+        bm25_k1=1.5,
+        bm25_b=0.75,
+        bm25_top_k=5,
+        hybrid_bm25_weight=0.3,
+        hybrid_semantic_weight=0.7,
+        llm_provider="fake",
+        llm_model="fake-model",
+        llm_temperature=0.0,
+        rag_enabled=True,
+        rag_max_context_docs=10,
+        rag_prompt_template_path="./prompts/rag_answer_prompt.txt",
+        tracing_enabled=False,
+    )
+    with (
+        patch("epistemon.cli.load_config", return_value=rag_config),
+        patch("epistemon.cli.create_vector_store") as mock_create_store,
+        patch("epistemon.cli.create_app") as mock_create_app,
+        patch("epistemon.cli.create_vector_store_manager") as mock_create_manager,
+        patch("epistemon.cli.create_llm") as mock_create_llm,
+        patch("epistemon.cli.create_traced_rag_chain") as mock_create_traced,
+        patch("epistemon.cli.uvicorn.run"),
+    ):
+        mock_create_store.return_value = Mock()
+        mock_create_app.return_value = Mock()
+        mock_create_manager.return_value = Mock()
+        mock_create_llm.return_value = Mock()
+        plain_chain = Mock()
+        mock_create_traced.return_value = plain_chain
+
+        web_ui_command(None, "127.0.0.1", 8000)
+
+        mock_create_traced.assert_called_once()
+        call_kwargs = mock_create_traced.call_args[1]
+        assert call_kwargs["tracing_enabled"] is False
+        app_kwargs = mock_create_app.call_args[1]
+        assert app_kwargs["rag_chain"] is plain_chain
+
+
 def test_web_ui_command_passes_config_to_create_app(test_config: Configuration) -> None:
     with (
         patch("epistemon.cli.load_config", return_value=test_config),

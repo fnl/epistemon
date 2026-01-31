@@ -16,7 +16,7 @@ from epistemon import __version__
 from epistemon.config import Configuration
 from epistemon.indexing.bm25_indexer import BM25Indexer
 from epistemon.indexing.vector_store_manager import VectorStoreManager
-from epistemon.retrieval.rag_chain import RAGChain
+from epistemon.retrieval.rag_chain import RAGChainProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -325,7 +325,7 @@ def create_app(
     files_directory: Path | None = None,
     vector_store_manager: Optional[VectorStoreManager] = None,
     bm25_retriever: Optional[BM25Indexer] = None,
-    rag_chain: Optional[RAGChain] = None,
+    rag_chain: Optional[RAGChainProtocol] = None,
     config: Optional[Configuration] = None,
 ) -> FastAPI:
     if config is not None:

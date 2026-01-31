@@ -39,6 +39,14 @@ class LLMProtocol(Protocol):
         ...
 
 
+class RAGChainProtocol(Protocol):
+    """Protocol for RAG chain implementations (plain or traced)."""
+
+    def invoke(
+        self, query: str, k: Optional[int] = None, base_url: str = ""
+    ) -> "RAGResponse": ...
+
+
 @dataclass
 class RAGResponse:
     """Response from the RAG chain."""
