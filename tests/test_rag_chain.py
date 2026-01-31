@@ -261,6 +261,43 @@ def test_format_context_includes_urls_when_base_url_provided() -> None:
     assert "Content 2" in context
 
 
+def test_retrieve_documents_returns_flat_document_list() -> None:
+    """Test that retrieve_documents strips scores and returns plain Documents."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm)
+
+    doc1 = Document(page_content="First", metadata={"source": "a.md"})
+    doc2 = Document(page_content="Second", metadata={"source": "b.md"})
+    retriever.retrieve.return_value = [(doc1, 0.95), (doc2, 0.80)]
+
+    result = chain.retrieve_documents("some query")
+
+    assert result == [doc1, doc2]
+
+
+def test_generate_answer_formats_context_and_calls_llm() -> None:
+    """Test that generate_answer fills the prompt template and returns a RAGResponse."""
+    retriever = Mock()
+    llm = Mock()
+    custom_template = "Context: {context}\n\nQ: {query}\nA:"
+    chain = RAGChain(retriever=retriever, llm=llm, prompt_template=custom_template)
+
+    doc = Document(page_content="Python is great", metadata={"source": "py.md"})
+    llm.invoke.return_value = Mock(content="Python is indeed great.")
+
+    response = chain.generate_answer("What is Python?", [doc])
+
+    assert isinstance(response, RAGResponse)
+    assert response.answer == "Python is indeed great."
+    assert response.query == "What is Python?"
+    assert response.source_documents == [doc]
+    llm.invoke.assert_called_once()
+    prompt_sent = llm.invoke.call_args[0][0]
+    assert "Python is great" in prompt_sent
+    assert "Q: What is Python?" in prompt_sent
+
+
 def test_invoke_passes_base_url_to_context() -> None:
     """Test that invoke passes base_url to format_context."""
     retriever = Mock()

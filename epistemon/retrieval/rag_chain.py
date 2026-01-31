@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional, Protocol
+from urllib.parse import quote
 
 from langchain_core.documents import Document
 
@@ -102,8 +103,6 @@ class RAGChain:
         for doc in documents:
             source = doc.metadata.get("source", "Unknown")
             if base_url and source != "Unknown":
-                from urllib.parse import quote
-
                 full_url = f"{base_url}/{quote(source)}"
                 formatted_docs.append(
                     f"Source: {source}\nURL: {full_url}\n{doc.page_content}"
@@ -112,6 +111,43 @@ class RAGChain:
                 formatted_docs.append(f"Source: {source}\n{doc.page_content}")
 
         return "\n\n---\n\n".join(formatted_docs)
+
+    def retrieve_documents(self, query: str) -> list[Document]:
+        """Retrieve documents for a query, stripping relevance scores.
+
+        Args:
+            query: The user's question
+
+        Returns:
+            Flat list of Documents without scores
+        """
+        results = self.retriever.retrieve(query)
+        return [doc for doc, _score in results]
+
+    def generate_answer(
+        self,
+        query: str,
+        source_documents: list[Document],
+        base_url: str = "",
+    ) -> RAGResponse:
+        """Generate an answer from retrieved documents using the LLM.
+
+        Args:
+            query: The user's question
+            source_documents: Documents to use as context
+            base_url: Optional base URL for constructing full URLs to sources
+
+        Returns:
+            RAGResponse with the generated answer and source documents
+        """
+        context = self.format_context(source_documents, base_url=base_url)
+        prompt = self.prompt_template.format(context=context, query=query)
+        response = self.llm.invoke(prompt)
+        return RAGResponse(
+            answer=response.content,
+            source_documents=source_documents,
+            query=query,
+        )
 
     def invoke(
         self, query: str, k: Optional[int] = None, base_url: str = ""
@@ -128,8 +164,7 @@ class RAGChain:
         Returns:
             RAGResponse with the generated answer and source documents
         """
-        results = self.retriever.retrieve(query)
-        source_documents = [doc for doc, _score in results]
+        source_documents = self.retrieve_documents(query)
 
         if k is not None and k > 0:
             source_documents = source_documents[:k]
@@ -141,12 +176,4 @@ class RAGChain:
                 query=query,
             )
 
-        context = self.format_context(source_documents, base_url=base_url)
-        prompt = self.prompt_template.format(context=context, query=query)
-
-        response = self.llm.invoke(prompt)
-        answer = response.content
-
-        return RAGResponse(
-            answer=answer, source_documents=source_documents, query=query
-        )
+        return self.generate_answer(query, source_documents, base_url=base_url)
