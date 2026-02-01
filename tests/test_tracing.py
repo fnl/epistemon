@@ -106,3 +106,16 @@ def test_create_traced_rag_chain_logs_info_when_tracing_enabled(
 
     info_messages = [r for r in caplog.records if r.levelno == logging.INFO]
     assert any("tracing" in m.message.lower() for m in info_messages)
+
+
+def test_create_traced_rag_chain_logs_debug_when_tracing_disabled(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Disabling tracing logs a DEBUG message indicating tracing is disabled."""
+    chain = RAGChain(retriever=Mock(), llm=Mock(), prompt_template="{context}{query}")
+
+    with caplog.at_level(logging.DEBUG, logger="epistemon.tracing"):
+        create_traced_rag_chain(chain, tracing_enabled=False)
+
+    debug_messages = [r for r in caplog.records if r.levelno == logging.DEBUG]
+    assert any("tracing" in m.message.lower() for m in debug_messages)

@@ -82,6 +82,7 @@ def create_traced_rag_chain(
         The original chain if tracing is disabled, or a TracedRAGChain wrapper
     """
     if not tracing_enabled:
+        logger.debug("Tracing is disabled")
         return chain
 
     from langfuse import get_client
