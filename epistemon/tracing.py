@@ -44,12 +44,24 @@ class TracedRAGChain:
                 query=query,
             )
 
-        return self.chain.generate_answer(
-            query,
-            source_documents,
-            base_url=base_url,
-            config={"callbacks": [self.callback_handler]},
-        )
+        return self._generate_with_span(query, source_documents, base_url)
+
+    def _generate_with_span(
+        self, query: str, source_documents: list[Document], base_url: str
+    ) -> RAGResponse:
+        with self.langfuse_client.start_as_current_observation(
+            as_type="span",
+            name="generation",
+            input={"query": query, "document_count": len(source_documents)},
+        ) as span:
+            response = self.chain.generate_answer(
+                query,
+                source_documents,
+                base_url=base_url,
+                config={"callbacks": [self.callback_handler]},
+            )
+            span.update(output={"answer_length": len(response.answer)})
+        return response
 
     def _retrieve_with_span(self, query: str, k: Optional[int]) -> list[Document]:
         with self.langfuse_client.start_as_current_observation(

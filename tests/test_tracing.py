@@ -32,24 +32,28 @@ def test_traced_rag_chain_creates_retrieval_span() -> None:
     retriever.retrieve.return_value = [(doc, 0.9)]
     llm.invoke.return_value = Mock(content="answer")
 
-    span = Mock()
+    retrieval_span = Mock()
+    retrieval_cm = Mock()
+    retrieval_cm.__enter__ = Mock(return_value=retrieval_span)
+    retrieval_cm.__exit__ = Mock(return_value=False)
+    generation_cm = Mock()
+    generation_cm.__enter__ = Mock(return_value=Mock())
+    generation_cm.__exit__ = Mock(return_value=False)
+
     langfuse_client = Mock()
-    langfuse_client.start_as_current_observation.return_value.__enter__ = Mock(
-        return_value=span
-    )
-    langfuse_client.start_as_current_observation.return_value.__exit__ = Mock(
-        return_value=False
-    )
+    langfuse_client.start_as_current_observation.side_effect = [
+        retrieval_cm,
+        generation_cm,
+    ]
     handler = Mock()
 
     traced = TracedRAGChain(chain, langfuse_client, handler)
     traced.invoke("test query")
 
-    langfuse_client.start_as_current_observation.assert_called_once()
-    call_kwargs = langfuse_client.start_as_current_observation.call_args[1]
-    assert call_kwargs["name"] == "retrieval"
-    span.update.assert_called_once()
-    update_kwargs = span.update.call_args[1]
+    retrieval_call = langfuse_client.start_as_current_observation.call_args_list[0][1]
+    assert retrieval_call["name"] == "retrieval"
+    retrieval_span.update.assert_called_once()
+    update_kwargs = retrieval_span.update.call_args[1]
     assert update_kwargs["output"]["document_count"] == 1
     assert update_kwargs["output"]["sources"] == ["a.md"]
 
@@ -69,13 +73,10 @@ def test_traced_rag_chain_forwards_callback_handler_to_llm() -> None:
     llm.invoke.return_value = Mock(content="answer")
 
     langfuse_client = Mock()
-    span = Mock()
-    langfuse_client.start_as_current_observation.return_value.__enter__ = Mock(
-        return_value=span
-    )
-    langfuse_client.start_as_current_observation.return_value.__exit__ = Mock(
-        return_value=False
-    )
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=Mock())
+    cm.__exit__ = Mock(return_value=False)
+    langfuse_client.start_as_current_observation.return_value = cm
     handler = Mock()
 
     traced = TracedRAGChain(chain, langfuse_client, handler)
@@ -84,6 +85,51 @@ def test_traced_rag_chain_forwards_callback_handler_to_llm() -> None:
     llm.invoke.assert_called_once()
     call_kwargs = llm.invoke.call_args[1]
     assert call_kwargs["config"]["callbacks"] == [handler]
+
+
+def test_traced_rag_chain_creates_generation_span() -> None:
+    """Answer generation is wrapped in a LangFuse span with query and document count."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(
+        retriever=retriever,
+        llm=llm,
+        prompt_template="Context: {context}\n\nQ: {query}\nA:",
+    )
+
+    docs = [
+        Document(page_content="a", metadata={"source": "a.md"}),
+        Document(page_content="b", metadata={"source": "b.md"}),
+    ]
+    retriever.retrieve.return_value = [(d, 0.9) for d in docs]
+    llm.invoke.return_value = Mock(content="short answer")
+
+    retrieval_span = Mock()
+    generation_span = Mock()
+    retrieval_cm = Mock()
+    retrieval_cm.__enter__ = Mock(return_value=retrieval_span)
+    retrieval_cm.__exit__ = Mock(return_value=False)
+    generation_cm = Mock()
+    generation_cm.__enter__ = Mock(return_value=generation_span)
+    generation_cm.__exit__ = Mock(return_value=False)
+
+    langfuse_client = Mock()
+    langfuse_client.start_as_current_observation.side_effect = [
+        retrieval_cm,
+        generation_cm,
+    ]
+
+    traced = TracedRAGChain(chain, langfuse_client, Mock())
+    traced.invoke("test query")
+
+    calls = langfuse_client.start_as_current_observation.call_args_list
+    generation_call = calls[1][1]
+    assert generation_call["name"] == "generation"
+    assert generation_call["input"]["query"] == "test query"
+    assert generation_call["input"]["document_count"] == 2
+
+    gen_output = generation_span.update.call_args[1]["output"]
+    assert gen_output["answer_length"] == len("short answer")
 
 
 def test_langfuse_imports_are_at_module_level() -> None:
@@ -156,14 +202,11 @@ def test_traced_rag_chain_invoke_logs_query_and_document_count(
     retriever.retrieve.return_value = [(d, 0.9) for d in docs]
     llm.invoke.return_value = Mock(content="answer")
 
-    span = Mock()
     langfuse_client = Mock()
-    langfuse_client.start_as_current_observation.return_value.__enter__ = Mock(
-        return_value=span
-    )
-    langfuse_client.start_as_current_observation.return_value.__exit__ = Mock(
-        return_value=False
-    )
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=Mock())
+    cm.__exit__ = Mock(return_value=False)
+    langfuse_client.start_as_current_observation.return_value = cm
 
     traced = TracedRAGChain(chain, langfuse_client, Mock())
 
