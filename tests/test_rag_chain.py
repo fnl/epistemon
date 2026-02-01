@@ -298,6 +298,22 @@ def test_generate_answer_formats_context_and_calls_llm() -> None:
     assert "Q: What is Python?" in prompt_sent
 
 
+def test_generate_answer_forwards_config_to_llm() -> None:
+    """Test that generate_answer passes config dict to llm.invoke."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(retriever=retriever, llm=llm, prompt_template="{context}\n{query}")
+
+    doc = Document(page_content="content", metadata={"source": "a.md"})
+    llm.invoke.return_value = Mock(content="answer")
+    handler = Mock()
+
+    chain.generate_answer("q", [doc], config={"callbacks": [handler]})
+
+    call_kwargs = llm.invoke.call_args[1]
+    assert call_kwargs["config"]["callbacks"] == [handler]
+
+
 def test_invoke_passes_base_url_to_context() -> None:
     """Test that invoke passes base_url to format_context."""
     retriever = Mock()

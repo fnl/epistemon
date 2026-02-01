@@ -137,6 +137,7 @@ class RAGChain:
         query: str,
         source_documents: list[Document],
         base_url: str = "",
+        config: Optional[dict[str, Any]] = None,
     ) -> RAGResponse:
         """Generate an answer from retrieved documents using the LLM.
 
@@ -144,13 +145,17 @@ class RAGChain:
             query: The user's question
             source_documents: Documents to use as context
             base_url: Optional base URL for constructing full URLs to sources
+            config: Optional config dict forwarded to llm.invoke (e.g. callbacks)
 
         Returns:
             RAGResponse with the generated answer and source documents
         """
         context = self.format_context(source_documents, base_url=base_url)
         prompt = self.prompt_template.format(context=context, query=query)
-        response = self.llm.invoke(prompt)
+        kwargs: dict[str, Any] = {}
+        if config is not None:
+            kwargs["config"] = config
+        response = self.llm.invoke(prompt, **kwargs)
         return RAGResponse(
             answer=response.content,
             source_documents=source_documents,

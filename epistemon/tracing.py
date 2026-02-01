@@ -44,16 +44,11 @@ class TracedRAGChain:
                 query=query,
             )
 
-        context = self.chain.format_context(source_documents, base_url=base_url)
-        prompt = self.chain.prompt_template.format(context=context, query=query)
-        response = self.chain.llm.invoke(
-            prompt, config={"callbacks": [self.callback_handler]}
-        )
-
-        return RAGResponse(
-            answer=response.content,
-            source_documents=source_documents,
-            query=query,
+        return self.chain.generate_answer(
+            query,
+            source_documents,
+            base_url=base_url,
+            config={"callbacks": [self.callback_handler]},
         )
 
     def _retrieve_with_span(self, query: str, k: Optional[int]) -> list[Document]:
