@@ -99,7 +99,7 @@ The web UI displays the results from all strategies side-by-side, allowing direc
 - **uv** for project management and dependency resolution
 - **Shiny** as a reactive UI
 
-## Tracing and Observability (Planned)
+## Tracing and Observability
 
 Epistemon supports optional tracing of the RAG pipeline via LangFuse.
 When enabled, every RAG invocation is traced end-to-end, giving visibility into
