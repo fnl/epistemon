@@ -1,10 +1,13 @@
 """LangFuse tracing module for the RAG pipeline."""
 
+import logging
 from typing import Any, Optional
 
 from langchain_core.documents import Document
 
 from epistemon.retrieval.rag_chain import RAGChain, RAGChainProtocol, RAGResponse
+
+logger = logging.getLogger(__name__)
 
 
 class TracedRAGChain:
@@ -86,4 +89,5 @@ def create_traced_rag_chain(
 
     langfuse_client = get_client()
     handler = CallbackHandler()
+    logger.info("LangFuse tracing is active")
     return TracedRAGChain(chain, langfuse_client, handler)

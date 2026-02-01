@@ -1,7 +1,9 @@
 """Tests for the tracing module."""
 
-from unittest.mock import Mock
+import logging
+from unittest.mock import Mock, patch
 
+import pytest
 from langchain_core.documents import Document
 
 from epistemon.retrieval.rag_chain import RAGChain
@@ -89,3 +91,18 @@ def test_create_traced_rag_chain_returns_plain_chain_when_tracing_disabled() -> 
     result = create_traced_rag_chain(chain, tracing_enabled=False)
 
     assert result is chain
+
+
+@patch("langfuse.get_client")
+@patch("langfuse.langchain.CallbackHandler")
+def test_create_traced_rag_chain_logs_info_when_tracing_enabled(
+    _mock_handler: Mock, _mock_get_client: Mock, caplog: pytest.LogCaptureFixture
+) -> None:
+    """Enabling tracing logs an INFO message indicating LangFuse tracing is active."""
+    chain = RAGChain(retriever=Mock(), llm=Mock(), prompt_template="{context}{query}")
+
+    with caplog.at_level(logging.DEBUG, logger="epistemon.tracing"):
+        create_traced_rag_chain(chain, tracing_enabled=True)
+
+    info_messages = [r for r in caplog.records if r.levelno == logging.INFO]
+    assert any("tracing" in m.message.lower() for m in info_messages)
