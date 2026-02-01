@@ -119,3 +119,43 @@ def test_create_traced_rag_chain_logs_debug_when_tracing_disabled(
 
     debug_messages = [r for r in caplog.records if r.levelno == logging.DEBUG]
     assert any("tracing" in m.message.lower() for m in debug_messages)
+
+
+def test_traced_rag_chain_invoke_logs_query_and_document_count(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Each traced invocation logs a DEBUG message with the query and document count."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(
+        retriever=retriever,
+        llm=llm,
+        prompt_template="Context: {context}\n\nQ: {query}\nA:",
+    )
+
+    docs = [
+        Document(page_content="a", metadata={"source": "a.md"}),
+        Document(page_content="b", metadata={"source": "b.md"}),
+    ]
+    retriever.retrieve.return_value = [(d, 0.9) for d in docs]
+    llm.invoke.return_value = Mock(content="answer")
+
+    span = Mock()
+    langfuse_client = Mock()
+    langfuse_client.start_as_current_observation.return_value.__enter__ = Mock(
+        return_value=span
+    )
+    langfuse_client.start_as_current_observation.return_value.__exit__ = Mock(
+        return_value=False
+    )
+
+    traced = TracedRAGChain(chain, langfuse_client, Mock())
+
+    with caplog.at_level(logging.DEBUG, logger="epistemon.tracing"):
+        traced.invoke("what is Python?")
+
+    debug_messages = [r for r in caplog.records if r.levelno == logging.DEBUG]
+    assert any(
+        "what is python?" in m.message.lower() and "2" in m.message
+        for m in debug_messages
+    )

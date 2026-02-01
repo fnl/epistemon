@@ -28,6 +28,11 @@ class TracedRAGChain:
     ) -> RAGResponse:
         """Invoke the RAG chain with LangFuse tracing."""
         source_documents = self._retrieve_with_span(query, k)
+        logger.debug(
+            "Traced query: '%s', retrieved %d document(s)",
+            query,
+            len(source_documents),
+        )
 
         if not source_documents:
             return RAGResponse(
