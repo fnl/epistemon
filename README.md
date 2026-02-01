@@ -123,14 +123,17 @@ code is isolated in a dedicated `tracing` module.
 
 LangFuse requires three environment variables:
 
-| Variable | Description |
-|----------|-------------|
-| `LANGFUSE_SECRET_KEY` | Secret key from your LangFuse project (sk-lf-...) |
-| `LANGFUSE_PUBLIC_KEY` | Public key from your LangFuse project (pk-lf-...) |
-| `LANGFUSE_HOST` | LangFuse host URL (defaults to https://cloud.langfuse.com) |
+| Variable              | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| `LANGFUSE_SECRET_KEY` | Secret key from your LangFuse project (sk-lf-...)          |
+| `LANGFUSE_PUBLIC_KEY` | Public key from your LangFuse project (pk-lf-...)          |
+| `LANGFUSE_HOST`       | LangFuse host URL (defaults to https://cloud.langfuse.com) |
 
 You can get these from the LangFuse dashboard under Settings > API Keys.
 For self-hosted LangFuse, set `LANGFUSE_HOST` to your instance URL.
+
+If you are running LangFuse locally, you might need to got to MinIO at http://localhost:9091 and create a `langfuse` bucket, first.
+Specifically, if you see errors like this one when trying to store a trace: `Failed to export span batch code: 500, reason: {"message":"Internal Server Error","error":"Failed to upload JSON to S3"}`
 
 ### Configuration
 
