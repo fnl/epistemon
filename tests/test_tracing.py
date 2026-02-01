@@ -78,6 +78,14 @@ def test_traced_rag_chain_forwards_callback_handler_to_llm() -> None:
     assert call_kwargs["config"]["callbacks"] == [handler]
 
 
+def test_langfuse_imports_are_at_module_level() -> None:
+    """Verify langfuse symbols are importable directly from epistemon.tracing."""
+    from epistemon import tracing
+
+    assert hasattr(tracing, "get_client")
+    assert hasattr(tracing, "CallbackHandler")
+
+
 def test_create_traced_rag_chain_returns_plain_chain_when_tracing_disabled() -> None:
     """Test that the factory returns the original RAGChain when tracing is disabled."""
     retriever = Mock()
@@ -93,8 +101,8 @@ def test_create_traced_rag_chain_returns_plain_chain_when_tracing_disabled() -> 
     assert result is chain
 
 
-@patch("langfuse.get_client")
-@patch("langfuse.langchain.CallbackHandler")
+@patch("epistemon.tracing.get_client")
+@patch("epistemon.tracing.CallbackHandler")
 def test_create_traced_rag_chain_logs_info_when_tracing_enabled(
     _mock_handler: Mock, _mock_get_client: Mock, caplog: pytest.LogCaptureFixture
 ) -> None:

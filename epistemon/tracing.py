@@ -4,6 +4,8 @@ import logging
 from typing import Any, Optional
 
 from langchain_core.documents import Document
+from langfuse import get_client
+from langfuse.langchain import CallbackHandler
 
 from epistemon.retrieval.rag_chain import RAGChain, RAGChainProtocol, RAGResponse
 
@@ -89,9 +91,6 @@ def create_traced_rag_chain(
     if not tracing_enabled:
         logger.debug("Tracing is disabled")
         return chain
-
-    from langfuse import get_client
-    from langfuse.langchain import CallbackHandler
 
     langfuse_client = get_client()
     handler = CallbackHandler()
