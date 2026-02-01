@@ -45,8 +45,11 @@ search_results_limit: 5
     assert config.search_results_limit == 5
 
 
-def test_load_config_without_file_uses_defaults() -> None:
+def test_load_config_without_file_uses_defaults(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Test loading configuration without a file uses all default values."""
+    monkeypatch.chdir(tmp_path)
     config = load_config()
 
     assert config.input_directory == "./tests/data"
@@ -203,8 +206,11 @@ search_results_limit: -5
         load_config(config_path)
 
 
-def test_configuration_is_immutable() -> None:
+def test_configuration_is_immutable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Test that Configuration instances are immutable."""
+    monkeypatch.chdir(tmp_path)
     config = load_config()
 
     with pytest.raises(AttributeError):
@@ -253,8 +259,11 @@ vector_store_type: "{vector_store_type}"
     assert config.vector_store_type == vector_store_type
 
 
-def test_load_config_includes_bm25_defaults() -> None:
+def test_load_config_includes_bm25_defaults(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Test that configuration includes BM25 defaults."""
+    monkeypatch.chdir(tmp_path)
     config = load_config()
 
     assert config.bm25_k1 == 1.5
@@ -279,8 +288,11 @@ bm25_top_k: 10
     assert config.bm25_top_k == 10
 
 
-def test_load_config_includes_llm_defaults() -> None:
+def test_load_config_includes_llm_defaults(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Test that configuration includes LLM defaults."""
+    monkeypatch.chdir(tmp_path)
     config = load_config()
 
     assert config.llm_provider == "openai"
@@ -311,8 +323,11 @@ rag_max_context_docs: 20
     assert config.rag_max_context_docs == 20
 
 
-def test_load_config_includes_hybrid_search_weight_defaults() -> None:
+def test_load_config_includes_hybrid_search_weight_defaults(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Test that configuration includes hybrid search weight defaults."""
+    monkeypatch.chdir(tmp_path)
     config = load_config()
 
     assert config.hybrid_bm25_weight == 0.3
@@ -334,8 +349,11 @@ hybrid_semantic_weight: 0.6
     assert config.hybrid_semantic_weight == 0.6
 
 
-def test_load_config_includes_rag_prompt_template_path_default() -> None:
+def test_load_config_includes_rag_prompt_template_path_default(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Test that configuration includes RAG prompt template path default."""
+    monkeypatch.chdir(tmp_path)
     config = load_config()
 
     assert config.rag_prompt_template_path == "./prompts/rag_answer_prompt.txt"
@@ -388,8 +406,11 @@ llm_provider: "openai"
         load_config(config_path)
 
 
-def test_load_config_tracing_disabled_by_default() -> None:
+def test_load_config_tracing_disabled_by_default(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Test that tracing_enabled defaults to False when not specified."""
+    monkeypatch.chdir(tmp_path)
     config = load_config()
 
     assert config.tracing_enabled is False
@@ -457,3 +478,16 @@ llm_provider: "openai"
 
     assert config.embedding_provider == "openai"
     assert config.llm_provider == "openai"
+
+
+def test_load_config_auto_discovers_config_yaml_in_current_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Test that load_config reads ./config.yaml when no path is given and the file exists."""
+    config_file = tmp_path / "config.yaml"
+    config_file.write_text("chunk_size: 999\nllm_provider: fake\n")
+    monkeypatch.chdir(tmp_path)
+
+    config = load_config()
+
+    assert config.chunk_size == 999

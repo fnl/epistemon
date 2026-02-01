@@ -45,6 +45,19 @@ class Configuration:
     tracing_enabled: bool
 
 
+DEFAULT_CONFIG_FILENAME: Final[str] = "config.yaml"
+
+
+def _resolve_config_path(config_path: Optional[str]) -> Optional[str]:
+    """Return the config path to use, auto-discovering ./config.yaml if needed."""
+    if config_path is not None:
+        return config_path
+    default_path = Path(DEFAULT_CONFIG_FILENAME)
+    if default_path.exists():
+        return str(default_path)
+    return None
+
+
 def _load_yaml_config(config_path: Optional[str]) -> dict[str, Any]:
     """Load configuration data from YAML file or return empty dict."""
     if config_path is None:
@@ -221,7 +234,13 @@ def _validate_numeric_ranges(config: dict[str, Any]) -> None:
 
 
 def load_config(config_path: Optional[str] = None) -> Configuration:
-    """Load configuration from a YAML file or use defaults."""
+    """Load configuration from a YAML file or use defaults.
+
+    When no config_path is given, auto-discovers ./config.yaml in the
+    current working directory. Falls back to built-in defaults if neither
+    an explicit path nor ./config.yaml is available.
+    """
+    config_path = _resolve_config_path(config_path)
     defaults = {
         "input_directory": "./tests/data",
         "embedding_provider": "huggingface",
