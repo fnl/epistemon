@@ -1,6 +1,7 @@
 """Tests for the tracing module."""
 
 import logging
+import typing
 from unittest.mock import Mock, patch
 
 import pytest
@@ -8,6 +9,13 @@ from langchain_core.documents import Document
 
 from epistemon.retrieval.rag_chain import RAGChain
 from epistemon.tracing import TracedRAGChain, create_traced_rag_chain
+
+
+def test_traced_rag_chain_constructor_uses_concrete_types() -> None:
+    """TracedRAGChain constructor parameters use concrete types instead of Any."""
+    hints = typing.get_type_hints(TracedRAGChain.__init__)
+    assert hints["langfuse_client"] is not typing.Any
+    assert hints["callback_handler"] is not typing.Any
 
 
 def test_traced_rag_chain_creates_retrieval_span() -> None:

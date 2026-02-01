@@ -1,10 +1,11 @@
 """LangFuse tracing module for the RAG pipeline."""
 
 import logging
-from typing import Any, Optional
+from typing import Optional
 
+from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.documents import Document
-from langfuse import get_client
+from langfuse import Langfuse, get_client
 from langfuse.langchain import CallbackHandler
 
 from epistemon.retrieval.rag_chain import RAGChain, RAGChainProtocol, RAGResponse
@@ -18,8 +19,8 @@ class TracedRAGChain:
     def __init__(
         self,
         chain: RAGChain,
-        langfuse_client: Any,
-        callback_handler: Any,
+        langfuse_client: Langfuse,
+        callback_handler: BaseCallbackHandler,
     ) -> None:
         self.chain = chain
         self.langfuse_client = langfuse_client
