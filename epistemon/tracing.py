@@ -8,9 +8,42 @@ from langchain_core.documents import Document
 from langfuse import Langfuse, get_client
 from langfuse.langchain import CallbackHandler
 
+from epistemon.retrieval.hybrid_retriever import (
+    BM25RetrieverProtocol,
+    HybridRetriever,
+)
 from epistemon.retrieval.rag_chain import RAGChain, RAGChainProtocol, RAGResponse
 
 logger = logging.getLogger(__name__)
+
+
+class TracedBM25Retriever:
+    """Wraps a BM25 retriever to record a LangFuse span for each search."""
+
+    def __init__(
+        self,
+        retriever: BM25RetrieverProtocol,
+        langfuse_client: Langfuse,
+    ) -> None:
+        self.retriever = retriever
+        self.langfuse_client = langfuse_client
+
+    def retrieve(self, query: str) -> list[tuple[Document, float]]:
+        with self.langfuse_client.start_as_current_observation(
+            as_type="span",
+            name="bm25-search",
+            input={"query": query},
+        ) as span:
+            results = self.retriever.retrieve(query)
+            span.update(
+                output={
+                    "document_count": len(results),
+                    "sources": [
+                        doc.metadata.get("source", "Unknown") for doc, _ in results
+                    ],
+                }
+            )
+        return results
 
 
 class TracedRAGChain:
@@ -134,7 +167,18 @@ def create_traced_rag_chain(
 
     langfuse_client = get_client()
     handler = CallbackHandler()
+    _install_retriever_tracing(chain, langfuse_client)
     logger.info("LangFuse tracing is active")
     return TracedRAGChain(
         chain, langfuse_client, handler, embedding_model=embedding_model
+    )
+
+
+def _install_retriever_tracing(chain: RAGChain, langfuse_client: Langfuse) -> None:
+    """Replace sub-retrievers with traced wrappers when using HybridRetriever."""
+    retriever = chain.retriever
+    if not isinstance(retriever, HybridRetriever):
+        return
+    retriever.bm25_retriever = TracedBM25Retriever(
+        retriever.bm25_retriever, langfuse_client
     )
