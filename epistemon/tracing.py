@@ -30,21 +30,36 @@ class TracedRAGChain:
         self, query: str, k: Optional[int] = None, base_url: str = ""
     ) -> RAGResponse:
         """Invoke the RAG chain with LangFuse tracing."""
-        source_documents = self._retrieve_with_span(query, k)
-        logger.debug(
-            "Traced query: '%s', retrieved %d document(s)",
-            query,
-            len(source_documents),
-        )
-
-        if not source_documents:
-            return RAGResponse(
-                answer="No relevant documents were found to answer your question.",
-                source_documents=[],
-                query=query,
+        with self.langfuse_client.start_as_current_observation(
+            as_type="span",
+            name="rag-pipeline",
+            input={"query": query},
+        ) as trace:
+            source_documents = self._retrieve_with_span(query, k)
+            logger.debug(
+                "Traced query: '%s', retrieved %d document(s)",
+                query,
+                len(source_documents),
             )
 
-        return self._generate_with_span(query, source_documents, base_url)
+            if not source_documents:
+                trace.update(
+                    output={"answer_length": 0, "document_count": 0},
+                )
+                return RAGResponse(
+                    answer="No relevant documents were found to answer your question.",
+                    source_documents=[],
+                    query=query,
+                )
+
+            response = self._generate_with_span(query, source_documents, base_url)
+            trace.update(
+                output={
+                    "answer_length": len(response.answer),
+                    "document_count": len(source_documents),
+                },
+            )
+            return response
 
     def _generate_with_span(
         self, query: str, source_documents: list[Document], base_url: str

@@ -11,6 +11,56 @@ from epistemon.retrieval.rag_chain import RAGChain
 from epistemon.tracing import TracedRAGChain, create_traced_rag_chain
 
 
+def test_traced_rag_chain_creates_parent_trace_wrapping_pipeline() -> None:
+    """Invoke creates a parent observation that wraps retrieval and generation."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(
+        retriever=retriever,
+        llm=llm,
+        prompt_template="Context: {context}\n\nQ: {query}\nA:",
+    )
+
+    doc = Document(page_content="content", metadata={"source": "a.md"})
+    retriever.retrieve.return_value = [(doc, 0.9)]
+    llm.invoke.return_value = Mock(content="the answer")
+
+    parent_span = Mock()
+    retrieval_span = Mock()
+    generation_span = Mock()
+
+    parent_cm = Mock()
+    parent_cm.__enter__ = Mock(return_value=parent_span)
+    parent_cm.__exit__ = Mock(return_value=False)
+    retrieval_cm = Mock()
+    retrieval_cm.__enter__ = Mock(return_value=retrieval_span)
+    retrieval_cm.__exit__ = Mock(return_value=False)
+    generation_cm = Mock()
+    generation_cm.__enter__ = Mock(return_value=generation_span)
+    generation_cm.__exit__ = Mock(return_value=False)
+
+    langfuse_client = Mock()
+    langfuse_client.start_as_current_observation.side_effect = [
+        parent_cm,
+        retrieval_cm,
+        generation_cm,
+    ]
+    handler = Mock()
+
+    traced = TracedRAGChain(chain, langfuse_client, handler)
+    traced.invoke("test query")
+
+    calls = langfuse_client.start_as_current_observation.call_args_list
+    assert len(calls) == 3
+    parent_call = calls[0][1]
+    assert parent_call["name"] == "rag-pipeline"
+    assert parent_call["input"] == {"query": "test query"}
+    parent_span.update.assert_called_once()
+    parent_output = parent_span.update.call_args[1]["output"]
+    assert parent_output["answer_length"] == len("the answer")
+    assert parent_output["document_count"] == 1
+
+
 def test_traced_rag_chain_constructor_uses_concrete_types() -> None:
     """TracedRAGChain constructor parameters use concrete types instead of Any."""
     hints = typing.get_type_hints(TracedRAGChain.__init__)
@@ -33,6 +83,9 @@ def test_traced_rag_chain_creates_retrieval_span() -> None:
     llm.invoke.return_value = Mock(content="answer")
 
     retrieval_span = Mock()
+    parent_cm = Mock()
+    parent_cm.__enter__ = Mock(return_value=Mock())
+    parent_cm.__exit__ = Mock(return_value=False)
     retrieval_cm = Mock()
     retrieval_cm.__enter__ = Mock(return_value=retrieval_span)
     retrieval_cm.__exit__ = Mock(return_value=False)
@@ -42,6 +95,7 @@ def test_traced_rag_chain_creates_retrieval_span() -> None:
 
     langfuse_client = Mock()
     langfuse_client.start_as_current_observation.side_effect = [
+        parent_cm,
         retrieval_cm,
         generation_cm,
     ]
@@ -50,7 +104,7 @@ def test_traced_rag_chain_creates_retrieval_span() -> None:
     traced = TracedRAGChain(chain, langfuse_client, handler)
     traced.invoke("test query")
 
-    retrieval_call = langfuse_client.start_as_current_observation.call_args_list[0][1]
+    retrieval_call = langfuse_client.start_as_current_observation.call_args_list[1][1]
     assert retrieval_call["name"] == "retrieval"
     retrieval_span.update.assert_called_once()
     update_kwargs = retrieval_span.update.call_args[1]
@@ -76,7 +130,7 @@ def test_traced_rag_chain_forwards_callback_handler_to_llm() -> None:
     cm = Mock()
     cm.__enter__ = Mock(return_value=Mock())
     cm.__exit__ = Mock(return_value=False)
-    langfuse_client.start_as_current_observation.return_value = cm
+    langfuse_client.start_as_current_observation.side_effect = [cm, cm, cm]
     handler = Mock()
 
     traced = TracedRAGChain(chain, langfuse_client, handler)
@@ -104,8 +158,12 @@ def test_traced_rag_chain_creates_generation_span() -> None:
     retriever.retrieve.return_value = [(d, 0.9) for d in docs]
     llm.invoke.return_value = Mock(content="short answer")
 
+    parent_span = Mock()
     retrieval_span = Mock()
     generation_span = Mock()
+    parent_cm = Mock()
+    parent_cm.__enter__ = Mock(return_value=parent_span)
+    parent_cm.__exit__ = Mock(return_value=False)
     retrieval_cm = Mock()
     retrieval_cm.__enter__ = Mock(return_value=retrieval_span)
     retrieval_cm.__exit__ = Mock(return_value=False)
@@ -115,6 +173,7 @@ def test_traced_rag_chain_creates_generation_span() -> None:
 
     langfuse_client = Mock()
     langfuse_client.start_as_current_observation.side_effect = [
+        parent_cm,
         retrieval_cm,
         generation_cm,
     ]
@@ -123,7 +182,7 @@ def test_traced_rag_chain_creates_generation_span() -> None:
     traced.invoke("test query")
 
     calls = langfuse_client.start_as_current_observation.call_args_list
-    generation_call = calls[1][1]
+    generation_call = calls[2][1]
     assert generation_call["name"] == "generation"
     assert generation_call["input"]["query"] == "test query"
     assert generation_call["input"]["document_count"] == 2
@@ -206,7 +265,7 @@ def test_traced_rag_chain_invoke_logs_query_and_document_count(
     cm = Mock()
     cm.__enter__ = Mock(return_value=Mock())
     cm.__exit__ = Mock(return_value=False)
-    langfuse_client.start_as_current_observation.return_value = cm
+    langfuse_client.start_as_current_observation.side_effect = [cm, cm, cm]
 
     traced = TracedRAGChain(chain, langfuse_client, Mock())
 
