@@ -129,6 +129,22 @@ def test_highlight_keywords_filters_stopwords() -> None:
     )
 
 
+def test_punctuation_in_query_does_not_affect_search_results() -> None:
+    directory = Path("tests/data")
+    indexer = BM25Indexer(directory)
+
+    results_with_punctuation = indexer.retrieve("What is LangChain?", top_k=3)
+    results_without_punctuation = indexer.retrieve("What is LangChain", top_k=3)
+
+    assert len(results_with_punctuation) > 0
+    assert len(results_with_punctuation) == len(results_without_punctuation)
+    for (doc_a, score_a), (doc_b, score_b) in zip(
+        results_with_punctuation, results_without_punctuation, strict=True
+    ):
+        assert doc_a.page_content == doc_b.page_content
+        assert abs(score_a - score_b) < 0.01
+
+
 def test_bm25_returns_empty_results_for_completely_unmatched_query() -> None:
     directory = Path("tests/data")
     indexer = BM25Indexer(directory)

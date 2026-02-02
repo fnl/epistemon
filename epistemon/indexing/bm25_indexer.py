@@ -37,7 +37,8 @@ def tokenize(text: str) -> list[str]:
         List of lowercase tokens with stop words removed
     """
     tokens = text.lower().split()
-    return [token for token in tokens if token not in ENGLISH_STOP_WORDS]
+    stripped = [token.strip(".,;:!?\"'()[]{}#*~`<>/\\-_=+@$%^&|") for token in tokens]
+    return [token for token in stripped if token and token not in ENGLISH_STOP_WORDS]
 
 
 def highlight_keywords(text: str, query: str) -> str:
