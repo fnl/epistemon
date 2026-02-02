@@ -61,6 +61,38 @@ def test_traced_rag_chain_creates_parent_trace_wrapping_pipeline() -> None:
     assert parent_output["document_count"] == 1
 
 
+def test_traced_rag_chain_creates_embedding_observation() -> None:
+    """Invoke records an embedding observation with query and model name."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(
+        retriever=retriever,
+        llm=llm,
+        prompt_template="Context: {context}\n\nQ: {query}\nA:",
+    )
+
+    doc = Document(page_content="content", metadata={"source": "a.md"})
+    retriever.retrieve.return_value = [(doc, 0.9)]
+    llm.invoke.return_value = Mock(content="answer")
+
+    langfuse_client = Mock()
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=Mock())
+    cm.__exit__ = Mock(return_value=False)
+    langfuse_client.start_as_current_observation.side_effect = [cm, cm, cm, cm]
+
+    traced = TracedRAGChain(
+        chain, langfuse_client, Mock(), embedding_model="all-MiniLM-L6-v2"
+    )
+    traced.invoke("test query")
+
+    calls = langfuse_client.start_as_current_observation.call_args_list
+    embedding_call = next(c[1] for c in calls if c[1].get("as_type") == "embedding")
+    assert embedding_call["name"] == "query-embedding"
+    assert embedding_call["model"] == "all-MiniLM-L6-v2"
+    assert embedding_call["input"] == {"query": "test query"}
+
+
 def test_traced_rag_chain_constructor_uses_concrete_types() -> None:
     """TracedRAGChain constructor parameters use concrete types instead of Any."""
     hints = typing.get_type_hints(TracedRAGChain.__init__)

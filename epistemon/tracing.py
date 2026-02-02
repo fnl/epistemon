@@ -21,10 +21,12 @@ class TracedRAGChain:
         chain: RAGChain,
         langfuse_client: Langfuse,
         callback_handler: BaseCallbackHandler,
+        embedding_model: Optional[str] = None,
     ) -> None:
         self.chain = chain
         self.langfuse_client = langfuse_client
         self.callback_handler = callback_handler
+        self.embedding_model = embedding_model
 
     def invoke(
         self, query: str, k: Optional[int] = None, base_url: str = ""
@@ -35,6 +37,8 @@ class TracedRAGChain:
             name="rag-pipeline",
             input={"query": query},
         ) as trace:
+            if self.embedding_model is not None:
+                self._record_embedding(query)
             source_documents = self._retrieve_with_span(query, k)
             logger.debug(
                 "Traced query: '%s', retrieved %d document(s)",
@@ -60,6 +64,15 @@ class TracedRAGChain:
                 },
             )
             return response
+
+    def _record_embedding(self, query: str) -> None:
+        with self.langfuse_client.start_as_current_observation(
+            as_type="embedding",
+            name="query-embedding",
+            model=self.embedding_model,
+            input={"query": query},
+        ):
+            pass
 
     def _generate_with_span(
         self, query: str, source_documents: list[Document], base_url: str
@@ -100,13 +113,17 @@ class TracedRAGChain:
 
 
 def create_traced_rag_chain(
-    chain: RAGChain, *, tracing_enabled: bool
+    chain: RAGChain,
+    *,
+    tracing_enabled: bool,
+    embedding_model: Optional[str] = None,
 ) -> RAGChainProtocol:
     """Create a RAG chain optionally wrapped with LangFuse tracing.
 
     Args:
         chain: The base RAGChain to optionally wrap
         tracing_enabled: Whether tracing is enabled
+        embedding_model: Name of the embedding model for trace metadata
 
     Returns:
         The original chain if tracing is disabled, or a TracedRAGChain wrapper
@@ -118,4 +135,6 @@ def create_traced_rag_chain(
     langfuse_client = get_client()
     handler = CallbackHandler()
     logger.info("LangFuse tracing is active")
-    return TracedRAGChain(chain, langfuse_client, handler)
+    return TracedRAGChain(
+        chain, langfuse_client, handler, embedding_model=embedding_model
+    )

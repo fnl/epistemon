@@ -67,7 +67,9 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
             llm = create_llm(config)
             rag_chain = RAGChain(retriever=hybrid_retriever, llm=llm)
             rag_chain = create_traced_rag_chain(
-                rag_chain, tracing_enabled=config.tracing_enabled
+                rag_chain,
+                tracing_enabled=config.tracing_enabled,
+                embedding_model=config.embedding_model,
             )
 
         logger.info("Creating web application...")
