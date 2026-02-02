@@ -11,6 +11,7 @@ from langfuse.langchain import CallbackHandler
 from epistemon.retrieval.hybrid_retriever import (
     BM25RetrieverProtocol,
     HybridRetriever,
+    SemanticRetrieverProtocol,
 )
 from epistemon.retrieval.rag_chain import RAGChain, RAGChainProtocol, RAGResponse
 
@@ -41,6 +42,36 @@ class TracedBM25Retriever:
                     "sources": [
                         doc.metadata.get("source", "Unknown") for doc, _ in results
                     ],
+                }
+            )
+        return results
+
+
+class TracedSemanticRetriever:
+    """Wraps a semantic retriever to record a LangFuse span for each search."""
+
+    def __init__(
+        self,
+        retriever: SemanticRetrieverProtocol,
+        langfuse_client: Langfuse,
+    ) -> None:
+        self.retriever = retriever
+        self.langfuse_client = langfuse_client
+
+    def similarity_search_with_score(self, query: str) -> list[tuple[Document, float]]:
+        with self.langfuse_client.start_as_current_observation(
+            as_type="span",
+            name="semantic-search",
+            input={"query": query},
+        ) as span:
+            results = self.retriever.similarity_search_with_score(query)
+            span.update(
+                output={
+                    "document_count": len(results),
+                    "sources": [
+                        doc.metadata.get("source", "Unknown") for doc, _ in results
+                    ],
+                    "scores": [score for _, score in results],
                 }
             )
         return results
@@ -181,4 +212,7 @@ def _install_retriever_tracing(chain: RAGChain, langfuse_client: Langfuse) -> No
         return
     retriever.bm25_retriever = TracedBM25Retriever(
         retriever.bm25_retriever, langfuse_client
+    )
+    retriever.semantic_retriever = TracedSemanticRetriever(
+        retriever.semantic_retriever, langfuse_client
     )

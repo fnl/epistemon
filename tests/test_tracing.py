@@ -93,6 +93,38 @@ def test_traced_rag_chain_creates_embedding_observation() -> None:
     assert embedding_call["input"] == {"query": "test query"}
 
 
+def test_traced_semantic_retriever_creates_span_with_results() -> None:
+    """TracedSemanticRetriever wraps search in a LangFuse span with scores."""
+    from epistemon.tracing import TracedSemanticRetriever
+
+    inner = Mock()
+    docs = [
+        Document(page_content="a", metadata={"source": "a.md"}),
+        Document(page_content="b", metadata={"source": "b.md"}),
+    ]
+    inner.similarity_search_with_score.return_value = [(docs[0], 0.95), (docs[1], 0.82)]
+
+    span = Mock()
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=span)
+    cm.__exit__ = Mock(return_value=False)
+
+    langfuse_client = Mock()
+    langfuse_client.start_as_current_observation.return_value = cm
+
+    traced = TracedSemanticRetriever(inner, langfuse_client)
+    results = traced.similarity_search_with_score("test query")
+
+    assert results == [(docs[0], 0.95), (docs[1], 0.82)]
+    call_kwargs = langfuse_client.start_as_current_observation.call_args[1]
+    assert call_kwargs["name"] == "semantic-search"
+    assert call_kwargs["input"] == {"query": "test query"}
+    output = span.update.call_args[1]["output"]
+    assert output["document_count"] == 2
+    assert output["sources"] == ["a.md", "b.md"]
+    assert output["scores"] == [0.95, 0.82]
+
+
 def test_traced_bm25_retriever_creates_span_with_results() -> None:
     """TracedBM25Retriever wraps retrieve() in a LangFuse span with query and results."""
     from epistemon.tracing import TracedBM25Retriever
