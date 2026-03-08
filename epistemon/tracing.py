@@ -1,6 +1,7 @@
 """LangFuse tracing module for the RAG pipeline."""
 
 import logging
+import threading
 from typing import Optional
 
 from langchain_core.callbacks import BaseCallbackHandler
@@ -136,7 +137,10 @@ class TracedRAGChain:
             )
 
         if self.judge is not None:
-            self._score_async(query, response)
+            thread = threading.Thread(
+                target=self._score_async, args=(query, response), daemon=True
+            )
+            thread.start()
 
         return response
 

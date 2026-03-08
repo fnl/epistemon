@@ -421,6 +421,47 @@ def test_traced_rag_chain_with_judge_posts_four_scores_to_langfuse() -> None:
     assert langfuse_client.score.call_count == 4
 
 
+def test_traced_rag_chain_response_returned_before_scoring_thread_runs() -> None:
+    """RAGResponse is returned before the scoring thread has executed."""
+    from unittest.mock import patch
+
+    from epistemon.evaluation import JudgeScore, RetrievalJudge
+    from epistemon.retrieval.rag_chain import RAGResponse
+
+    bm25_doc = Document(page_content="BM25 content", metadata={"source": "bm25.md"})
+    retriever = Mock()
+    retriever.retrieve.return_value = [(bm25_doc, 1.5)]
+    retriever.bm25_retriever = Mock()
+    retriever.bm25_retriever.last_results = [(bm25_doc, 1.5)]
+    retriever.semantic_retriever = Mock()
+    retriever.semantic_retriever.last_results = []
+
+    llm = Mock()
+    llm.invoke.return_value = Mock(content="the answer")
+    chain = RAGChain(retriever=retriever, llm=llm, prompt_template="{context}\n{query}")
+
+    judge = Mock(spec=RetrievalJudge)
+    judge.score_context_relevance.return_value = JudgeScore(score=0.8, reason="ok")
+    judge.score_answer_faithfulness.return_value = JudgeScore(score=0.9, reason="ok")
+
+    langfuse_client = Mock()
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=Mock())
+    cm.__exit__ = Mock(return_value=False)
+    langfuse_client.start_as_current_observation.side_effect = [cm, cm, cm]
+
+    with patch("epistemon.tracing.threading.Thread") as mock_thread_cls:
+        mock_thread = Mock()
+        mock_thread_cls.return_value = mock_thread
+
+        traced = TracedRAGChain(chain, langfuse_client, Mock(), judge=judge)
+        response = traced.invoke("test query")
+
+    assert isinstance(response, RAGResponse)
+    judge.score_context_relevance.assert_not_called()
+    judge.score_answer_faithfulness.assert_not_called()
+
+
 def test_traced_rag_chain_without_judge_makes_no_scoring_calls() -> None:
     """TracedRAGChain without a judge does not call any LangFuse score API."""
     retriever = Mock()
