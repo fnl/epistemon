@@ -134,7 +134,46 @@ class TracedRAGChain:
                     "document_count": len(source_documents),
                 },
             )
-            return response
+
+        if self.judge is not None:
+            self._score_async(query, response)
+
+        return response
+
+    def _score_async(self, query: str, response: RAGResponse) -> None:
+        retriever = self.chain.retriever
+        if not (
+            hasattr(retriever, "bm25_retriever")
+            and hasattr(retriever, "semantic_retriever")
+        ):
+            return
+
+        bm25_results: list[tuple[Document, float]] = getattr(
+            retriever.bm25_retriever, "last_results", []
+        )
+        sem_results: list[tuple[Document, float]] = getattr(
+            retriever.semantic_retriever, "last_results", []
+        )
+
+        bm25_context = self.chain.format_context([doc for doc, _ in bm25_results])
+        sem_context = self.chain.format_context([doc for doc, _ in sem_results])
+
+        judge = self.judge
+        if judge is None:
+            return
+        score = judge.score_context_relevance(query, bm25_context)
+        self.langfuse_client.score(name="bm25-context-relevance", value=score.score)
+
+        score = judge.score_context_relevance(query, sem_context)
+        self.langfuse_client.score(name="semantic-context-relevance", value=score.score)
+
+        score = judge.score_answer_faithfulness(query, response.answer, bm25_context)
+        self.langfuse_client.score(name="bm25-answer-faithfulness", value=score.score)
+
+        score = judge.score_answer_faithfulness(query, response.answer, sem_context)
+        self.langfuse_client.score(
+            name="semantic-answer-faithfulness", value=score.score
+        )
 
     def _record_embedding(self, query: str) -> None:
         with self.langfuse_client.start_as_current_observation(

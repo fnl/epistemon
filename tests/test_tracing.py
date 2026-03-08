@@ -387,6 +387,40 @@ def test_traced_bm25_retriever_last_results_populated_after_retrieve() -> None:
     assert traced.last_results == [(docs[0], 1.5), (docs[1], 0.8)]
 
 
+def test_traced_rag_chain_with_judge_posts_four_scores_to_langfuse() -> None:
+    """TracedRAGChain with a judge calls langfuse_client.score() four times after invoke."""
+    from epistemon.evaluation import JudgeScore, RetrievalJudge
+
+    bm25_doc = Document(page_content="BM25 content", metadata={"source": "bm25.md"})
+    sem_doc = Document(page_content="Semantic content", metadata={"source": "sem.md"})
+
+    retriever = Mock()
+    retriever.retrieve.return_value = [(bm25_doc, 1.5), (sem_doc, 0.9)]
+    retriever.bm25_retriever = Mock()
+    retriever.bm25_retriever.last_results = [(bm25_doc, 1.5)]
+    retriever.semantic_retriever = Mock()
+    retriever.semantic_retriever.last_results = [(sem_doc, 0.9)]
+
+    llm = Mock()
+    llm.invoke.return_value = Mock(content="the answer")
+    chain = RAGChain(retriever=retriever, llm=llm, prompt_template="{context}\n{query}")
+
+    judge = Mock(spec=RetrievalJudge)
+    judge.score_context_relevance.return_value = JudgeScore(score=0.8, reason="ok")
+    judge.score_answer_faithfulness.return_value = JudgeScore(score=0.9, reason="ok")
+
+    langfuse_client = Mock()
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=Mock())
+    cm.__exit__ = Mock(return_value=False)
+    langfuse_client.start_as_current_observation.side_effect = [cm, cm, cm]
+
+    traced = TracedRAGChain(chain, langfuse_client, Mock(), judge=judge)
+    traced.invoke("test query")
+
+    assert langfuse_client.score.call_count == 4
+
+
 def test_traced_rag_chain_without_judge_makes_no_scoring_calls() -> None:
     """TracedRAGChain without a judge does not call any LangFuse score API."""
     retriever = Mock()
