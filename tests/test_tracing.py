@@ -387,6 +387,32 @@ def test_traced_bm25_retriever_last_results_populated_after_retrieve() -> None:
     assert traced.last_results == [(docs[0], 1.5), (docs[1], 0.8)]
 
 
+def test_traced_rag_chain_without_judge_makes_no_scoring_calls() -> None:
+    """TracedRAGChain without a judge does not call any LangFuse score API."""
+    retriever = Mock()
+    llm = Mock()
+    chain = RAGChain(
+        retriever=retriever,
+        llm=llm,
+        prompt_template="Context: {context}\n\nQ: {query}\nA:",
+    )
+
+    doc = Document(page_content="content", metadata={"source": "a.md"})
+    retriever.retrieve.return_value = [(doc, 0.9)]
+    llm.invoke.return_value = Mock(content="the answer")
+
+    langfuse_client = Mock()
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=Mock())
+    cm.__exit__ = Mock(return_value=False)
+    langfuse_client.start_as_current_observation.side_effect = [cm, cm, cm]
+
+    traced = TracedRAGChain(chain, langfuse_client, Mock())
+    traced.invoke("test query")
+
+    langfuse_client.score.assert_not_called()
+
+
 def test_traced_rag_chain_invoke_logs_query_and_document_count(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
