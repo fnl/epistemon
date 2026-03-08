@@ -28,6 +28,7 @@ class TracedBM25Retriever:
     ) -> None:
         self.retriever = retriever
         self.langfuse_client = langfuse_client
+        self.last_results: list[tuple[Document, float]] = []
 
     def retrieve(self, query: str) -> list[tuple[Document, float]]:
         with self.langfuse_client.start_as_current_observation(
@@ -36,6 +37,7 @@ class TracedBM25Retriever:
             input={"query": query},
         ) as span:
             results = self.retriever.retrieve(query)
+            self.last_results = results
             span.update(
                 output={
                     "document_count": len(results),

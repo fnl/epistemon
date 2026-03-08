@@ -337,6 +337,30 @@ def test_create_traced_rag_chain_logs_debug_when_tracing_disabled(
     assert any("tracing" in m.message.lower() for m in debug_messages)
 
 
+def test_traced_bm25_retriever_last_results_populated_after_retrieve() -> None:
+    """last_results contains the (Document, float) tuples returned by retrieve()."""
+    from epistemon.tracing import TracedBM25Retriever
+
+    inner = Mock()
+    docs = [
+        Document(page_content="a", metadata={"source": "a.md"}),
+        Document(page_content="b", metadata={"source": "b.md"}),
+    ]
+    inner.retrieve.return_value = [(docs[0], 1.5), (docs[1], 0.8)]
+
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=Mock())
+    cm.__exit__ = Mock(return_value=False)
+
+    langfuse_client = Mock()
+    langfuse_client.start_as_current_observation.return_value = cm
+
+    traced = TracedBM25Retriever(inner, langfuse_client)
+    traced.retrieve("test query")
+
+    assert traced.last_results == [(docs[0], 1.5), (docs[1], 0.8)]
+
+
 def test_traced_rag_chain_invoke_logs_query_and_document_count(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
