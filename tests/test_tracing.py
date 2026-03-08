@@ -337,6 +337,32 @@ def test_create_traced_rag_chain_logs_debug_when_tracing_disabled(
     assert any("tracing" in m.message.lower() for m in debug_messages)
 
 
+def test_traced_semantic_retriever_last_results_populated_after_similarity_search() -> (
+    None
+):
+    """last_results contains the (Document, float) tuples returned by similarity_search_with_score()."""
+    from epistemon.tracing import TracedSemanticRetriever
+
+    inner = Mock()
+    docs = [
+        Document(page_content="a", metadata={"source": "a.md"}),
+        Document(page_content="b", metadata={"source": "b.md"}),
+    ]
+    inner.similarity_search_with_score.return_value = [(docs[0], 0.95), (docs[1], 0.82)]
+
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=Mock())
+    cm.__exit__ = Mock(return_value=False)
+
+    langfuse_client = Mock()
+    langfuse_client.start_as_current_observation.return_value = cm
+
+    traced = TracedSemanticRetriever(inner, langfuse_client)
+    traced.similarity_search_with_score("test query")
+
+    assert traced.last_results == [(docs[0], 0.95), (docs[1], 0.82)]
+
+
 def test_traced_bm25_retriever_last_results_populated_after_retrieve() -> None:
     """last_results contains the (Document, float) tuples returned by retrieve()."""
     from epistemon.tracing import TracedBM25Retriever

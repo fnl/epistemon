@@ -23,6 +23,33 @@ def test_score_context_relevance_returns_judge_score_from_valid_json() -> None:
     assert result.reason == "The context directly addresses the question."
 
 
+def test_score_context_relevance_returns_fallback_on_invalid_json() -> None:
+    """score_context_relevance returns score=0.0 and reason='parse error' on invalid JSON."""
+    llm = Mock()
+    llm.invoke.return_value = Mock(content="not valid json at all")
+
+    result = score_context_relevance(llm, "What is Python?", "Python is a language.")
+
+    assert result.score == 0.0
+    assert result.reason == "parse error"
+
+
+def test_score_answer_faithfulness_returns_fallback_on_invalid_json() -> None:
+    """score_answer_faithfulness returns score=0.0 and reason='parse error' on invalid JSON."""
+    llm = Mock()
+    llm.invoke.return_value = Mock(content="not valid json at all")
+
+    result = score_answer_faithfulness(
+        llm,
+        "What is Python?",
+        "Python is a language.",
+        "Python is a programming language.",
+    )
+
+    assert result.score == 0.0
+    assert result.reason == "parse error"
+
+
 def test_score_answer_faithfulness_returns_judge_score_from_valid_json() -> None:
     """score_answer_faithfulness returns a JudgeScore parsed from LLM JSON output."""
     llm = Mock()

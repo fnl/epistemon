@@ -22,7 +22,7 @@ def score_context_relevance(llm: Any, question: str, context: str) -> JudgeScore
         context: The retrieved context to evaluate
 
     Returns:
-        JudgeScore with a 0.0-1.0 score and reasoning
+        JudgeScore with a 0.0-1.0 score and reasoning, or score=0.0 on parse error
     """
     prompt = (
         "You are an evaluation judge. Score how relevant the following context is "
@@ -32,8 +32,11 @@ def score_context_relevance(llm: Any, question: str, context: str) -> JudgeScore
         'Respond with valid JSON only: {"score": <float>, "reason": "<string>"}'
     )
     response = llm.invoke(prompt)
-    parsed = json.loads(response.content)
-    return JudgeScore(score=parsed["score"], reason=parsed["reason"])
+    try:
+        parsed = json.loads(response.content)
+        return JudgeScore(score=parsed["score"], reason=parsed["reason"])
+    except (json.JSONDecodeError, KeyError):
+        return JudgeScore(score=0.0, reason="parse error")
 
 
 def score_answer_faithfulness(
@@ -59,5 +62,8 @@ def score_answer_faithfulness(
         'Respond with valid JSON only: {"score": <float>, "reason": "<string>"}'
     )
     response = llm.invoke(prompt)
-    parsed = json.loads(response.content)
-    return JudgeScore(score=parsed["score"], reason=parsed["reason"])
+    try:
+        parsed = json.loads(response.content)
+        return JudgeScore(score=parsed["score"], reason=parsed["reason"])
+    except (json.JSONDecodeError, KeyError):
+        return JudgeScore(score=0.0, reason="parse error")
