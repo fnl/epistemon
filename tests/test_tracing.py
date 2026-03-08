@@ -405,7 +405,9 @@ def test_traced_bm25_retriever_last_results_populated_after_retrieve() -> None:
 
 
 def test_traced_rag_chain_with_judge_posts_four_scores_to_langfuse() -> None:
-    """TracedRAGChain with a judge calls langfuse_client.score() four times after invoke."""
+    """TracedRAGChain with a judge calls langfuse_client.create_score() four times after invoke."""
+    from langfuse import Langfuse
+
     from epistemon.evaluation import JudgeScore, RetrievalJudge
 
     bm25_doc = Document(page_content="BM25 content", metadata={"source": "bm25.md"})
@@ -426,7 +428,7 @@ def test_traced_rag_chain_with_judge_posts_four_scores_to_langfuse() -> None:
     judge.score_context_relevance.return_value = JudgeScore(score=0.8, reason="ok")
     judge.score_answer_faithfulness.return_value = JudgeScore(score=0.9, reason="ok")
 
-    langfuse_client = Mock()
+    langfuse_client = Mock(spec=Langfuse)
     cm = Mock()
     cm.__enter__ = Mock(return_value=Mock())
     cm.__exit__ = Mock(return_value=False)
@@ -435,7 +437,7 @@ def test_traced_rag_chain_with_judge_posts_four_scores_to_langfuse() -> None:
     traced = TracedRAGChain(chain, langfuse_client, Mock(), judge=judge)
     traced.invoke("test query")
 
-    assert langfuse_client.score.call_count == 4
+    assert langfuse_client.create_score.call_count == 4
 
 
 def test_traced_rag_chain_response_returned_before_scoring_thread_runs() -> None:

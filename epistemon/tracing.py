@@ -172,16 +172,22 @@ class TracedRAGChain:
         if judge is None:
             return
         score = judge.score_context_relevance(query, bm25_context)
-        self.langfuse_client.score(name="bm25-context-relevance", value=score.score)
+        self.langfuse_client.create_score(
+            name="bm25-context-relevance", value=score.score
+        )
 
         score = judge.score_context_relevance(query, sem_context)
-        self.langfuse_client.score(name="semantic-context-relevance", value=score.score)
+        self.langfuse_client.create_score(
+            name="semantic-context-relevance", value=score.score
+        )
 
         score = judge.score_answer_faithfulness(query, response.answer, bm25_context)
-        self.langfuse_client.score(name="bm25-answer-faithfulness", value=score.score)
+        self.langfuse_client.create_score(
+            name="bm25-answer-faithfulness", value=score.score
+        )
 
         score = judge.score_answer_faithfulness(query, response.answer, sem_context)
-        self.langfuse_client.score(
+        self.langfuse_client.create_score(
             name="semantic-answer-faithfulness", value=score.score
         )
 
