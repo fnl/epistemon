@@ -404,8 +404,8 @@ def test_traced_bm25_retriever_last_results_populated_after_retrieve() -> None:
     assert traced.last_results == [(docs[0], 1.5), (docs[1], 0.8)]
 
 
-def test_traced_rag_chain_with_judge_posts_four_scores_to_langfuse() -> None:
-    """TracedRAGChain with a judge calls langfuse_client.create_score() four times after invoke."""
+def test_traced_rag_chain_with_judge_posts_four_scores_with_trace_id() -> None:
+    """create_score is called four times, each with the trace_id captured from the pipeline span."""
     from langfuse import Langfuse
 
     from epistemon.evaluation import JudgeScore, RetrievalJudge
@@ -428,16 +428,28 @@ def test_traced_rag_chain_with_judge_posts_four_scores_to_langfuse() -> None:
     judge.score_context_relevance.return_value = JudgeScore(score=0.8, reason="ok")
     judge.score_answer_faithfulness.return_value = JudgeScore(score=0.9, reason="ok")
 
+    parent_span = Mock()
+    parent_span.trace_id = "trace-abc-123"
+    parent_cm = Mock()
+    parent_cm.__enter__ = Mock(return_value=parent_span)
+    parent_cm.__exit__ = Mock(return_value=False)
+    child_cm = Mock()
+    child_cm.__enter__ = Mock(return_value=Mock())
+    child_cm.__exit__ = Mock(return_value=False)
+
     langfuse_client = Mock(spec=Langfuse)
-    cm = Mock()
-    cm.__enter__ = Mock(return_value=Mock())
-    cm.__exit__ = Mock(return_value=False)
-    langfuse_client.start_as_current_observation.side_effect = [cm, cm, cm]
+    langfuse_client.start_as_current_observation.side_effect = [
+        parent_cm,
+        child_cm,
+        child_cm,
+    ]
 
     traced = TracedRAGChain(chain, langfuse_client, Mock(), judge=judge)
     traced.invoke("test query")
 
     assert langfuse_client.create_score.call_count == 4
+    for call in langfuse_client.create_score.call_args_list:
+        assert call.kwargs["trace_id"] == "trace-abc-123"
 
 
 def test_traced_rag_chain_response_returned_before_scoring_thread_runs() -> None:

@@ -138,19 +138,21 @@ class TracedRAGChain:
 
         if self.judge is not None:
             thread = threading.Thread(
-                target=self._score_async, args=(query, response), daemon=True
+                target=self._score_async,
+                args=(query, response, trace.trace_id),
+                daemon=True,
             )
             thread.start()
 
         return response
 
-    def _score_async(self, query: str, response: RAGResponse) -> None:
+    def _score_async(self, query: str, response: RAGResponse, trace_id: str) -> None:
         try:
-            self._run_scoring(query, response)
+            self._run_scoring(query, response, trace_id)
         except Exception as exc:
             logger.warning("Judge scoring failed: %s", exc)
 
-    def _run_scoring(self, query: str, response: RAGResponse) -> None:
+    def _run_scoring(self, query: str, response: RAGResponse, trace_id: str) -> None:
         retriever = self.chain.retriever
         if not (
             hasattr(retriever, "bm25_retriever")
@@ -173,22 +175,22 @@ class TracedRAGChain:
             return
         score = judge.score_context_relevance(query, bm25_context)
         self.langfuse_client.create_score(
-            name="bm25-context-relevance", value=score.score
+            trace_id=trace_id, name="bm25-context-relevance", value=score.score
         )
 
         score = judge.score_context_relevance(query, sem_context)
         self.langfuse_client.create_score(
-            name="semantic-context-relevance", value=score.score
+            trace_id=trace_id, name="semantic-context-relevance", value=score.score
         )
 
         score = judge.score_answer_faithfulness(query, response.answer, bm25_context)
         self.langfuse_client.create_score(
-            name="bm25-answer-faithfulness", value=score.score
+            trace_id=trace_id, name="bm25-answer-faithfulness", value=score.score
         )
 
         score = judge.score_answer_faithfulness(query, response.answer, sem_context)
         self.langfuse_client.create_score(
-            name="semantic-answer-faithfulness", value=score.score
+            trace_id=trace_id, name="semantic-answer-faithfulness", value=score.score
         )
 
     def _record_embedding(self, query: str) -> None:
