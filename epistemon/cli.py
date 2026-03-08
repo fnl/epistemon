@@ -9,6 +9,7 @@ from typing import Optional
 import uvicorn
 
 from epistemon.config import load_config
+from epistemon.evaluation import RetrievalJudge
 from epistemon.indexing.bm25_indexer import BM25Indexer
 from epistemon.indexing.indexer import index
 from epistemon.indexing.vector_store_manager import create_vector_store_manager
@@ -66,10 +67,12 @@ def web_ui_command(config_path: Optional[str], host: str, port: int) -> None:
             )
             llm = create_llm(config)
             rag_chain = RAGChain(retriever=hybrid_retriever, llm=llm)
+            judge = RetrievalJudge(llm) if config.tracing_enabled else None
             rag_chain = create_traced_rag_chain(
                 rag_chain,
                 tracing_enabled=config.tracing_enabled,
                 embedding_model=config.embedding_model,
+                judge=judge,
             )
 
         logger.info("Creating web application...")
