@@ -13,6 +13,23 @@ class JudgeScore:
     reason: str
 
 
+class RetrievalJudge:
+    """LLM-based judge for evaluating RAG retrieval quality."""
+
+    def __init__(self, llm: Any) -> None:
+        self.llm = llm
+
+    def score_context_relevance(self, question: str, context: str) -> JudgeScore:
+        """Score how relevant the context is to the question."""
+        return score_context_relevance(self.llm, question, context)
+
+    def score_answer_faithfulness(
+        self, question: str, answer: str, context: str
+    ) -> JudgeScore:
+        """Score how faithful the answer is to the context."""
+        return score_answer_faithfulness(self.llm, question, answer, context)
+
+
 def score_context_relevance(llm: Any, question: str, context: str) -> JudgeScore:
     """Score how relevant the context is to the question.
 
