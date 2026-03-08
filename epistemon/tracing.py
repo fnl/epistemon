@@ -145,6 +145,12 @@ class TracedRAGChain:
         return response
 
     def _score_async(self, query: str, response: RAGResponse) -> None:
+        try:
+            self._run_scoring(query, response)
+        except Exception as exc:
+            logger.warning("Judge scoring failed: %s", exc)
+
+    def _run_scoring(self, query: str, response: RAGResponse) -> None:
         retriever = self.chain.retriever
         if not (
             hasattr(retriever, "bm25_retriever")

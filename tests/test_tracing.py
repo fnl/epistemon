@@ -462,6 +462,46 @@ def test_traced_rag_chain_response_returned_before_scoring_thread_runs() -> None
     judge.score_answer_faithfulness.assert_not_called()
 
 
+def test_traced_rag_chain_judge_exception_is_caught_and_does_not_propagate(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """An exception from the judge LLM is caught and logged; the RAGResponse is still returned."""
+    from epistemon.evaluation import RetrievalJudge
+    from epistemon.retrieval.rag_chain import RAGResponse
+
+    bm25_doc = Document(page_content="BM25 content", metadata={"source": "bm25.md"})
+    retriever = Mock()
+    retriever.retrieve.return_value = [(bm25_doc, 1.5)]
+    retriever.bm25_retriever = Mock()
+    retriever.bm25_retriever.last_results = [(bm25_doc, 1.5)]
+    retriever.semantic_retriever = Mock()
+    retriever.semantic_retriever.last_results = []
+
+    llm = Mock()
+    llm.invoke.return_value = Mock(content="the answer")
+    chain = RAGChain(retriever=retriever, llm=llm, prompt_template="{context}\n{query}")
+
+    judge = Mock(spec=RetrievalJudge)
+    judge.score_context_relevance.side_effect = RuntimeError("LLM unavailable")
+
+    langfuse_client = Mock()
+    cm = Mock()
+    cm.__enter__ = Mock(return_value=Mock())
+    cm.__exit__ = Mock(return_value=False)
+    langfuse_client.start_as_current_observation.side_effect = [cm, cm, cm]
+
+    traced = TracedRAGChain(chain, langfuse_client, Mock(), judge=judge)
+
+    with caplog.at_level(logging.WARNING, logger="epistemon.tracing"):
+        response = traced.invoke("test query")
+        import time
+
+        time.sleep(0.05)
+
+    assert isinstance(response, RAGResponse)
+    assert any("LLM unavailable" in r.message for r in caplog.records)
+
+
 def test_traced_rag_chain_without_judge_makes_no_scoring_calls() -> None:
     """TracedRAGChain without a judge does not call any LangFuse score API."""
     retriever = Mock()
