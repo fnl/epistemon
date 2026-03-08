@@ -237,6 +237,7 @@ def create_traced_rag_chain(
     *,
     tracing_enabled: bool,
     embedding_model: Optional[str] = None,
+    judge: Optional[RetrievalJudge] = None,
 ) -> RAGChainProtocol:
     """Create a RAG chain optionally wrapped with LangFuse tracing.
 
@@ -244,6 +245,7 @@ def create_traced_rag_chain(
         chain: The base RAGChain to optionally wrap
         tracing_enabled: Whether tracing is enabled
         embedding_model: Name of the embedding model for trace metadata
+        judge: Optional RetrievalJudge for async quality scoring
 
     Returns:
         The original chain if tracing is disabled, or a TracedRAGChain wrapper
@@ -257,7 +259,7 @@ def create_traced_rag_chain(
     _install_retriever_tracing(chain, langfuse_client)
     logger.info("LangFuse tracing is active")
     return TracedRAGChain(
-        chain, langfuse_client, handler, embedding_model=embedding_model
+        chain, langfuse_client, handler, embedding_model=embedding_model, judge=judge
     )
 
 

@@ -337,6 +337,23 @@ def test_create_traced_rag_chain_logs_debug_when_tracing_disabled(
     assert any("tracing" in m.message.lower() for m in debug_messages)
 
 
+@patch("epistemon.tracing.get_client")
+@patch("epistemon.tracing.CallbackHandler")
+def test_create_traced_rag_chain_forwards_judge_to_traced_chain(
+    _mock_handler: Mock, _mock_get_client: Mock
+) -> None:
+    """create_traced_rag_chain passes the judge to TracedRAGChain when tracing is enabled."""
+    from epistemon.evaluation import RetrievalJudge
+
+    chain = RAGChain(retriever=Mock(), llm=Mock(), prompt_template="{context}{query}")
+    judge = Mock(spec=RetrievalJudge)
+
+    result = create_traced_rag_chain(chain, tracing_enabled=True, judge=judge)
+
+    assert isinstance(result, TracedRAGChain)
+    assert result.judge is judge
+
+
 def test_traced_semantic_retriever_last_results_populated_after_similarity_search() -> (
     None
 ):
