@@ -8,6 +8,7 @@ from langchain_core.documents import Document
 from langfuse import Langfuse, get_client
 from langfuse.langchain import CallbackHandler
 
+from epistemon.evaluation import RetrievalJudge
 from epistemon.retrieval.hybrid_retriever import (
     BM25RetrieverProtocol,
     HybridRetriever,
@@ -90,11 +91,13 @@ class TracedRAGChain:
         langfuse_client: Langfuse,
         callback_handler: BaseCallbackHandler,
         embedding_model: Optional[str] = None,
+        judge: Optional[RetrievalJudge] = None,
     ) -> None:
         self.chain = chain
         self.langfuse_client = langfuse_client
         self.callback_handler = callback_handler
         self.embedding_model = embedding_model
+        self.judge = judge
 
     def invoke(
         self, query: str, k: Optional[int] = None, base_url: str = ""
