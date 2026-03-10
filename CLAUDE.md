@@ -1,5 +1,6 @@
 ## Notes
 
+- Never push to the remote repository without first asking the user to review and approve.
 - When working on a Beads task, you are expected to follow a TDD-based approach. Don't forget to set the `bd` ticket to "In Progress".
 - Remember that you have a HTTP MCP servier docs-langchain to refer to LangChain documentation.
 - The project is about implementing a beefed up semantic search engine example described in https://docs.langchain.com/oss/python/langchain/knowledge-base with a RAG agent https://docs.langchain.com/oss/python/langchain/rag and BM25 search.
