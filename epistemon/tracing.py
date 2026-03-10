@@ -2,7 +2,7 @@
 
 import logging
 import threading
-from typing import Optional
+from typing import Optional, cast
 
 from langchain_core.callbacks import BaseCallbackHandler
 from langchain_core.documents import Document
@@ -160,6 +160,7 @@ class TracedRAGChain:
         ):
             return
 
+        retriever = cast(HybridRetriever, retriever)
         bm25_results: list[tuple[Document, float]] = getattr(
             retriever.bm25_retriever, "last_results", []
         )
@@ -169,6 +170,7 @@ class TracedRAGChain:
 
         bm25_context = self.chain.format_context([doc for doc, _ in bm25_results])
         sem_context = self.chain.format_context([doc for doc, _ in sem_results])
+        final_context = self.chain.format_context(response.source_documents)
 
         judge = self.judge
         if judge is None:
@@ -183,14 +185,9 @@ class TracedRAGChain:
             trace_id=trace_id, name="semantic-context-relevance", value=score.score
         )
 
-        score = judge.score_answer_faithfulness(query, response.answer, bm25_context)
+        score = judge.score_answer_faithfulness(query, response.answer, final_context)
         self.langfuse_client.create_score(
-            trace_id=trace_id, name="bm25-answer-faithfulness", value=score.score
-        )
-
-        score = judge.score_answer_faithfulness(query, response.answer, sem_context)
-        self.langfuse_client.create_score(
-            trace_id=trace_id, name="semantic-answer-faithfulness", value=score.score
+            trace_id=trace_id, name="answer-faithfulness", value=score.score
         )
 
     def _record_embedding(self, query: str) -> None:

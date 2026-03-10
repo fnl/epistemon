@@ -404,17 +404,18 @@ def test_traced_bm25_retriever_last_results_populated_after_retrieve() -> None:
     assert traced.last_results == [(docs[0], 1.5), (docs[1], 0.8)]
 
 
-def test_traced_rag_chain_with_judge_posts_four_scores_with_trace_id() -> None:
-    """create_score is called four times, each with the trace_id captured from the pipeline span."""
+def test_traced_rag_chain_with_judge_posts_three_scores_with_trace_id() -> None:
+    """create_score is called three times: bm25-context-relevance, semantic-context-relevance, answer-faithfulness."""
     from langfuse import Langfuse
 
     from epistemon.evaluation import JudgeScore, RetrievalJudge
 
     bm25_doc = Document(page_content="BM25 content", metadata={"source": "bm25.md"})
     sem_doc = Document(page_content="Semantic content", metadata={"source": "sem.md"})
+    final_doc = Document(page_content="Final content", metadata={"source": "final.md"})
 
     retriever = Mock()
-    retriever.retrieve.return_value = [(bm25_doc, 1.5), (sem_doc, 0.9)]
+    retriever.retrieve.return_value = [(final_doc, 1.0)]
     retriever.bm25_retriever = Mock()
     retriever.bm25_retriever.last_results = [(bm25_doc, 1.5)]
     retriever.semantic_retriever = Mock()
@@ -447,8 +448,15 @@ def test_traced_rag_chain_with_judge_posts_four_scores_with_trace_id() -> None:
     traced = TracedRAGChain(chain, langfuse_client, Mock(), judge=judge)
     traced.invoke("test query")
 
-    assert langfuse_client.create_score.call_count == 4
-    for call in langfuse_client.create_score.call_args_list:
+    score_calls = langfuse_client.create_score.call_args_list
+    assert len(score_calls) == 3
+    score_names = [c.kwargs["name"] for c in score_calls]
+    assert score_names == [
+        "bm25-context-relevance",
+        "semantic-context-relevance",
+        "answer-faithfulness",
+    ]
+    for call in score_calls:
         assert call.kwargs["trace_id"] == "trace-abc-123"
 
 
